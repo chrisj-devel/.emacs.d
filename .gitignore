@@ -1,0 +1,15 @@
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+.\#*
+
+/transient/
+/tramp
+/projects
+/history
+/eshell/
+/elpa/
+/auto-save-list/
+/server/
