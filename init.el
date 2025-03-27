@@ -8,9 +8,12 @@
 (load (expand-file-name "modules/ui.el" user-emacs-directory))
 (load (expand-file-name "modules/evil.el" user-emacs-directory))
 (load (expand-file-name "modules/vc.el" user-emacs-directory))
+(load (expand-file-name "modules/auth.el" user-emacs-directory))
+(load (expand-file-name "modules/ai.el" user-emacs-directory))
 
 (cua-mode +1)
 (tool-bar-mode -1)
+(which-key-mode +1)
 (windmove-default-keybindings)
 (set-message-beep 'silent)
 
@@ -27,13 +30,11 @@
      "5a0ddbd75929d24f5ef34944d78789c6c3421aa943c15218bac791c199fc897d"
      "51fa6edfd6c8a4defc2681e4c438caf24908854c12ea12a1fbfd4d055a9647a3"
      "75b371fce3c9e6b1482ba10c883e2fb813f2cc1c88be0b8a1099773eb78a7176"
-     "5aedf993c7220cbbe66a410334239521d8ba91e1815f6ebde59cecc2355d7757"
-     default))
+     "5aedf993c7220cbbe66a410334239521d8ba91e1815f6ebde59cecc2355d7757" default))
  '(package-selected-packages
-   '(annalist embark-consult evil evil-collection goto-chg gruvbox-theme
-	      magit marginalia meow orderless solaire-mode
-	      spacious-padding undo-fu undo-fu-session vertico vundo
-	      wgrep)))
+   '(annalist auth-source-1password copilot embark-consult evil evil-collection goto-chg gptel gruvbox-theme magit
+	      marginalia meow orderless solaire-mode spacious-padding undo-fu undo-fu-session vertico visual-fill-column
+	      vundo wgrep)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
