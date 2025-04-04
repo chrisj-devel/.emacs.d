@@ -197,3 +197,39 @@
    '(read-only t cursor-intangible t face minibuffer-prompt)))
 
 (use-package wgrep)
+
+(use-package popper
+  :bind
+  ([f12] . popper-toggle)
+  ("M-<f12>" . popper-toggle-type)
+  :hook
+  (after-init)
+  (popper-mode . popper-echo-mode)
+  :custom
+  (popper-window-height 25))
+  ;; (popper-reference-buffers
+  ;;   '("\\*Messages\\*"
+  ;;      ("\\*Warnings\\*" . hide)
+  ;;      "\\*compilation\\*"
+  ;;      "\\*compilation-.*\\*"
+  ;;      "\\*vc-diff.*\\*"
+  ;;      "\\*vc-git.*\\*"
+  ;;      "\\*vc\\*"
+  ;;      "Output\\*$"
+  ;;      "\\*Async Shell Command\\*"
+  ;;      "\\*Buffer List\\*"
+  ;;      "\\*eldoc\\*"
+  ;;      "\\*shell\\*"
+  ;;      "\\*.*-shell\\*"
+  ;;      "\\*.*eshell.*\\*" eshell-mode
+  ;;      compilation-mode
+  ;;      rspec-compilation-mode
+  ;;      exunit-compilation-mode
+  ;;      "^\\*.*vterm.*\\*$" vterm-mode
+  ;;      "^\\*prodigy.*\\*$" prodigy-mode
+  ;;      "^\\*RE-Builder.*\\*$" reb-mode
+  ;;      "^\\*Heroku.*\\*$"
+  ;;      "^\\*jest-test-compilation\\*$"
+  ;;      "^\\*Bundler\\*$"
+  ;;      "^\\*EGLOT.*\\*$"
+  ;;      "^\\*Inf-Elixir.*\\*$" inf-elixir-mode)))
