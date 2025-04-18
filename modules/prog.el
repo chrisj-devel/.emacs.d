@@ -63,3 +63,23 @@
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
+
+(use-package treesit-fold
+  :config (global-treesit-fold-mode))
+
+(use-package indent-bars
+  :hook
+  (prog-mode . indent-bars-mode)
+  (yaml-ts-mode . indent-bars-mode)
+  :bind ("C-c M-i" . indent-bars-toggle)
+  :custom
+  (indent-bars-treesit-support t)
+  (indent-bars-color '(highlight :face-bg t :blend 0.15))
+  (indent-bars-pattern ".")
+  (indent-bars-width-frac 0.1)
+  (indent-bars-pad-frac 0.1)
+  (indent-bars-zigzag nil)
+  (indent-bars-color-by-depth '(:regexp "outline-\\([0-9]+\\)" :blend 1))
+  (indent-bars-highlight-current-depth '(:blend 0.5))
+  (indent-bars-display-on-blank-lines t)
+  (indent-bars-prefer-character t))

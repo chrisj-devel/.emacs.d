@@ -1,6 +1,6 @@
 (use-package auth-source-1password
   :hook (after-init . auth-source-1password-enable)
-  :custom (auth-source-1password-construct-secret-reference 'my/construct-secret-reference)
+  ;; :custom (auth-source-1password-construct-secret-reference 'my/construct-secret-reference)
   :config
   (defun my/construct-secret-reference (_backend _type host user _port)
     "For reference, see `auth-source-1password-construct-secret-reference'.
