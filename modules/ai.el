@@ -8,9 +8,7 @@
   :custom-face (gptel-context-highlight ((t (:extend t)))))
 
 (use-package copilot
-  :hook (prog-mode . copilot-mode)
-  :bind
-  ("C-c a c" . copilot-mode)
+  :bind ("C-c a c" . global-copilot-mode)
   (:map copilot-completion-map
     ("C-a" . copilot-accept-completion)
     ("C-A" . copilot-accept-completion-by-line)

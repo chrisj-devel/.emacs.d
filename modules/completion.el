@@ -15,6 +15,7 @@
   )
 
 (use-package dabbrev
+  :ensure nil
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
           ("C-M-/" . dabbrev-expand))
@@ -25,6 +26,7 @@
   (add-to-list 'dabbrev-ignored-buffer-modes 'tags-table-mode))
 
 (use-package emacs
+  :ensure nil
   :custom
   (tab-always-indent 'complete)
   (text-mode-ispell-word-completion nil)

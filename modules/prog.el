@@ -1,5 +1,4 @@
 (use-package eglot
-  :ensure nil
   :hook
   ((c++-mode
      c++-ts-mode
@@ -83,3 +82,18 @@
   (indent-bars-highlight-current-depth '(:blend 0.5))
   (indent-bars-display-on-blank-lines t)
   (indent-bars-prefer-character t))
+
+(use-package stripspace
+  :hook ((prog-mode . stripspace-local-mode)
+          (text-mode . stripspace-local-mode)
+          (conf-mode . stripspace-local-mode))
+  :custom
+  (stripspace-only-if-initially-clean nil)
+  (stripspace-restore-column t))
+
+(use-package emacs
+  :ensure nil
+  :hook
+  (prog-mode . display-line-numbers-mode)
+  :config
+  (setq-default require-final-newline t))

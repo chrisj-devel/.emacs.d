@@ -1,11 +1,17 @@
-(use-package gruvbox-theme)
+(use-package doom-themes
+  :custom
+  (doom-themes-enable-bold t)
+  (doom-themes-enable-italic t)
+  :config
+  (load-theme 'doom-one t)
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config))
+
+(use-package doom-modeline
+  :config (doom-modeline-mode))
+
+(use-package nerd-icons
+  :custom (nerd-icons-font-family "JetBrainsMono NFM"))
 
 (use-package solaire-mode
-  :config
-  (solaire-global-mode))
-
-(use-package visual-fill-column
-  :bind ("C-c M-v" . visual-line-fill-column-mode)
-  :custom
-  (visual-fill-column-center-text t)
-  (fill-column 120))
+  :config (solaire-global-mode))
