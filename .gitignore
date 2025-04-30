@@ -16,3 +16,5 @@
 /.cache/
 /tree-sitter/
 /undo-fu-session/
+/eln-cache/
+/elpaca/

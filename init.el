@@ -23,6 +23,9 @@
 
 ;; Update inbuilt Emacs libraries
 (use-package transient)
+(use-package flymake)
+
+(if (eq system-type 'darwin) (load-file (expand-file-name "darwin.el" user-emacs-directory)))
 
 (load (expand-file-name "modules/theme.el" user-emacs-directory))
 (load (expand-file-name "modules/ui.el" user-emacs-directory))
@@ -46,7 +49,7 @@
 (menu-bar-mode -1)
 (which-key-mode +1)
 (windmove-default-keybindings)
-(set-message-beep 'silent)
+(setq ring-bell-function 'ignore)
 
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror)))
