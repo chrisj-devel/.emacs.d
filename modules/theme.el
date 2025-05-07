@@ -11,7 +11,7 @@
   :config (doom-modeline-mode))
 
 (use-package nerd-icons
-  :custom (nerd-icons-font-family "JetBrainsMono NFM"))
+  :custom (nerd-icons-font-family "FiraCode Nerd Font"))
 
 (use-package solaire-mode
   :config (solaire-global-mode))

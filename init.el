@@ -25,7 +25,27 @@
 (use-package transient)
 (use-package flymake)
 
-(if (eq system-type 'darwin) (load-file (expand-file-name "darwin.el" user-emacs-directory)))
+(use-package envrc
+  :bind
+  ("C-c e" . my/open-envrc-file)
+  (:map envrc-file-mode-map
+    ("C-c , a" . envrc-allow)
+    ("C-c , d" . envrc-deny)
+    ("C-c , r" . envrc-reload))
+  :custom (envrc-show-summary-in-minibuffer nil)
+  :config
+  (envrc-global-mode)
+  (defun my/open-envrc-file ()
+    "Open the .envrc file in the current project."
+    (interactive)
+    (let ((envrc-dir (envrc--find-env-dir)))
+      (if envrc-dir
+        (if (file-exists-p (concat envrc-dir ".envrc"))
+          (find-file (concat envrc-dir ".envrc"))
+          (find-file (concat envrc-dir ".env")))
+        (message "No envrc file found in the current project.")))))
+
+(if (eq system-type 'darwin) (load-file (expand-file-name "modules/darwin.el" user-emacs-directory)))
 
 (load (expand-file-name "modules/theme.el" user-emacs-directory))
 (load (expand-file-name "modules/ui.el" user-emacs-directory))
@@ -39,6 +59,7 @@
 (load (expand-file-name "modules/lisp.el" user-emacs-directory))
 (load (expand-file-name "modules/systems.el" user-emacs-directory))
 (load (expand-file-name "modules/rust.el" user-emacs-directory))
+(load (expand-file-name "modules/api.el" user-emacs-directory))
 
 (load (expand-file-name "modules/ai.el" user-emacs-directory))
 (load (expand-file-name "modules/writing.el" user-emacs-directory))

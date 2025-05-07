@@ -95,5 +95,7 @@
   :ensure nil
   :hook
   (prog-mode . display-line-numbers-mode)
+  :custom
+  (display-line-numbers-grow-only t)
   :config
   (setq-default require-final-newline t))
