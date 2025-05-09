@@ -51,7 +51,7 @@
 
 (use-package flymake-collection
   :after (flymake)
-  :hook (after-init . flymake-collection-hook-setup))
+  :hook (elpaca-after-init . flymake-collection-hook-setup))
 
 (use-package scratch
   :bind ("C-c s" . scratch))
@@ -90,6 +90,41 @@
   :custom
   (stripspace-only-if-initially-clean nil)
   (stripspace-restore-column t))
+
+(use-package vterm
+  :if (not (eq system-type 'windows-nt))
+  :after popper
+  :functions (vterm my/vterm-show my/project-vterm)
+  :defines (vterm-mode-map)
+  :hook (vterm-mode . visual-line-mode)
+  :custom
+  (vterm-tramp-shells '((t login-shell) ("podman" "/bin/sh")))
+  :bind
+  ([f11] . my/vterm-show)
+  (:map vterm-mode-map ([f11] . popper-toggle))
+  (:map vterm-mode-map ([f12] . popper-toggle))
+  :config
+  (defun my/project-vterm ()
+    "Open or switch to a vterm buffer for the current project.
+
+     If the prefix ARG is set, open another vterm buffer."
+    (interactive)
+    (let* ((default-directory (project-root (project-current t)))
+            (default-project-vterm-name (project-prefixed-buffer-name "vterm"))
+            (vterm-buffer (get-buffer default-project-vterm-name)))
+      (if (and vterm-buffer (not current-prefix-arg))
+        (pop-to-buffer vterm-buffer (bound-and-true-p display-comint-buffer-action))
+        (vterm (generate-new-buffer-name default-project-vterm-name)))))
+
+  (defun my/vterm-show ()
+    "Show or open a vterm buffer, context aware of whether it should be
+     a project buffer."
+    (interactive)
+    (if (and (fboundp 'project-current) (project-current))
+      (my/project-vterm)
+      (if-let* ((vterm-buffer (get-buffer "*vterm*")))
+        (pop-to-buffer vterm-buffer)
+        (vterm)))))
 
 (use-package envrc
   :bind

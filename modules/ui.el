@@ -186,7 +186,7 @@
   ([f12] . popper-toggle)
   ("M-<f12>" . popper-toggle-type)
   :hook
-  (after-init)
+  (elpaca-after-init)
   (popper-mode . popper-echo-mode)
   :custom
   (popper-window-height 25)
