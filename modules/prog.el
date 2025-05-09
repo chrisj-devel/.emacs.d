@@ -91,11 +91,28 @@
   (stripspace-only-if-initially-clean nil)
   (stripspace-restore-column t))
 
+(use-package envrc
+  :bind
+  ("C-c e" . my/open-envrc-file)
+  (:map envrc-file-mode-map
+    ("C-c , a" . envrc-allow)
+    ("C-c , d" . envrc-deny)
+    ("C-c , r" . envrc-reload))
+  :custom (envrc-show-summary-in-minibuffer nil)
+  :config
+  (envrc-global-mode)
+  (defun my/open-envrc-file ()
+    "Open the .envrc file in the current project."
+    (interactive)
+    (let ((envrc-dir (envrc--find-env-dir)))
+      (if envrc-dir
+        (if (file-exists-p (concat envrc-dir ".envrc"))
+          (find-file (concat envrc-dir ".envrc"))
+          (find-file (concat envrc-dir ".env")))
+        (message "No envrc file found in the current project.")))))
+
 (use-package emacs
   :ensure nil
-  :hook
-  (prog-mode . display-line-numbers-mode)
-  :custom
-  (display-line-numbers-grow-only t)
-  :config
-  (setq-default require-final-newline t))
+  :hook (prog-mode . display-line-numbers-mode)
+  :custom (display-line-numbers-grow-only t)
+  :config (setq-default require-final-newline t))
