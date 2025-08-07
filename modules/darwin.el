@@ -19,4 +19,8 @@
   (frame-resize-pixelwise t)
   (ns-use-native-fullscreen nil)
   (dired-use-ls-dired nil)
-  (warning-minimum-level :error))
+  (warning-minimum-level :error)
+  :config
+  (setq-default default-frame-alist '((font . "FiraCode Nerd Font:pixelsize=13:weight=medium")))
+  (set-frame-font "FiraCode Nerd Font:pixelsize=13:weight=medium" nil t)
+  (set-face-attribute 'variable-pitch nil :family "SF Pro"))

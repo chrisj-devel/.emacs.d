@@ -2,7 +2,6 @@
   :hook
   ((c++-mode
      c++-ts-mode
-     elixir-ts-mode
      js-mode
      js-ts-mode
      typescript-mode
@@ -11,16 +10,15 @@
      css-ts-mode
      scss-mode
      ruby-mode
-     ruby-ts-mode
-     rust-mode
-     rust-ts-mode) . eglot-ensure)
+     ruby-ts-mode) . eglot-ensure)
   :custom
   (eglot-sync-connect nil) ;; Connect asynchronously without blocking
   (eglot-events-buffer-config '(:size nil :format lisp))
   (eglot-autoshutdown t)
   :config
   (dolist (mode '((elixir-ts-mode "elixir-ls")
-                   (nix-ts-mode "nixd")))
+                   (ruby-mode "ruby-lsp")
+                   (ruby-ts-mode "ruby-lsp")))
     (add-to-list 'eglot-server-programs mode))
 
   (setq-default eglot-workspace-configuration
@@ -52,6 +50,9 @@
 (use-package flymake-collection
   :after (flymake)
   :hook (elpaca-after-init . flymake-collection-hook-setup))
+
+(use-package ws-butler
+  :hook (prog-mode . ws-butler-mode))
 
 (use-package scratch
   :bind ("C-c s" . scratch))
@@ -151,3 +152,31 @@
   :hook (prog-mode . display-line-numbers-mode)
   :custom (display-line-numbers-grow-only t)
   :config (setq-default require-final-newline t))
+
+(use-package csv-mode
+  :mode
+  ("\\.csv\\'" . csv-mode)
+  ("\\.tsv\\'" . tsv-mode))
+
+(use-package rainbow-csv
+  :after (csv-mode)
+  :ensure (:host github :repo "emacs-vs/rainbow-csv")
+  :hook ((csv-mode tsv-mode) . rainbow-csv-mode))
+
+(use-package ligature
+  :functions (ligature-set-ligatures)
+  :hook (elpaca-after-init . global-ligature-mode)
+  :config
+  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+                                        ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+                                        "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+                                        "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+                                        "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+                                        "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+                                        "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+                                        "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+                                        ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+                                        "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+                                        "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+                                        "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+                                        "\\\\" "://")))

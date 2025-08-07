@@ -11,8 +11,7 @@
   :init
   (global-corfu-mode)
   (corfu-history-mode)
-  (corfu-popupinfo-mode)
-  )
+  (corfu-popupinfo-mode))
 
 (use-package dabbrev
   :ensure nil
@@ -31,3 +30,14 @@
   (tab-always-indent 'complete)
   (text-mode-ispell-word-completion nil)
   (read-extended-command-predicate #'command-completion-default-include-p))
+
+(use-package yasnippet
+  :hook (elpaca-after-init . yas-global-mode))
+
+(use-package yasnippet-snippets
+  :after (yasnippet))
+
+(use-package yasnippet-capf
+  :after (yasnippet cape)
+  :ensure (:host github :repo "elken/yasnippet-capf")
+  :config (add-to-list 'completion-at-point-functions #'yasnippet-capf))

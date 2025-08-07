@@ -2,8 +2,12 @@
   :custom
   (evil-want-keybinding nil)
   (evil-undo-system 'undo-fu)
-  :config
-  (evil-mode 1))
+  (evil-respect-visual-line-mode t)
+  :bind
+  (:map evil-motion-state-map ("C-f" . consult-line))
+  (:map evil-normal-state-map ("C-." . consult-project-extra-find))
+  :hook
+  (elpaca-after-init . evil-mode))
 
 (use-package evil-collection
   :after evil

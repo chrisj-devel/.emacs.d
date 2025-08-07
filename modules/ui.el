@@ -1,5 +1,11 @@
 (use-package dashboard
-  :config (dashboard-setup-startup-hook))
+  :functions (dashboard-setup-startup-hook)
+  :defines (dashboard-projects-backend dashboard-items dashboard-buffer-name)
+  :config (dashboard-setup-startup-hook)
+  :custom
+  (initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name))) ;; Open dashboard for emacsclient
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents  . 5) (projects . 5) (bookmarks . 5))))
 
 (use-package consult
   ;; Replace bindings. Lazily loaded by `use-package'.
@@ -46,6 +52,10 @@
           ("M-s u" . consult-focus-lines)
           ;; Isearch integration
           ("M-s e" . consult-isearch-history)
+          ;; Custom bindings.
+          ("C-," . consult-buffer)
+          ("C-/" . consult-ripgrep)
+          ("C-f" . consult-line)
           :map isearch-mode-map
           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
@@ -102,6 +112,10 @@
   ;; You may want to use `embark-prefix-help-command' or which-key instead.
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
   )
+
+(use-package consult-project-extra
+  :after (consult)
+  :bind ("C-." . consult-project-extra-find))
 
 (use-package embark
   :bind
@@ -213,12 +227,12 @@
        "^\\*Heroku.*\\*$"
        "^\\*jest-test-compilation\\*$"
        "^\\*Bundler\\*$"
-       "^\\*EGLOT.*\\*$"
-       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode)))
+       "^\\*EGLOT.*\\*$")))
 
 (use-package sideline
   :hook (flymake-mode . sideline-mode)
   :custom
+  (sideline-backends-right '(sideline-flymake))
   (sideline-backends-left-skip-current-line t)   ; don't display on current line (left)
   (sideline-backends-right-skip-current-line t)  ; don't display on current line (right)
   (sideline-order-left 'down)                    ; or 'up
@@ -227,3 +241,82 @@
   (sideline-format-right "   %s")                ; format for right aligment
   (sideline-priority 100)                        ; overlays' priority
   (sideline-display-backend-name nil))           ; display the backend name
+
+(use-package sideline-flymake
+  :after (sideline flymake))
+
+(use-package sideline-blame
+  :after (sideline)
+  :bind ("C-c C-b" . my/toggle-sideline-blame)
+  :custom-face (sideline-blame ((t (:foreground "grey40" :slant italic))))
+  :config
+  (defun my/toggle-sideline-blame ()
+    (interactive)
+    (if (member 'sideline-blame sideline-backends-right)
+      (setq sideline-backends-right (remove 'sideline-blame sideline-backends-right))
+      (push 'sideline-blame sideline-backends-right))))
+
+(use-package consistent-window-splits
+  :ensure (:host github :repo "armkeh/consistent-window-splits")
+  :config (consistent-window-splits-automatically-optimize))
+
+(use-package zoom
+  :after (evil)
+  :defines (evil-window-map)
+  :bind (:map evil-window-map
+          ("Z" . zoom)
+          ("z" . zoom-mode))
+  :custom (zoom-size '(0.618 . 0.618)))
+
+(use-package minions
+  :hook (elpaca-after-init))
+
+(use-package ultra-scroll
+  :ensure (:host github :repo "jdtsmith/ultra-scroll")
+  :init
+  (setq scroll-conservatively 101 ; important!
+    scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
+
+
+(use-package helpful
+  :bind
+  ("C-h f" . helpful-callable)
+  ("C-h v" . helpful-variable)
+  ("C-h k" . helpful-key)
+  ("C-h F" . helpful-function)
+  ("C-h x" . helpful-command)
+  ("C-h ." . helpful-at-point)
+  ("C-h o" . helpful-symbol))
+
+(use-package otpp
+  :after project
+  :hook
+  (elpaca-after-init . otpp-mode)
+  (elpaca-after-init . otpp-override-mode))
+
+(use-package tab-bar
+  :ensure nil
+  :bind
+  ("M-s-<right>" . tab-bar-switch-to-next-tab)
+  ("M-s-<left>" . tab-bar-switch-to-prev-tab)
+  ("M-s-<up>" . tab-bar-switch-to-next-tab)
+  ("M-s-<down>" . tab-bar-switch-to-prev-tab)
+  ("s-t" . tab-new)
+  ("s-w" . tab-close)
+  :custom
+  (tab-bar-close-button-show nil)
+  (tab-bar-new-button-show nil)
+  (tab-bar-auto-width nil)
+  (tab-bar-separator " | ")
+  :custom-face
+  (tab-bar ((t (:background unspecified))))
+  (tab-bar-tab ((t (:box nil))))
+  (tab-bar-tab-inactive ((t (:background unspecified
+                              :foreground unspecified
+                              :box nil
+                              :inherit tab-bar-tab-ungrouped)))))
+
+(use-package vim-tab-bar
+  :hook (elpaca-after-init . vim-tab-bar-mode))

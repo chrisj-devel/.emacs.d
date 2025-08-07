@@ -9,6 +9,7 @@
   :custom-face (gptel-context-highlight ((t (:extend t)))))
 
 (use-package copilot
+  :disabled t
   :bind ("C-c a c" . global-copilot-mode)
   (:map copilot-completion-map
     ("C-a" . copilot-accept-completion)
@@ -16,3 +17,9 @@
     ("C-M-a" . 'copilot-accept-completion-by-word)
     ("C-n" . 'copilot-next-completion)
     ("C-p" . 'copilot-previous-completion)))
+
+(use-package claude-code-ide
+  :after (transient)
+  :ensure (:host github :repo "manzaltu/claude-code-ide.el")
+  :bind ("M-c" . claude-code-ide-menu)
+  :config (claude-code-ide-emacs-tools-setup))

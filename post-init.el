@@ -3,11 +3,14 @@
   :ensure (:wait t)
   :custom (el-patch-enable-use-package-integration t))
 
+(use-package memoize)
+
 ;; Update inbuilt Emacs libraries
 (use-package transient)
 (use-package flymake)
 
 (if (eq system-type 'darwin) (load-file (expand-file-name "modules/darwin.el" user-emacs-directory)))
+(if (eq system-type 'windows-nt) (load-file (expand-file-name "modules/windows.el" user-emacs-directory)))
 
 (load (expand-file-name "modules/theme.el" user-emacs-directory))
 (load (expand-file-name "modules/ui.el" user-emacs-directory))
@@ -21,6 +24,7 @@
 (load (expand-file-name "modules/lisp.el" user-emacs-directory))
 (load (expand-file-name "modules/systems.el" user-emacs-directory))
 (load (expand-file-name "modules/rust.el" user-emacs-directory))
+(load (expand-file-name "modules/elixir.el" user-emacs-directory))
 (load (expand-file-name "modules/api.el" user-emacs-directory))
 
 (load (expand-file-name "modules/ai.el" user-emacs-directory))
@@ -34,6 +38,7 @@
   (kept-old-versions 10)
   (kept-new-versions 10)
   (ring-bell-function 'ignore)
+  (display-line-numbers-grow-only t)
   (custom-file (concat user-emacs-directory "custom.el"))
   :hook
   (elpaca-after-init . global-auto-revert-mode)

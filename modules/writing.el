@@ -1,4 +1,5 @@
-(use-package markdown-mode)
+(use-package markdown-mode
+  :mode ("README\\.md\\'" . gfm-mode))
 
 (use-package visual-fill-column
   :bind ("C-c M-v" . visual-line-fill-column-mode)
