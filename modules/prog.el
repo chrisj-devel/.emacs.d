@@ -135,8 +135,8 @@
     ("C-c , d" . envrc-deny)
     ("C-c , r" . envrc-reload))
   :custom (envrc-show-summary-in-minibuffer nil)
+  :hook (elpaca-after-init . envrc-global-mode)
   :config
-  (envrc-global-mode)
   (defun my/open-envrc-file ()
     "Open the .envrc file in the current project."
     (interactive)
