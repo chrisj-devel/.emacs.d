@@ -1,3 +1,4 @@
+;;; ai.el --- AI configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 (use-package gptel
   :hook (gptel-mode . visual-line-fill-column-mode)
   :bind

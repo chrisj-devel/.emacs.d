@@ -215,3 +215,15 @@
        "^\\*Bundler\\*$"
        "^\\*EGLOT.*\\*$"
        "^\\*Inf-Elixir.*\\*$" inf-elixir-mode)))
+
+(use-package sideline
+  :hook (flymake-mode . sideline-mode)
+  :custom
+  (sideline-backends-left-skip-current-line t)   ; don't display on current line (left)
+  (sideline-backends-right-skip-current-line t)  ; don't display on current line (right)
+  (sideline-order-left 'down)                    ; or 'up
+  (sideline-order-right 'up)                     ; or 'down
+  (sideline-format-left "%s   ")                 ; format for left aligment
+  (sideline-format-right "   %s")                ; format for right aligment
+  (sideline-priority 100)                        ; overlays' priority
+  (sideline-display-backend-name nil))           ; display the backend name
