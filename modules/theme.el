@@ -10,8 +10,7 @@
 (use-package doom-modeline
   :config (doom-modeline-mode))
 
-(use-package nerd-icons
-  :custom (nerd-icons-font-family "FiraCode Nerd Font"))
+(use-package nerd-icons)
 
 (use-package nerd-icons
   :defer t

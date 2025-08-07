@@ -5,9 +5,9 @@
   :init
   (menu-bar-mode -1)
   (set-language-environment "UTF-8")
-  (defvar msys-home "C:/msys64")
-  (add-to-list 'exec-path (concat msys-home "/usr/bin") t)
-  (add-to-list 'exec-path (concat msys-home "/ucrt64/bin") t))
+  :config
+  (setq-default default-frame-alist '((font . "Cascadia Mono:pixelsize=20:weight=regular")))
+  (set-frame-font "Cascadia Mono:pixelsize=20:weight=regular" nil t))
 
 (use-package shell
   :ensure nil
