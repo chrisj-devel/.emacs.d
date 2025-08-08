@@ -227,7 +227,9 @@
        "^\\*Heroku.*\\*$"
        "^\\*jest-test-compilation\\*$"
        "^\\*Bundler\\*$"
-       "^\\*EGLOT.*\\*$")))
+       "^\\*EGLOT.*\\*$"
+       "^\\*.*-eat.*\\*$"
+       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode)))
 
 (use-package sideline
   :hook (flymake-mode . sideline-mode)
@@ -282,13 +284,13 @@
 
 (use-package helpful
   :bind
-  ("C-h f" . helpful-callable)
-  ("C-h v" . helpful-variable)
-  ("C-h k" . helpful-key)
-  ("C-h F" . helpful-function)
-  ("C-h x" . helpful-command)
-  ("C-h ." . helpful-at-point)
-  ("C-h o" . helpful-symbol))
+  ([remap describe-command] . helpful-command)
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-key] . helpful-key)
+  ([remap describe-symbol] . helpful-symbol)
+  ([remap describe-variable] . helpful-variable)
+  :custom
+  (helpful-max-buffers 7))
 
 (use-package otpp
   :after project

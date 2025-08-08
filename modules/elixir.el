@@ -14,17 +14,14 @@
   :config (memoize 'mix--fetch-all-mix-tasks))
 
 (use-package inf-elixir
-  :after (elixir-ts-mode popper)
+  :after (elixir-ts-mode)
   :bind (:map elixir-ts-mode-map
           ("C-c i i" . inf-elixir)
           ("C-c i p" . inf-elixir-project)
           ("C-c i l" . inf-elixir-send-line)
           ("C-c i r" . inf-elixir-send-region)
           ("C-c i b" . inf-elixir-send-buffer)
-          ("C-c i R" . inf-elixir-reload-module))
-  :config
-  (add-to-list popper-reference-buffers "^\\*Inf-Elixir.*\\*$" )
-  (add-to-list popper-reference-buffers inf-elixir-mode))
+          ("C-c i R" . inf-elixir-reload-module)))
 
 (use-package erlang
   :mode ("\\.erl\\'" . erlang-mode))

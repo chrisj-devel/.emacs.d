@@ -92,6 +92,11 @@
   (stripspace-only-if-initially-clean nil)
   (stripspace-restore-column t))
 
+(use-package eat
+  :defines (eat-eshell-mode eat-project)
+  :hook (eshell-load-hook . eat-eshell-mode)
+  :bind ([f9] . eat-project))
+
 (use-package vterm
   :if (not (eq system-type 'windows-nt))
   :after popper
