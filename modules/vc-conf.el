@@ -1,3 +1,7 @@
+;;; vc.el --- Version control configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
 (use-package magit
   :bind ("C-x g" . magit-status)
   :config (setopt magit-format-file-function #'magit-format-file-nerd-icons))
@@ -42,3 +46,6 @@ Defaults to \"origin\"."
                  (car remote-info)
                  (cadr remote-info)
                  branch)))))))))
+
+(provide 'vc-conf)
+;;; vc.el ends here

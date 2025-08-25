@@ -1,4 +1,7 @@
 ;;; ai.el --- AI configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
 (use-package gptel
   :hook (gptel-mode . visual-line-fill-column-mode)
   :bind
@@ -23,3 +26,6 @@
   :ensure (:host github :repo "manzaltu/claude-code-ide.el")
   :bind ("M-c" . claude-code-ide-menu)
   :config (claude-code-ide-emacs-tools-setup))
+
+(provide 'ai-conf)
+;;; ai.el ends here

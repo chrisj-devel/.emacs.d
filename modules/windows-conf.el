@@ -1,4 +1,6 @@
 ;;; windows.el --- Windows specific configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 (use-package emacs
   :ensure nil
   :if (eq system-type 'windows-nt)
@@ -22,3 +24,6 @@
   :config/el-patch
   ;; byte compilation is wonky on windows and breaks flymake
   (defun elisp-flymake-byte-compile (_report-fn &rest _args) 'ignore))
+
+(provide 'windows-conf)
+;;; windows.el ends here

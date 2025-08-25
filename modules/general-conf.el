@@ -1,3 +1,7 @@
+;;; general-conf.el --- General Emacs configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
 (use-package dashboard
   :functions (dashboard-setup-startup-hook)
   :defines (dashboard-projects-backend dashboard-items dashboard-buffer-name)
@@ -322,3 +326,9 @@
 
 (use-package vim-tab-bar
   :hook (elpaca-after-init . vim-tab-bar-mode))
+
+(use-package iedit
+  :bind ("C-;" . iedit-mode))
+
+(provide 'general-conf)
+;;; general-conf.el ends here

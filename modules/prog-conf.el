@@ -1,3 +1,15 @@
+;;; prog.el --- General Programming configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
+(use-package emacs
+  :ensure nil
+  :hook (prog-mode . display-line-numbers-mode)
+  :custom
+  (display-line-numbers-grow-only t)
+  (lisp-indent-offset 2)
+  :config (setq-default require-final-newline t))
+
 (use-package eglot
   :hook
   ((c++-mode
@@ -152,12 +164,6 @@
           (find-file (concat envrc-dir ".env")))
         (message "No envrc file found in the current project.")))))
 
-(use-package emacs
-  :ensure nil
-  :hook (prog-mode . display-line-numbers-mode)
-  :custom (display-line-numbers-grow-only t)
-  :config (setq-default require-final-newline t))
-
 (use-package csv-mode
   :mode
   ("\\.csv\\'" . csv-mode)
@@ -185,3 +191,6 @@
                                         "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
                                         "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
                                         "\\\\" "://")))
+
+(provide 'prog-conf)
+;;; prog.el ends here

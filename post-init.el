@@ -1,4 +1,6 @@
 ;;; post-init.el --- General configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 (use-package el-patch
   :ensure (:wait t)
   :custom (el-patch-enable-use-package-integration t))
@@ -9,26 +11,26 @@
 (use-package transient)
 (use-package flymake)
 
-(if (eq system-type 'darwin) (load-file (expand-file-name "modules/darwin.el" user-emacs-directory)))
-(if (eq system-type 'windows-nt) (load-file (expand-file-name "modules/windows.el" user-emacs-directory)))
+(add-to-list 'load-path (expand-file-name "modules/" user-emacs-directory))
 
-(load (expand-file-name "modules/theme.el" user-emacs-directory))
-(load (expand-file-name "modules/ui.el" user-emacs-directory))
-(load (expand-file-name "modules/evil.el" user-emacs-directory))
-(load (expand-file-name "modules/completion.el" user-emacs-directory))
-
-(load (expand-file-name "modules/vc.el" user-emacs-directory))
-(load (expand-file-name "modules/auth.el" user-emacs-directory))
-
-(load (expand-file-name "modules/prog.el" user-emacs-directory))
-(load (expand-file-name "modules/lisp.el" user-emacs-directory))
-(load (expand-file-name "modules/systems.el" user-emacs-directory))
-(load (expand-file-name "modules/rust.el" user-emacs-directory))
-(load (expand-file-name "modules/elixir.el" user-emacs-directory))
-(load (expand-file-name "modules/api.el" user-emacs-directory))
-
-(load (expand-file-name "modules/ai.el" user-emacs-directory))
-(load (expand-file-name "modules/writing.el" user-emacs-directory))
+(if (eq system-type 'darwin) (require 'darwin-conf))
+(if (eq system-type 'windows-nt) (require 'windows-conf))
+(require 'theme-conf)
+(require 'general-conf)
+(require 'evil-conf)
+(require 'completion-conf)
+(require 'vc-conf)
+(require 'auth-conf)
+(require 'prog-conf)
+(require 'systems-conf)
+(require 'rust-conf)
+(require 'ruby-conf)
+(require 'dired-conf)
+(require 'elixir-conf)
+(require 'api-conf)
+(require 'ai-conf)
+(require 'writing-conf)
+(require 'web-conf)
 
 (use-package emacs
   :ensure nil
@@ -52,3 +54,6 @@
   (elpaca-after-init . (lambda () (load custom-file 'noerror)))
   :init
   (windmove-default-keybindings))
+
+(provide 'post-init)
+;;; post-init.el ends here

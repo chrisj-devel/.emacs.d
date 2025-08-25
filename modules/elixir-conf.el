@@ -1,4 +1,7 @@
 ;;; elixir.el --- Elixir programming language configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
 (use-package elixir-ts-mode
   :ensure nil
   :mode "\\.exs?\\'"
@@ -25,3 +28,6 @@
 
 (use-package erlang
   :mode ("\\.erl\\'" . erlang-mode))
+
+(provide 'elixir-conf)
+;;; elixir.el ends here

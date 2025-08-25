@@ -1,3 +1,7 @@
+;;; meow.el --- General Programming configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
 (use-package meow
   :ensure t
   :demand t
@@ -16,13 +20,13 @@
 (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
 
 (setq global-leader-map
-      (let ((keymap (make-sparse-keymap)))
-        (define-key keymap (kbd "c") 'meow-keypad-start)
-        (define-key keymap (kbd "g") 'meow-keypad-start)
-        (define-key keymap (kbd "h") 'meow-keypad-start)
-        (define-key keymap (kbd "m") 'meow-keypad-start)
-        (define-key keymap (kbd "x") 'meow-keypad-start)
-        keymap))
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap (kbd "c") 'meow-keypad-start)
+    (define-key keymap (kbd "g") 'meow-keypad-start)
+    (define-key keymap (kbd "h") 'meow-keypad-start)
+    (define-key keymap (kbd "m") 'meow-keypad-start)
+    (define-key keymap (kbd "x") 'meow-keypad-start)
+    keymap))
 
 (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
 
@@ -109,3 +113,5 @@
   '("'" . repeat)
   '("<escape>" . ignore))
 
+(provide 'meow-conf)
+;;; meow.el ends here

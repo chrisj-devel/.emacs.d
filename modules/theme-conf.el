@@ -1,3 +1,7 @@
+;;; theme.el --- Theming configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
 (use-package doom-themes
   :custom
   (doom-themes-enable-bold t)
@@ -37,3 +41,6 @@
 
 (use-package solaire-mode
   :config (solaire-global-mode))
+
+(provide 'theme-conf)
+;;; theme.el ends here

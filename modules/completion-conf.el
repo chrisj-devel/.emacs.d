@@ -1,3 +1,7 @@
+;;; completion.el --- Completion configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
 (use-package corfu
   ;; Optional customizations
   :custom
@@ -41,3 +45,6 @@
   :after (yasnippet cape)
   :ensure (:host github :repo "elken/yasnippet-capf")
   :config (add-to-list 'completion-at-point-functions #'yasnippet-capf))
+
+(provide 'completion-conf)
+;;; completion.el ends here

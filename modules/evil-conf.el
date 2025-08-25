@@ -1,3 +1,7 @@
+;;; evil.el --- MacOS configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
+
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -41,3 +45,6 @@
   :bind ("C-R" . vundo))
 
 (use-package goto-chg)
+
+(provide 'evil-conf)
+;;; evil.el ends here
