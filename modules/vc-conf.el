@@ -2,7 +2,11 @@
 ;;; Commentary:
 ;;; Code:
 
+(use-package cond-let
+  :ensure (:host github :repo "tarsius/cond-let"))
+
 (use-package magit
+  :after (cond-let)
   :bind ("C-x g" . magit-status)
   :config (setopt magit-format-file-function #'magit-format-file-nerd-icons))
 
