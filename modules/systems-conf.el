@@ -5,5 +5,8 @@
 (use-package systemd
   :ensure (:host github :repo "mavit/systemd-mode" :branch "podman"))
 
+(use-package journalctl-mode
+  :bind ("M-t" . journalctl))
+
 (provide 'systems-conf)
 ;;; systems.el ends here
