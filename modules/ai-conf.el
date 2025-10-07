@@ -22,10 +22,20 @@
     ("C-p" . 'copilot-previous-completion)))
 
 (use-package claude-code-ide
+  :disabled t
   :after (transient)
   :ensure (:host github :repo "manzaltu/claude-code-ide.el")
   :bind ("M-c" . claude-code-ide-menu)
   :config (claude-code-ide-emacs-tools-setup))
+
+(use-package shell-maker
+  :ensure t)
+
+(use-package acp
+  :ensure (:host github :repo "xenodium/acp.el"))
+
+(use-package agent-shell
+  :ensure (:host github :repo "xenodium/agent-shell"))
 
 (provide 'ai-conf)
 ;;; ai.el ends here
