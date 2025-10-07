@@ -15,6 +15,7 @@
 
 (if (eq system-type 'darwin) (require 'darwin-conf))
 (if (eq system-type 'windows-nt) (require 'windows-conf))
+(if (eq system-type 'gnu/linux) (require 'linux-conf))
 (require 'theme-conf)
 (require 'general-conf)
 (require 'evil-conf)
