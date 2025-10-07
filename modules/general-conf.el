@@ -4,12 +4,14 @@
 
 (use-package dashboard
   :functions (dashboard-setup-startup-hook)
-  :defines (dashboard-projects-backend dashboard-items dashboard-buffer-name)
-  :config (dashboard-setup-startup-hook)
   :custom
-  (initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name))) ;; Open dashboard for emacsclient
+  ;; (initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name))) ;; Open dashboard for emacsclient
   (dashboard-projects-backend 'project-el)
-  (dashboard-items '((recents  . 5) (projects . 5) (bookmarks . 5))))
+  (dashboard-items '((recents  . 5) (projects . 5) (bookmarks . 5)))
+  :config
+  (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+  (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
+  (dashboard-setup-startup-hook))
 
 (use-package consult
   ;; Replace bindings. Lazily loaded by `use-package'.
