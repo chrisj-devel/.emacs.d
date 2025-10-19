@@ -5,7 +5,14 @@
   :ensure nil
   :init
   (menu-bar-mode -1)
-  (set-language-environment "UTF-8")
+  ;; UTF-8 defaults
+  (set-terminal-coding-system 'utf-8)
+  (set-language-environment 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+  (setq locale-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
   :config
   (setq-default default-frame-alist '((font . "Cascadia Mono:pixelsize=20:weight=regular")))
   (set-frame-font "Cascadia Mono:pixelsize=20:weight=regular" nil t))
@@ -13,8 +20,7 @@
 (use-package shell
   :ensure nil
   :hook (comint-output-filter-functions . comint-strip-ctrl-m)
-  :bind ("<f11>" . shell)
-  :custom (prefer-coding-system 'utf-8))
+  :bind ("<f11>" . shell))
 
 (use-package elisp-mode
   :ensure nil

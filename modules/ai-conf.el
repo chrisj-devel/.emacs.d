@@ -37,5 +37,13 @@
 (use-package agent-shell
   :ensure (:host github :repo "xenodium/agent-shell"))
 
+(use-package agent-shell-sidebar
+  :after agent-shell
+  :ensure (:host github :repo "cmacrae/agent-shell-sidebar")
+  :custom
+  (agent-shell-sidebar-default-config
+    (agent-shell-google-make-gemini-config))
+  :bind ([f5] . agent-shell-sidebar-toggle))
+
 (provide 'ai-conf)
 ;;; ai.el ends here
