@@ -8,6 +8,7 @@
   :custom
   (display-line-numbers-grow-only t)
   (lisp-indent-offset 2)
+  (yaml-indent-offset 2)
   :config (setq-default require-final-newline t))
 
 (use-package eglot

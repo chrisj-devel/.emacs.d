@@ -28,13 +28,13 @@
   :bind ("M-c" . claude-code-ide-menu)
   :config (claude-code-ide-emacs-tools-setup))
 
-(use-package shell-maker
-  :ensure t)
+(use-package shell-maker)
 
 (use-package acp
   :ensure (:host github :repo "xenodium/acp.el"))
 
 (use-package agent-shell
+  :after (shell-maker acp)
   :ensure (:host github :repo "xenodium/agent-shell"))
 
 (use-package agent-shell-sidebar
@@ -42,7 +42,7 @@
   :ensure (:host github :repo "cmacrae/agent-shell-sidebar")
   :custom
   (agent-shell-sidebar-default-config
-    (agent-shell-google-make-gemini-config))
+    (agent-shell-anthropic-make-claude-code-config))
   :bind ([f5] . agent-shell-sidebar-toggle))
 
 (provide 'ai-conf)
