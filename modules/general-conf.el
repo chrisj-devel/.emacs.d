@@ -158,8 +158,18 @@
   (vertico-count 20) ;; Show more candidates
   (vertico-resize t) ;; Grow and shrink the Vertico minibuffer
   ;; (vertico-cycle t) ;; Enable cycling for `vertico-next/previous'
-  :init
-  (vertico-mode))
+  :hook (elpaca-after-init . vertico-mode))
+
+(use-package savehist
+  :ensure nil
+  :hook (elpaca-after-init . savehist-mode))
+
+(use-package vertico-repeat
+  :ensure nil ;; vertico extension pulled in through vertico
+  :after (vertico savehist)
+  :bind ("M-r" . vertico-repeat-select)
+  :hook (minibuffer-setup . vertico-repeat-save)
+  :config (add-to-list 'savehist-additional-variables 'vertico-repeat-history))
 
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
