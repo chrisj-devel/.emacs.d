@@ -7,6 +7,7 @@
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
   :custom
+  (evil-shift-width 2)
   (evil-undo-system 'undo-fu)
   (evil-respect-visual-line-mode t)
   (evil-ex-visual-char-range t)
@@ -22,6 +23,7 @@
   (evil-move-beyond-eol t)
   (evil-search-wrap nil)
   (evil-want-Y-yank-to-eol t)
+  (evil-visual-newline-commands '(LaTeX-section TeX-font comment-line))
   :bind
   (:map evil-motion-state-map ("C-f" . consult-line))
   (:map evil-normal-state-map ("C-." . consult-project-extra-find))

@@ -52,4 +52,4 @@ Defaults to \"origin\"."
                  branch)))))))))
 
 (provide 'vc-conf)
-;;; vc.el ends here
+;;; vc-conf.el ends here

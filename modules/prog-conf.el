@@ -9,9 +9,14 @@
   (display-line-numbers-grow-only t)
   (lisp-indent-offset 2)
   (yaml-indent-offset 2)
-  :config (setq-default require-final-newline t))
+  :config
+  (setq-default require-final-newline t)
+  (setq-default tab-width 2))
+
+(use-package jsonrpc)
 
 (use-package eglot
+  :after (jsonrpc)
   :hook
   ((c++-mode
      c++-ts-mode
@@ -175,7 +180,6 @@
   ("\\.tsv\\'" . tsv-mode))
 
 (use-package rainbow-csv
-  :after (csv-mode)
   :ensure (:host github :repo "emacs-vs/rainbow-csv")
   :hook ((csv-mode tsv-mode) . rainbow-csv-mode))
 

@@ -263,17 +263,6 @@
 (use-package sideline-flymake
   :after (sideline flymake))
 
-(use-package sideline-blame
-  :after (sideline)
-  :bind ("C-c C-b" . my/toggle-sideline-blame)
-  :custom-face (sideline-blame ((t (:foreground "grey40" :slant italic))))
-  :config
-  (defun my/toggle-sideline-blame ()
-    (interactive)
-    (if (member 'sideline-blame sideline-backends-right)
-      (setq sideline-backends-right (remove 'sideline-blame sideline-backends-right))
-      (push 'sideline-blame sideline-backends-right))))
-
 (use-package consistent-window-splits
   :ensure (:host github :repo "armkeh/consistent-window-splits")
   :config (consistent-window-splits-automatically-optimize))
