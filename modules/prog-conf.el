@@ -174,6 +174,9 @@
           (find-file (concat envrc-dir ".env")))
         (message "No envrc file found in the current project.")))))
 
+(use-package mise
+  :hook (elpaca-after-init . global-mise-mode))
+
 (use-package csv-mode
   :mode
   ("\\.csv\\'" . csv-mode)
