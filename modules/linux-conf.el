@@ -6,6 +6,7 @@
   :init (exec-path-from-shell-initialize))
 
 (add-to-list 'default-frame-alist '(undecorated . t))
+(add-to-list 'default-frame-alist '(font-backend . "harfbuzz"))
 
 (provide 'linux-conf)
 ;;; linux-conf.el ends here
