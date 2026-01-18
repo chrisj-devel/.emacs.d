@@ -1,15 +1,19 @@
-;;; theme.el --- Theming configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; theme-conf.el --- Theming configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 
-(use-package doom-themes
-  :custom
-  (doom-themes-enable-bold t)
-  (doom-themes-enable-italic t)
+;; (use-package doom-themes
+;;   :custom
+;;   (doom-themes-enable-bold t)
+;;   (doom-themes-enable-italic t)
+;;   :config
+;;   (load-theme 'doom-oceanic-next t)
+;;   (doom-themes-visual-bell-config)
+;;   (doom-themes-org-config))
+
+(use-package catppuccin-theme
   :config
-  (load-theme 'doom-oceanic-next t)
-  (doom-themes-visual-bell-config)
-  (doom-themes-org-config))
+  (load-theme 'catppuccin t))
 
 (use-package doom-modeline
   :config (doom-modeline-mode))
@@ -43,4 +47,4 @@
   :config (solaire-global-mode))
 
 (provide 'theme-conf)
-;;; theme.el ends here
+;;; theme-conf.el ends here

@@ -20,7 +20,7 @@
        (slot . 0)
        (window-width . 0.4)
        (preserve-size . (t . nil))))
-  (agent-shell-preferred-agent-config (agent-shell-google-make-gemini-config)))
+  (agent-shell-preferred-agent-config (agent-shell-anthropic-make-claude-code-config)))
 
 (provide 'ai-conf)
 ;;; ai.el ends here

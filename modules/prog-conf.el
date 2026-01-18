@@ -204,5 +204,7 @@
                                         "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
                                         "\\\\" "://")))
 
+(use-package kdl-mode)
+
 (provide 'prog-conf)
 ;;; prog.el ends here

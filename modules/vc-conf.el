@@ -10,6 +10,8 @@
   :bind ("C-x g" . magit-status)
   :config (setopt magit-format-file-function #'magit-format-file-nerd-icons))
 
+(use-package git-modes)
+
 (use-package git-link
   :ensure (:host github :repo "sshaw/git-link")
   :bind
