@@ -60,8 +60,7 @@
           ("M-s e" . consult-isearch-history)
           ;; Custom bindings.
           ("C-," . consult-buffer)
-          ("C-/" . consult-ripgrep)
-          ("C-f" . consult-line)
+          ("C-s" . search-map)
           :map isearch-mode-map
           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
@@ -268,11 +267,6 @@
   :config (consistent-window-splits-automatically-optimize))
 
 (use-package zoom
-  :after (evil)
-  :defines (evil-window-map)
-  :bind (:map evil-window-map
-          ("Z" . zoom)
-          ("z" . zoom-mode))
   :custom (zoom-size '(0.618 . 0.618)))
 
 (use-package minions

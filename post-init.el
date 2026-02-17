@@ -10,6 +10,7 @@
 ;; Update inbuilt Emacs libraries
 (use-package transient)
 (use-package flymake)
+(use-package project)
 
 (add-to-list 'load-path (expand-file-name "modules/" user-emacs-directory))
 
@@ -18,7 +19,8 @@
 (if (eq system-type 'gnu/linux) (require 'linux-conf))
 (require 'theme-conf)
 (require 'general-conf)
-(require 'evil-conf)
+(require 'undo-conf)
+(require 'meow-conf)
 (require 'completion-conf)
 (require 'vc-conf)
 (require 'auth-conf)

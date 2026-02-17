@@ -33,16 +33,9 @@
   (eglot-sync-connect nil) ;; Connect asynchronously without blocking
   (eglot-events-buffer-config '(:size nil :format lisp))
   (eglot-autoshutdown t)
+  (eglot-code-action-indicator "*")
   :config
-  ;; Workaround for the mise install having a bug
-  ;; https://github.com/mise-plugins/mise-elixir-ls/issues/3
-  (setenv "ELS_INSTALL_PREFIX" (substring (shell-command-to-string "mise where elixir-ls") 0 -1))
-  (dolist (mode '((ruby-mode "ruby-lsp")
-                   (ruby-ts-mode "ruby-lsp")
-                   (elixir-ts-mode "elixir-ls")
-                   ))
-    (add-to-list 'eglot-server-programs mode))
-
+  (add-to-list 'eglot-server-programs '(elixir-ts-mode "elixir-ls"))
   (setq-default eglot-workspace-configuration
     '(:elixirLS (:dialyzerEnabled t :dialyzerFormat "dialyxir_short" :mixEnv "dev" :mcpEnabled t))))
 

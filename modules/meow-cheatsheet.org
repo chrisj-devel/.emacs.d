@@ -1,0 +1,141 @@
+#+TITLE: Meow Cheatsheet (Vim-Transitional)
+#+STARTUP: overview
+
+Remember: *select first, then act*
+
+* Movement
+| Key | Action              |
+|-----+---------------------|
+| h   | left                |
+| j   | down                |
+| k   | up                  |
+| l   | right               |
+| H   | left (expand sel)   |
+| J   | down (expand sel)   |
+| K   | up (expand sel)     |
+| L   | right (expand sel)  |
+| w   | next word           |
+| W   | next symbol (WORD)  |
+| b   | back word           |
+| B   | back symbol (WORD)  |
+| f   | find char           |
+| t   | till char           |
+| ^   | first non-blank     |
+| $   | end of line         |
+| `   | beginning of buffer |
+| G   | goto line           |
+| C-d | page down           |
+| C-u | page up             |
+
+* Selection
+| Key | Action                        |
+|-----+-------------------------------|
+| e   | mark word (expandable)        |
+| E   | mark symbol (expandable)      |
+| v   | select line (expandable)      |
+| V   | expand line selection         |
+| s   | select tree-sitter node/block |
+| S   | expand to next block level    |
+| ,   | inner of thing (like vim =i=) |
+| .   | bounds of thing (like vim =a=)|
+| [   | to beginning of thing         |
+| ]   | to end of thing               |
+| ;   | reverse selection direction   |
+| g   | cancel selection              |
+
+* Thing Keys (after =,= or =.=)
+| Key | Thing              |
+|-----+--------------------|
+| r   | round ()           |
+| s   | square []          |
+| c   | curly {}           |
+| g   | string             |
+| e   | symbol             |
+| w   | window             |
+| b   | buffer             |
+| p   | paragraph          |
+| l   | line               |
+| v   | visual-line        |
+| d   | defun              |
+| .   | sentence           |
+|-----+--------------------|
+| f   | function (treesit) |
+| a   | class (treesit)    |
+| t   | test (treesit)     |
+| y   | entry (treesit)    |
+| ,   | parameter (treesit)|
+| /   | comment (treesit)  |
+
+* Actions
+| Key | Action                       |
+|-----+------------------------------|
+| d   | kill (delete) selection       |
+| c   | change selection (del+insert) |
+| y   | copy selection               |
+| Y   | copy and append to kill ring  |
+| p   | paste                        |
+| P   | paste (cycle kill ring)       |
+| r   | replace selection with paste  |
+| x   | delete char forward          |
+| X   | delete char backward         |
+| u   | undo                         |
+| U   | undo in selection            |
+| m   | join lines (vim =J=)         |
+| "   | toggle comment               |
+
+* Insert Mode
+| Key | Action       |
+|-----+--------------|
+| i   | insert       |
+| a   | append       |
+| o   | open below   |
+| O   | open above   |
+| c   | change       |
+| ESC | back to normal |
+
+* Search
+| Key | Action              |
+|-----+---------------------|
+| /   | search (completion) |
+| n   | next match          |
+| N   | previous match      |
+
+* Other
+| Key | Action                 |
+|-----+------------------------|
+| q   | quit window            |
+| Q   | grab (secondary sel)   |
+| '   | repeat last command    |
+| ?   | this cheatsheet        |
+| SPC | leader (keypad)        |
+| 0-9 | expand hint            |
+
+* Common Workflows
+
+** Delete a word
+=e= (mark word) then =d= (kill)
+or: =w= (to next word) then =d=
+
+** Delete a line
+=v= (select line) then =d= (kill)
+
+** Copy a line
+=v= (select line) then =y= (copy)
+
+** Change a word
+=e= (mark word) then =c= (change)
+
+** Select multiple lines
+=v= then keep pressing =v= to expand
+
+** Select inside parens
+=,= then =r= (inner of round)
+
+** Select around parens
+=.= then =r= (bounds of round)
+
+** Select inside function (tree-sitter)
+=,= then =f= (inner of function)
+
+** Select around class (tree-sitter)
+=.= then =a= (bounds of class)

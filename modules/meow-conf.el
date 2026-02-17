@@ -1,117 +1,162 @@
-;;; meow.el --- General Programming configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; meow-conf.el --- Meow modal editing configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; Commentary:
+;; Vim-transitional keymap for meow.
+;; Paradigm: select first, then act. hjkl and action keys (d/y/c/p)
+;; are in their vim positions.
 ;;; Code:
+
+(defun meow-open-cheatsheet ()
+  "Open the meow cheatsheet in a side window."
+  (interactive)
+  (let ((file (expand-file-name "modules/meow-cheatsheet.org" user-emacs-directory)))
+    (when (file-exists-p file)
+      (with-current-buffer (find-file-noselect file)
+        (read-only-mode 1)
+        (select-window
+          (display-buffer (current-buffer)
+            '(display-buffer-in-side-window
+               (side . right)
+               (window-width . 0.4))))))))
 
 (use-package meow
   :ensure t
   :demand t
+  :custom
+  (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+  (meow-expand-hint-remove-delay 3.0)
+  (meow-selection-command-fallback
+    '((meow-kill . meow-C-k)
+       (meow-change . meow-change-char)
+       (meow-save . meow-save-char)
+       (meow-cancel-selection . keyboard-quit)
+       (meow-pop-selection . meow-pop-grab)
+       (meow-beacon-change . meow-beacon-change-char)))
+  :hook
+  (git-commit-mode . meow-insert-mode)
   :config
-  ;; emacs keybind to access local leader map
-  (setq emacs-local-leader-prefix "C-?")
-  ;; meow keybind alias for local leader map
-  (setq meow-local-leader-prefix "/")
-  (setq meow-local-leader-insert-prefix "C-/")
-  ;; keep the expand hints around a while longer
-  (setq meow-expand-hint-remove-delay 3.0)
-  ;; start git commits in insert mode
-  (add-hook 'git-commit-mode-hook 'meow-insert-mode)
+  ;; Motion mode (read-only buffers)
+  (meow-motion-define-key
+    '("j" . meow-next)
+    '("k" . meow-prev)
+    '("<escape>" . ignore))
+
+  ;; Leader keys (SPC prefix)
+  (meow-leader-define-key
+    '("1" . meow-digit-argument)
+    '("2" . meow-digit-argument)
+    '("3" . meow-digit-argument)
+    '("4" . meow-digit-argument)
+    '("5" . meow-digit-argument)
+    '("6" . meow-digit-argument)
+    '("7" . meow-digit-argument)
+    '("8" . meow-digit-argument)
+    '("9" . meow-digit-argument)
+    '("0" . meow-digit-argument)
+    '("/" . meow-keypad-describe-key)
+    '("?" . meow-cheatsheet))
+
+  ;; Normal mode
+  (meow-normal-define-key
+    ;; Expand hints (0-9)
+    '("0" . meow-expand-0)
+    '("1" . meow-expand-1)
+    '("2" . meow-expand-2)
+    '("3" . meow-expand-3)
+    '("4" . meow-expand-4)
+    '("5" . meow-expand-5)
+    '("6" . meow-expand-6)
+    '("7" . meow-expand-7)
+    '("8" . meow-expand-8)
+    '("9" . meow-expand-9)
+    '("-" . negative-argument)
+
+    ;; Movement (hjkl)
+    '("h" . meow-left)
+    '("j" . meow-next)
+    '("k" . meow-prev)
+    '("l" . meow-right)
+    '("H" . meow-left-expand)
+    '("J" . meow-next-expand)
+    '("K" . meow-prev-expand)
+    '("L" . meow-right-expand)
+
+    ;; Line position
+    '("^" . meow-back-to-indentation)
+    '("$" . end-of-line)
+
+    ;; Buffer position
+    '("`" . beginning-of-buffer)
+
+    ;; Scrolling
+    '("C-d" . meow-page-down)
+    '("C-u" . meow-page-up)
+
+    ;; Word/symbol motion
+    '("w" . meow-next-word)
+    '("W" . meow-next-symbol)
+    '("b" . meow-back-word)
+    '("B" . meow-back-symbol)
+    '("e" . meow-mark-word)
+    '("E" . meow-mark-symbol)
+
+    ;; Find/till
+    '("f" . meow-find)
+    '("t" . meow-till)
+
+    ;; Insert mode entry
+    '("i" . meow-insert)
+    '("a" . meow-append)
+    '("o" . meow-open-below)
+    '("O" . meow-open-above)
+    '("c" . meow-change)
+
+    ;; Actions
+    '("d" . meow-kill)
+    '("x" . meow-delete)
+    '("X" . meow-backward-delete)
+    '("y" . meow-save)
+    '("Y" . meow-save-append)
+    '("p" . meow-yank)
+    '("P" . meow-yank-pop)
+    '("r" . meow-replace)
+    '("u" . undo-fu-only-undo)
+    '("U" . undo-fu-only-redo)
+
+    ;; Selection
+    '("v" . meow-line)
+    '("V" . meow-line-expand)
+    '("s" . meow-block)
+    '("S" . meow-to-block)
+    '("," . meow-inner-of-thing)
+    '("." . meow-bounds-of-thing)
+    '("[" . meow-beginning-of-thing)
+    '("]" . meow-end-of-thing)
+
+    ;; Search
+    '("/" . meow-visit)
+    '("n" . meow-search)
+    '("N" . meow-pop-search)
+
+    ;; Other
+    '(";" . meow-reverse)
+    '("g" . meow-cancel-selection)
+    '("G" . meow-goto-line)
+    '("m" . meow-join)
+    '("q" . meow-quit)
+    '("Q" . meow-grab)
+    '("'" . repeat)
+    '("\"" . meow-comment)
+    '("?" . meow-open-cheatsheet)
+    '("<escape>" . ignore))
+
   (meow-global-mode 1))
 
-(setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-
-(setq global-leader-map
-  (let ((keymap (make-sparse-keymap)))
-    (define-key keymap (kbd "c") 'meow-keypad-start)
-    (define-key keymap (kbd "g") 'meow-keypad-start)
-    (define-key keymap (kbd "h") 'meow-keypad-start)
-    (define-key keymap (kbd "m") 'meow-keypad-start)
-    (define-key keymap (kbd "x") 'meow-keypad-start)
-    keymap))
-
-(setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-
-(meow-motion-define-key
-  '("j" . meow-next)
-  '("k" . meow-prev)
-  '("<escape>" . ignore))
-
-(meow-leader-define-key
-  ;; Use SPC (0-9) for digit arguments.
-  '("1" . meow-digit-argument)
-  '("2" . meow-digit-argument)
-  '("3" . meow-digit-argument)
-  '("4" . meow-digit-argument)
-  '("5" . meow-digit-argument)
-  '("6" . meow-digit-argument)
-  '("7" . meow-digit-argument)
-  '("8" . meow-digit-argument)
-  '("9" . meow-digit-argument)
-  '("0" . meow-digit-argument)
-  '("/" . meow-keypad-describe-key)
-  '("?" . meow-cheatsheet))
-
-(meow-normal-define-key
-  '("0" . meow-expand-0)
-  '("9" . meow-expand-9)
-  '("8" . meow-expand-8)
-  '("7" . meow-expand-7)
-  '("6" . meow-expand-6)
-  '("5" . meow-expand-5)
-  '("4" . meow-expand-4)
-  '("3" . meow-expand-3)
-  '("2" . meow-expand-2)
-  '("1" . meow-expand-1)
-  '("-" . negative-argument)
-  '(";" . meow-reverse)
-  '("," . meow-inner-of-thing)
-  '("." . meow-bounds-of-thing)
-  '("[" . meow-beginning-of-thing)
-  '("]" . meow-end-of-thing)
-  '("a" . meow-append)
-  '("A" . meow-open-below)
-  '("b" . meow-back-word)
-  '("B" . meow-back-symbol)
-  '("c" . meow-change)
-  '("d" . meow-delete)
-  '("D" . meow-backward-delete)
-  '("e" . meow-next-word)
-  '("E" . meow-next-symbol)
-  '("f" . meow-find)
-  '("g" . meow-cancel-selection)
-  '("G" . meow-grab)
-  '("h" . meow-left)
-  '("H" . meow-left-expand)
-  '("i" . meow-insert)
-  '("I" . meow-open-above)
-  '("j" . meow-next)
-  '("J" . meow-next-expand)
-  '("k" . meow-prev)
-  '("K" . meow-prev-expand)
-  '("l" . meow-right)
-  '("L" . meow-right-expand)
-  '("m" . meow-join)
-  '("n" . meow-search)
-  '("o" . meow-block)
-  '("O" . meow-to-block)
-  '("p" . meow-yank)
-  '("q" . meow-quit)
-  '("Q" . meow-goto-line)
-  '("r" . meow-replace)
-  '("R" . meow-swap-grab)
-  '("s" . meow-kill)
-  '("t" . meow-till)
-  '("u" . meow-undo)
-  '("U" . meow-undo-in-selection)
-  '("v" . meow-visit)
-  '("w" . meow-mark-word)
-  '("W" . meow-mark-symbol)
-  '("x" . meow-line)
-  '("X" . meow-goto-line)
-  '("y" . meow-save)
-  '("Y" . meow-sync-grab)
-  '("z" . meow-pop-selection)
-  '("'" . repeat)
-  '("<escape>" . ignore))
+(use-package meow-tree-sitter
+  :after (meow)
+  :config
+  (meow-tree-sitter-register-defaults)
+  (meow-normal-define-key
+    '("T" . meow-tree-sitter-node)))
 
 (provide 'meow-conf)
-;;; meow.el ends here
+;;; meow-conf.el ends here

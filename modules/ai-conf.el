@@ -19,8 +19,7 @@
        (side . right)
        (slot . 0)
        (window-width . 0.4)
-       (preserve-size . (t . nil))))
-  (agent-shell-preferred-agent-config (agent-shell-anthropic-make-claude-code-config)))
+       (preserve-size . (t . nil)))))
 
 (provide 'ai-conf)
 ;;; ai.el ends here
