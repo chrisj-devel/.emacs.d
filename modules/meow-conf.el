@@ -18,8 +18,19 @@
                (side . right)
                (window-width . 0.4))))))))
 
+(defun meow-unpop-to-global-mark ()
+  "Go forward in the global mark ring."
+  (interactive)
+  (meow--cancel-selection)
+  (when global-mark-ring
+    (let ((marker (car (last global-mark-ring))))
+      (setq global-mark-ring
+        (cons (copy-marker (point-marker))
+          (butlast global-mark-ring)))
+      (switch-to-buffer (marker-buffer marker))
+      (goto-char marker))))
+
 (use-package meow
-  :ensure t
   :demand t
   :custom
   (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
@@ -31,9 +42,12 @@
        (meow-cancel-selection . keyboard-quit)
        (meow-pop-selection . meow-pop-grab)
        (meow-beacon-change . meow-beacon-change-char)))
-  :hook
-  (git-commit-mode . meow-insert-mode)
   :config
+  (setq meow-mode-state-list
+    (append '((git-commit-mode . insert)
+               (vterm-mode . insert)
+               (agent-shell-mode . insert))
+      meow-mode-state-list))
   ;; Motion mode (read-only buffers)
   (meow-motion-define-key
     '("j" . meow-next)
@@ -75,6 +89,7 @@
     '("j" . meow-next)
     '("k" . meow-prev)
     '("l" . meow-right)
+    ;; Movement with expand (HJKL)
     '("H" . meow-left-expand)
     '("J" . meow-next-expand)
     '("K" . meow-prev-expand)
@@ -88,8 +103,15 @@
     '("`" . beginning-of-buffer)
 
     ;; Scrolling
-    '("C-d" . meow-page-down)
-    '("C-u" . meow-page-up)
+    ;; '("C-d" . meow-page-down)
+    ;; '("C-u" . meow-page-up)
+
+    ;; Jump list
+    ;; '("C-o" . meow-pop-to-global-mark)
+    ;; '("C-i" . meow-unpop-to-global-mark)
+
+    ;; Go to definition
+    '("C-]" . xref-find-definitions)
 
     ;; Word/symbol motion
     '("w" . meow-next-word)
@@ -99,9 +121,9 @@
     '("e" . meow-mark-word)
     '("E" . meow-mark-symbol)
 
-    ;; Find/till
-    '("f" . meow-find)
-    '("t" . meow-till)
+    ;; Find/till (expand by default)
+    '("f" . meow-find-expand)
+    '("t" . meow-till-expand)
 
     ;; Insert mode entry
     '("i" . meow-insert)
@@ -112,6 +134,7 @@
 
     ;; Actions
     '("d" . meow-kill)
+    '("M" . meow-join)
     '("x" . meow-delete)
     '("X" . meow-backward-delete)
     '("y" . meow-save)
@@ -137,16 +160,20 @@
     '("n" . meow-search)
     '("N" . meow-pop-search)
 
+    ;; Indentation
+    '(">" . indent-rigidly-right-to-tab-stop)
+    '("<" . indent-rigidly-left-to-tab-stop)
+    '("=" . meow-indent)
+
     ;; Other
     '(";" . meow-reverse)
     '("g" . meow-cancel-selection)
     '("G" . meow-goto-line)
-    '("m" . meow-join)
-    '("q" . meow-quit)
     '("Q" . meow-grab)
     '("'" . repeat)
     '("\"" . meow-comment)
     '("?" . meow-open-cheatsheet)
+    '("C-g" . meow-cancel-selection)
     '("<escape>" . ignore))
 
   (meow-global-mode 1))

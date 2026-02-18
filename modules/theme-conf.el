@@ -18,10 +18,7 @@
 (use-package doom-modeline
   :config (doom-modeline-mode))
 
-(use-package nerd-icons)
-
 (use-package nerd-icons
-  :defer t
   :defines (nerd-icons-octicon))
 
 (use-package nerd-icons-dired

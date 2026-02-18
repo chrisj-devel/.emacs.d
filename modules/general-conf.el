@@ -14,6 +14,7 @@
   (dashboard-setup-startup-hook))
 
 (use-package consult
+  :demand t
   ;; Replace bindings. Lazily loaded by `use-package'.
   :bind (;; C-c bindings in `mode-specific-map'
           ("C-c M-x" . consult-mode-command)
@@ -60,7 +61,7 @@
           ("M-s e" . consult-isearch-history)
           ;; Custom bindings.
           ("C-," . consult-buffer)
-          ("C-s" . search-map)
+          ("C-s" . consult-line)
           :map isearch-mode-map
           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
@@ -104,8 +105,8 @@
     consult-theme :preview-key '(:debounce 0.2 any)
     consult-ripgrep consult-git-grep consult-grep consult-man
     consult-bookmark consult-recent-file consult-xref
-    consult--source-bookmark consult--source-file-register
-    consult--source-recent-file consult--source-project-recent-file
+    consult-source-bookmark consult-source-file-register
+    consult-source-recent-file consult-source-project-recent-file
     ;; :preview-key "M-."
     :preview-key '(:debounce 0.4 any))
 
@@ -261,10 +262,6 @@
 
 (use-package sideline-flymake
   :after (sideline flymake))
-
-(use-package consistent-window-splits
-  :ensure (:host github :repo "armkeh/consistent-window-splits")
-  :config (consistent-window-splits-automatically-optimize))
 
 (use-package zoom
   :custom (zoom-size '(0.618 . 0.618)))

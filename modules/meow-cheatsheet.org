@@ -6,26 +6,25 @@ Remember: *select first, then act*
 * Movement
 | Key | Action              |
 |-----+---------------------|
-| h   | left                |
-| j   | down                |
-| k   | up                  |
-| l   | right               |
-| H   | left (expand sel)   |
-| J   | down (expand sel)   |
-| K   | up (expand sel)     |
-| L   | right (expand sel)  |
+| h   | left (expand sel)   |
+| j   | down (expand sel)   |
+| k   | up (expand sel)     |
+| l   | right (expand sel)  |
 | w   | next word           |
 | W   | next symbol (WORD)  |
 | b   | back word           |
 | B   | back symbol (WORD)  |
-| f   | find char           |
-| t   | till char           |
+| f   | find char (expand)  |
+| t   | till char (expand)  |
 | ^   | first non-blank     |
 | $   | end of line         |
 | `   | beginning of buffer |
 | G   | goto line           |
 | C-d | page down           |
 | C-u | page up             |
+| C-o | jump back (global)  |
+| C-i | jump forward (global)|
+| C-] | go to definition    |
 
 * Selection
 | Key | Action                        |
@@ -75,22 +74,25 @@ Remember: *select first, then act*
 | Y   | copy and append to kill ring  |
 | p   | paste                        |
 | P   | paste (cycle kill ring)       |
+| J   | join lines                   |
 | r   | replace selection with paste  |
 | x   | delete char forward          |
 | X   | delete char backward         |
 | u   | undo                         |
 | U   | undo in selection            |
-| m   | join lines (vim =J=)         |
+| >   | indent right                 |
+| <   | indent left                  |
+| =   | auto-indent region           |
 | "   | toggle comment               |
 
 * Insert Mode
 | Key | Action       |
 |-----+--------------|
-| i   | insert       |
-| a   | append       |
-| o   | open below   |
-| O   | open above   |
-| c   | change       |
+| i   | insert         |
+| a   | append         |
+| o   | open below     |
+| O   | open above     |
+| c   | change         |
 | ESC | back to normal |
 
 * Search
