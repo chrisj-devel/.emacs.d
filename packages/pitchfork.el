@@ -119,13 +119,46 @@ Each entry has :name :pid :status :error :root keys."
                   entries)))))
     (nreverse entries)))
 
+(defun pitchfork--local-daemon-info (root)
+  "Return an alist of (NAME . URL-OR-NIL) for daemons defined in ROOT's config files."
+  (let ((files (split-string (pitchfork--run-sync '("config") root) "\n" t))
+        result)
+    (dolist (file files)
+      (when (file-exists-p file)
+        (with-temp-buffer
+          (insert-file-contents file)
+          (goto-char (point-min))
+          (while (re-search-forward "^\\[daemons\\.\\([^]]+\\)\\]" nil t)
+            (let ((name (match-string 1))
+                  url)
+              ;; Scan forward until the next section for ready_http / ready_port
+              (save-excursion
+                (let ((section-end (save-excursion
+                                     (if (re-search-forward "^\\[" nil t)
+                                         (match-beginning 0)
+                                       (point-max)))))
+                  (cond
+                   ((re-search-forward "^ready_http\\s-*=\\s-*\"\\([^\"]+\\)\"" section-end t)
+                    (setq url (match-string 1)))
+                   ((re-search-forward "^ready_port\\s-*=\\s-*\\([0-9]+\\)" section-end t)
+                    (setq url (format "http://localhost:%s" (match-string 1)))))))
+              (push (cons name url) result))))))
+    result))
+
 (defun pitchfork--parse-all-projects ()
-  "Return daemon plists for all known projects that have a pitchfork.toml."
-  (let ((roots (project-known-project-roots)))
-    (seq-mapcat (lambda (root)
-                  (when (pitchfork--has-toml-p root)
-                    (pitchfork--parse-list root)))
-                roots)))
+  "Return daemon plists for all known projects that have a pitchfork.toml.
+Only includes daemons whose names are defined in that project's config,
+preventing daemons from other projects leaking into the wrong project.
+Each plist gains a :url key from ready_http / ready_port if present."
+  (seq-mapcat (lambda (root)
+                (when (pitchfork--has-toml-p root)
+                  (let ((info (pitchfork--local-daemon-info root)))
+                    (seq-keep
+                     (lambda (d)
+                       (when-let ((entry (assoc (plist-get d :name) info)))
+                         (append d (list :url (cdr entry)))))
+                     (pitchfork--parse-list root)))))
+              (project-known-project-roots)))
 
 ;;;; Tabulated list UI
 
@@ -205,11 +238,26 @@ Each entry has :name :pid :status :error :root keys."
     (ignore-errors (forward-line 1))))
 
 (defun pitchfork-mark-all ()
-  "Mark all daemons."
+  "Mark daemons with expanding selection.
+First call marks all daemons in the project of the daemon at point.
+Second consecutive call marks all daemons across all projects."
   (interactive)
-  (dolist (entry tabulated-list-entries)
-    (puthash (car entry) t pitchfork--marks))
-  (tabulated-list-print t))
+  (let* ((id (pitchfork--entry-id-at-point))
+         (root (car id))
+         (project-ids (mapcar #'car (funcall tabulated-list-entries)))
+         (project-marked (seq-every-p
+                          (lambda (eid)
+                            (when (equal (car eid) root)
+                              (gethash eid pitchfork--marks)))
+                          (seq-filter (lambda (eid) (equal (car eid) root))
+                                      project-ids))))
+    (if project-marked
+        (dolist (eid project-ids)
+          (puthash eid t pitchfork--marks))
+      (dolist (eid project-ids)
+        (when (equal (car eid) root)
+          (puthash eid t pitchfork--marks))))
+    (tabulated-list-print t)))
 
 (defun pitchfork-unmark ()
   "Unmark the daemon at point and advance to the next line."
@@ -327,10 +375,26 @@ Reuses an existing buffer and process if already running."
           (set-process-query-on-exit-flag proc nil))))
     (switch-to-buffer buf)))
 
+;;;; Browse
+
+(defun pitchfork-browse ()
+  "Open the URL for the daemon at point in a browser.
+The URL is derived from ready_http or ready_port in pitchfork.toml."
+  (interactive)
+  (let* ((id (pitchfork--entry-id-at-point))
+         (name (cdr id))
+         (root (car id))
+         (info (pitchfork--local-daemon-info root))
+         (url (cdr (assoc name info))))
+    (if url
+        (browse-url url)
+      (user-error "No URL configured for daemon %s (set ready_http or ready_port in pitchfork.toml)" name))))
+
 ;;;; Major mode
 
 (defvar-keymap pitchfork-mode-map
   :doc "Keymap for `pitchfork-mode'."
+  "RET" #'pitchfork-browse
   "m" #'pitchfork-mark
   "M" #'pitchfork-mark-all
   "u" #'pitchfork-unmark
