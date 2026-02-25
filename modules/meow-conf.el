@@ -35,6 +35,7 @@
   :custom
   (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
   (meow-expand-hint-remove-delay 3.0)
+  (meow-use-clipboard t)
   (meow-selection-command-fallback
     '((meow-kill . meow-C-k)
        (meow-change . meow-change-char)
@@ -43,16 +44,34 @@
        (meow-pop-selection . meow-pop-grab)
        (meow-beacon-change . meow-beacon-change-char)))
   :config
+  (meow-define-state ediff
+    "Meow state for ediff buffers."
+    :lighter " [E]"
+    :keymap (make-keymap))
+
   (setq meow-mode-state-list
     (append '((git-commit-mode . insert)
                (vterm-mode . insert)
-               (agent-shell-mode . insert))
+               (agent-shell-mode . insert)
+               (ediff-mode . ediff))
       meow-mode-state-list))
+
   ;; Motion mode (read-only buffers)
   (meow-motion-define-key
-    '("j" . meow-next)
-    '("k" . meow-prev)
+    '("j" . next-line)
+    '("k" . previous-line)
+    '("G" . end-of-buffer)
+    '("`" . beginning-of-buffer)
+    '("v" . set-mark-command)
+    '("y" . meow-save)
+    '("/" . meow-visit)
+    '("n" . meow-search)
     '("<escape>" . ignore))
+
+  ;; Ediff mode
+  (meow-define-keys 'ediff
+    '("j" . ediff-next-difference)
+    '("k" . ediff-previous-difference))
 
   ;; Leader keys (SPC prefix)
   (meow-leader-define-key
@@ -134,7 +153,7 @@
 
     ;; Actions
     '("d" . meow-kill)
-    '("M" . meow-join)
+    '("m" . meow-join)
     '("x" . meow-delete)
     '("X" . meow-backward-delete)
     '("y" . meow-save)
@@ -168,7 +187,8 @@
     ;; Other
     '(";" . meow-reverse)
     '("g" . meow-cancel-selection)
-    '("G" . meow-goto-line)
+    '("G" . end-of-buffer)
+    '(":" . meow-goto-line)
     '("Q" . meow-grab)
     '("'" . repeat)
     '("\"" . meow-comment)

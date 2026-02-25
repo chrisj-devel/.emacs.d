@@ -56,7 +56,10 @@
   (add-to-list 'apheleia-mode-alist '(ruby-mode . rubocop))
   (add-to-list 'apheleia-mode-alist '("\\.erb\\'" . htmlbeautifier))
   (add-to-list 'apheleia-mode-alist '(nxml-mode . html-tidy))
-  (add-to-list 'apheleia-mode-alist '(nix-ts-mode . nixfmt)))
+  (add-to-list 'apheleia-mode-alist '(nix-ts-mode . nixfmt))
+  (add-to-list 'apheleia-formatters '(ts-standard . ("apheleia-from-project-root" "tsconfig.json" "ts-standard" "--fix" inplace)))
+  (add-to-list 'apheleia-mode-alist '(typescript-ts-mode . ts-standard))
+  (add-to-list 'apheleia-mode-alist '(tsx-ts-mode . ts-standard)))
 
 (use-package flymake
   :ensure nil
@@ -166,6 +169,10 @@
           (find-file (concat envrc-dir ".envrc"))
           (find-file (concat envrc-dir ".env")))
         (message "No envrc file found in the current project.")))))
+
+(use-package dotenv-mode
+  :mode
+  ("\\.env\\..*\\'" . dotenv-mode))
 
 (use-package mise
   :hook (elpaca-after-init . global-mise-mode))

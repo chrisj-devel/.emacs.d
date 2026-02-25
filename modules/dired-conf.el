@@ -28,10 +28,14 @@
     (dired-subtree-insert)
     (dired-sidebar-redisplay-icons))
   (defun dired-sidebar-subtree-collapse ()
-    "Collapse subtree at point with icon refresh."
+    "Collapse subtree at point, or move to parent directory line."
     (interactive)
-    (dired-subtree-remove)
-    (dired-sidebar-redisplay-icons)))
+    (if (dired-subtree--is-expanded-p)
+      (progn
+        (dired-next-line 1)
+        (dired-subtree-remove)
+        (dired-sidebar-redisplay-icons))
+      (dired-subtree-up))))
 
 (provide 'dired-conf)
 ;;; dired-conf.el ends here

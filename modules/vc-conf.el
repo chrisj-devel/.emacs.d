@@ -7,8 +7,11 @@
 
 (use-package magit
   :after (cond-let transient)
-  :bind ("C-x g" . magit-status)
-  :config (setopt magit-format-file-function #'magit-format-file-nerd-icons))
+  :bind
+  ("C-x g" . magit-status)
+  (:map magit-mode-map ("x" . magit-delete-thing))
+  :config
+  (setopt magit-format-file-function #'magit-format-file-nerd-icons))
 
 (use-package git-modes)
 
