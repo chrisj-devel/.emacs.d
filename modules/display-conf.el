@@ -112,7 +112,8 @@
        "^\\*EGLOT.*\\*$"
        "^\\*.*-eat.*\\*$"
        "^\\*.*Agent.*\\*$" agent-shell-mode
-       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode)))
+       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode
+       "^\\*pitchfork\\*$" pitchfork-mode)))
 
 (use-package popper
   :after auto-side-windows ; Ensure auto-side-windows variables are defined

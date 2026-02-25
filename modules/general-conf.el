@@ -245,7 +245,8 @@
        "^\\*Bundler\\*$"
        "^\\*EGLOT.*\\*$"
        "^\\*.*-eat.*\\*$"
-       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode)))
+       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode
+       "^\\*pitchfork\\*$" pitchfork-mode)))
 
 (use-package sideline
   :hook (flymake-mode . sideline-mode)

@@ -13,6 +13,7 @@
 (use-package project)
 
 (add-to-list 'load-path (expand-file-name "modules/" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "packages/" user-emacs-directory))
 
 (if (eq system-type 'darwin) (require 'darwin-conf))
 (if (eq system-type 'windows-nt) (require 'windows-conf))
@@ -34,6 +35,7 @@
 (require 'ai-conf)
 (require 'writing-conf)
 (require 'web-conf)
+(require 'pitchfork-conf)
 
 (use-package emacs
   :ensure nil
