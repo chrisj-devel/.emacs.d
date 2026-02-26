@@ -107,7 +107,7 @@ Each entry has :name :pid :status :error :root keys."
       (let* ((parts (split-string line nil t))
              (len (length parts)))
         (when (>= len 1)
-          (let* ((name (nth 0 parts))
+          (let* ((name (car parts))
                  (pid-or-status (nth 1 parts))
                  (has-pid (and pid-or-status (string-match-p "\\`[0-9]+\\'" pid-or-status)))
                  (pid (if has-pid pid-or-status ""))
@@ -207,11 +207,17 @@ Each plist gains a :url key from ready_http / ready_port if present."
 
 (defun pitchfork--refresh ()
   "Refresh the pitchfork buffer."
+  (interactive)
   (when-let ((buf (get-buffer "*pitchfork*")))
     (with-current-buffer buf
       (tabulated-list-print t))))
 
 ;;;; Marks
+
+(defun pitchfork--advance ()
+  "Reprint the list and move point to the next line."
+  (tabulated-list-print t)
+  (ignore-errors (forward-line 1)))
 
 (defun pitchfork--entry-id-at-point ()
   "Return the entry ID (root . name) at point, or signal an error."
@@ -232,10 +238,8 @@ Each plist gains a :url key from ready_http / ready_port if present."
 (defun pitchfork-mark ()
   "Mark the daemon at point and advance to the next line."
   (interactive)
-  (let ((id (pitchfork--entry-id-at-point)))
-    (puthash id t pitchfork--marks)
-    (tabulated-list-print t)
-    (ignore-errors (forward-line 1))))
+  (puthash (pitchfork--entry-id-at-point) t pitchfork--marks)
+  (pitchfork--advance))
 
 (defun pitchfork-mark-all ()
   "Mark daemons with expanding selection.
@@ -262,10 +266,8 @@ Second consecutive call marks all daemons across all projects."
 (defun pitchfork-unmark ()
   "Unmark the daemon at point and advance to the next line."
   (interactive)
-  (let ((id (pitchfork--entry-id-at-point)))
-    (remhash id pitchfork--marks)
-    (tabulated-list-print t)
-    (ignore-errors (forward-line 1))))
+  (remhash (pitchfork--entry-id-at-point) pitchfork--marks)
+  (pitchfork--advance))
 
 (defun pitchfork-unmark-all ()
   "Unmark all daemons."
@@ -278,16 +280,15 @@ Second consecutive call marks all daemons across all projects."
 (defun pitchfork--run-async (args root &optional callback)
   "Run pitchfork with ARGS in ROOT asynchronously.
 Calls CALLBACK (if non-nil) when the process exits."
-  (let* ((default-directory root)
-         (proc (make-process
-                :name "pitchfork"
-                :buffer nil
-                :command (cons pitchfork-executable args)
-                :sentinel (lambda (proc _event)
-                            (when (memq (process-status proc) '(exit signal))
-                              (pitchfork--refresh)
-                              (when callback (funcall callback)))))))
-    proc))
+  (let ((default-directory root))
+    (make-process
+     :name "pitchfork"
+     :buffer nil
+     :command (cons pitchfork-executable args)
+     :sentinel (lambda (proc _event)
+                 (when (memq (process-status proc) '(exit signal))
+                   (pitchfork--refresh)
+                   (when callback (funcall callback)))))))
 
 (defun pitchfork--daemon-at-point ()
   "Return the daemon name at point, or signal an error."
@@ -295,46 +296,25 @@ Calls CALLBACK (if non-nil) when the process exits."
 
 ;;;; Interactive commands
 
-(defun pitchfork-start ()
-  "Start marked daemons, or daemon at point."
-  (interactive)
+(defun pitchfork--run-on-targets (verb command)
+  "Run pitchfork COMMAND on each target, logging VERB.  Clears marks after."
   (dolist (id (pitchfork--targets))
     (let ((name (cdr id)) (root (car id)))
-      (message "pitchfork: starting %s..." name)
-      (pitchfork--run-async (list "start" name) root)))
+      (message "pitchfork: %s %s..." verb name)
+      (pitchfork--run-async (list command name) root)))
   (clrhash pitchfork--marks))
 
-(defun pitchfork-start-all ()
-  "Start all daemons in all projects."
-  (interactive)
+(defun pitchfork--run-on-all-projects (verb command)
+  "Run pitchfork COMMAND --all in every project with a pitchfork.toml, logging VERB."
   (dolist (root (seq-filter #'pitchfork--has-toml-p (project-known-project-roots)))
-    (message "pitchfork: starting all daemons in %s..." root)
-    (pitchfork--run-async '("start" "--all") root)))
+    (message "pitchfork: %s all daemons in %s..." verb root)
+    (pitchfork--run-async (list command "--all") root)))
 
-(defun pitchfork-stop ()
-  "Stop marked daemons, or daemon at point."
-  (interactive)
-  (dolist (id (pitchfork--targets))
-    (let ((name (cdr id)) (root (car id)))
-      (message "pitchfork: stopping %s..." name)
-      (pitchfork--run-async (list "stop" name) root)))
-  (clrhash pitchfork--marks))
-
-(defun pitchfork-stop-all ()
-  "Stop all daemons in all projects."
-  (interactive)
-  (dolist (root (seq-filter #'pitchfork--has-toml-p (project-known-project-roots)))
-    (message "pitchfork: stopping all daemons in %s..." root)
-    (pitchfork--run-async '("stop" "--all") root)))
-
-(defun pitchfork-restart ()
-  "Restart marked daemons, or daemon at point."
-  (interactive)
-  (dolist (id (pitchfork--targets))
-    (let ((name (cdr id)) (root (car id)))
-      (message "pitchfork: restarting %s..." name)
-      (pitchfork--run-async (list "restart" name) root)))
-  (clrhash pitchfork--marks))
+(defun pitchfork-start ()     "Start marked daemons, or daemon at point."  (interactive) (pitchfork--run-on-targets "starting" "start"))
+(defun pitchfork-stop ()      "Stop marked daemons, or daemon at point."   (interactive) (pitchfork--run-on-targets "stopping" "stop"))
+(defun pitchfork-restart ()   "Restart marked daemons, or daemon at point." (interactive) (pitchfork--run-on-targets "restarting" "restart"))
+(defun pitchfork-start-all () "Start all daemons in all projects."          (interactive) (pitchfork--run-on-all-projects "starting" "start"))
+(defun pitchfork-stop-all ()  "Stop all daemons in all projects."           (interactive) (pitchfork--run-on-all-projects "stopping" "stop"))
 
 (define-derived-mode pitchfork-log-mode special-mode "Pitchfork-Log"
   "Major mode for viewing pitchfork daemon logs."
@@ -348,9 +328,8 @@ Reuses an existing buffer and process if already running."
          (name (cdr id))
          (root (car id))
          (buf-name (format "*pitchfork-logs:%s*" name))
-         (buf (get-buffer-create buf-name))
-         (existing-proc (get-buffer-process buf)))
-    (unless (and existing-proc (process-live-p existing-proc))
+         (buf (get-buffer-create buf-name)))
+    (unless (process-live-p (get-buffer-process buf))
       (with-current-buffer buf
         (let ((inhibit-read-only t))
           (erase-buffer))
@@ -406,14 +385,13 @@ The URL is derived from ready_http or ready_port in pitchfork.toml."
   "X" #'pitchfork-stop-all
   "r" #'pitchfork-restart
   "l" #'pitchfork-logs
-  "g" #'pitchfork-refresh
+  "g" #'pitchfork--refresh
   "q" #'quit-window)
 
 (define-derived-mode pitchfork-mode tabulated-list-mode "Pitchfork"
   "Major mode for managing pitchfork daemons."
   (buffer-disable-undo)
   (setq truncate-lines t)
-  (setq pitchfork--marks (make-hash-table :test #'equal))
   (setq tabulated-list-format
         [("M"       2  nil)
          ("Project" 16 t)
@@ -425,11 +403,6 @@ The URL is derived from ready_http or ready_port in pitchfork.toml."
   (setq tabulated-list-entries #'pitchfork--list-entries)
   (tabulated-list-init-header)
   (hl-line-mode 1))
-
-(defun pitchfork-refresh ()
-  "Refresh the daemon list."
-  (interactive)
-  (pitchfork--refresh))
 
 ;;;; Entry point
 
