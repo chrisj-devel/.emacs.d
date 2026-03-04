@@ -37,6 +37,7 @@
 (require 'writing-conf)
 (require 'web-conf)
 (require 'pitchfork-conf)
+(require 'casual-conf)
 
 (use-package emacs
   :ensure nil

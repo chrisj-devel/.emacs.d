@@ -22,8 +22,6 @@ Remember: *select first, then act*
 | G   | goto line           |
 | C-d | page down           |
 | C-u | page up             |
-| C-o | jump back (global)  |
-| C-i | jump forward (global)|
 | C-] | go to definition    |
 
 * Selection
@@ -111,6 +109,48 @@ Remember: *select first, then act*
 | ?   | this cheatsheet        |
 | SPC | leader (keypad)        |
 | 0-9 | expand hint            |
+
+* Casual Menus (Transient)
+
+** Global (any buffer)
+| Key       | Menu                     |
+|-----------+--------------------------|
+| SPC SPC   | EditKit main menu        |
+| SPC w     | Windows menu             |
+| SPC r     | Rectangles menu          |
+| SPC g     | Registers menu           |
+| SPC p     | Project menu             |
+
+** Mode-specific (C-o in motion state)
+| Mode          | Key  | Menu                   |
+|---------------+------+------------------------|
+| Dired         | C-o  | Dired menu             |
+| IBuffer       | C-o  | IBuffer menu           |
+| Info          | C-o  | Info menu              |
+| Calc          | C-o  | Calc menu              |
+| Org Agenda    | C-o  | Agenda menu            |
+| Calendar      | C-o  | Calendar menu          |
+| Bookmarks     | C-o  | Bookmarks menu         |
+| I-Search      | C-o  | I-Search menu          |
+| Help          | C-o  | Help menu              |
+| Eshell        | C-o  | Eshell menu            |
+| Ediff         | C-o  | Ediff menu             |
+| EWW           | C-o  | EWW menu               |
+| Image         | C-o  | Image menu             |
+| RE-Builder    | C-o  | RE-Builder menu        |
+| Compile/Grep  | C-o  | Compile menu           |
+| Man           | C-o  | Man menu               |
+
+** Mode-specific (M-m in normal/insert state)
+| Mode          | Key  | Menu                   |
+|---------------+------+------------------------|
+| Org           | M-m  | Org menu               |
+| Emacs Lisp    | M-m  | Elisp menu             |
+| Makefile      | M-m  | Make menu              |
+| CSV           | M-m  | CSV menu               |
+| CSS           | M-m  | CSS menu               |
+| HTML          | M-m  | HTML menu              |
+| BibTeX        | M-m  | BibTeX menu            |
 
 * Common Workflows
 
