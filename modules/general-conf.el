@@ -249,9 +249,11 @@
        "^\\*pitchfork\\*$" pitchfork-mode)))
 
 (use-package sideline
-  :hook (flymake-mode . sideline-mode)
+  :hook
+  (flymake-mode . sideline-mode)
+  (eglot-mode . sideline-mode)
   :custom
-  (sideline-backends-right '(sideline-flymake))
+  (sideline-backends-right '(sideline-flymake sideline-eglot))
   (sideline-backends-left-skip-current-line t)   ; don't display on current line (left)
   (sideline-backends-right-skip-current-line t)  ; don't display on current line (right)
   (sideline-order-left 'down)                    ; or 'up
@@ -263,6 +265,10 @@
 
 (use-package sideline-flymake
   :after (sideline flymake))
+
+(use-package sideline-eglot
+  :after (sideline eglot)
+  :custom (sideline-eglot-code-actions-prefix (concat (nerd-icons-codicon "nf-cod-lightbulb") " ")))
 
 (use-package zoom
   :custom (zoom-size '(0.618 . 0.618)))
@@ -277,7 +283,6 @@
     scroll-margin 0)
   :config
   (ultra-scroll-mode 1))
-
 
 (use-package helpful
   :bind

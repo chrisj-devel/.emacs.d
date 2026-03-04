@@ -43,5 +43,8 @@
 (use-package solaire-mode
   :config (solaire-global-mode))
 
+(use-package winpulse
+  :config (winpulse-mode +1))
+
 (provide 'theme-conf)
 ;;; theme-conf.el ends here

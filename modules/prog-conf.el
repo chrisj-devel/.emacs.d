@@ -1,4 +1,4 @@
-;;; prog.el --- General Programming configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; prog-conf.el --- General Programming configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 
@@ -9,6 +9,8 @@
   (display-line-numbers-grow-only t)
   (lisp-indent-offset 2)
   (yaml-indent-offset 2)
+  (standard-indent 2)
+  (js-indent-level 2)
   :config
   (setq-default require-final-newline t)
   (setq-default tab-width 2))
@@ -34,6 +36,7 @@
   (eglot-events-buffer-config '(:size nil :format lisp))
   (eglot-autoshutdown t)
   (eglot-code-action-indicator "*")
+  (eglot-code-action-indications '())
   :config
   (add-to-list 'eglot-server-programs '(elixir-ts-mode "elixir-ls"))
   (setq-default eglot-workspace-configuration
@@ -57,9 +60,12 @@
   (add-to-list 'apheleia-mode-alist '("\\.erb\\'" . htmlbeautifier))
   (add-to-list 'apheleia-mode-alist '(nxml-mode . html-tidy))
   (add-to-list 'apheleia-mode-alist '(nix-ts-mode . nixfmt))
-  (add-to-list 'apheleia-formatters '(ts-standard . ("apheleia-from-project-root" "tsconfig.json" "ts-standard" "--fix" inplace)))
+  (add-to-list 'apheleia-formatters '(ts-standard . ("apheleia-from-project-root" "tsconfig.json" "ts-standard" "--fix" file)))
   (add-to-list 'apheleia-mode-alist '(typescript-ts-mode . ts-standard))
-  (add-to-list 'apheleia-mode-alist '(tsx-ts-mode . ts-standard)))
+  (add-to-list 'apheleia-mode-alist '(tsx-ts-mode . ts-standard))
+  (add-to-list 'apheleia-formatters '(standard . ("standard" "--fix" inplace)))
+  (add-to-list 'apheleia-mode-alist '(js-mode . standard))
+  (add-to-list 'apheleia-mode-alist '(js-ts-mode . standard)))
 
 (use-package flymake
   :ensure nil
@@ -207,4 +213,4 @@
 (use-package kdl-mode)
 
 (provide 'prog-conf)
-;;; prog.el ends here
+;;; prog-conf.el ends here

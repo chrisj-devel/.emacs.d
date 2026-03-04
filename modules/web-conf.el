@@ -16,10 +16,6 @@
     "\\.eex\\'"
     "\\.leex\\'"))
 
-(use-package js
-  :ensure nil
-  :custom (js-indent-level 2))
-
 (use-package jest-test-mode
   :defines jest-test-mode-map
   :hook (js-ts-mode tsx-ts-mode js-mode typescript-mode typescript-tsx-mode typescript-ts-mode)

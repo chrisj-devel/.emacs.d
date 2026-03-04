@@ -18,6 +18,11 @@
                (side . right)
                (window-width . 0.4))))))))
 
+(defun join-line-below ()
+  "Join the next line onto the current line, like vim's J."
+  (interactive)
+  (delete-indentation t))
+
 (defun meow-unpop-to-global-mark ()
   "Go forward in the global mark ring."
   (interactive)
@@ -154,6 +159,7 @@
     ;; Actions
     '("d" . meow-kill)
     '("m" . meow-join)
+    '("M" . join-line-below)
     '("x" . meow-delete)
     '("X" . meow-backward-delete)
     '("y" . meow-save)
