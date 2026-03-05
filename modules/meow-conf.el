@@ -57,9 +57,9 @@
   (setq meow-mode-state-list
     (append '((git-commit-mode . insert)
                (vterm-mode . insert)
-               (agent-shell-mode . insert)
-               (ediff-mode . ediff))
+               (agent-shell-mode . insert))
       meow-mode-state-list))
+
 
   ;; Motion mode (read-only buffers)
   (meow-motion-define-key
@@ -210,6 +210,11 @@
   (meow-tree-sitter-register-defaults)
   (meow-normal-define-key
     '("T" . meow-tree-sitter-node)))
+
+(use-package ediff
+  :ensure nil
+  :after (meow ediff)
+  :hook (ediff-startup . meow-ediff-mode))
 
 (provide 'meow-conf)
 ;;; meow-conf.el ends here

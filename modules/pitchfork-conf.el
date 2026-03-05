@@ -7,8 +7,8 @@
   :custom (pitchfork-auto-stop-on-project-switch t)
   :hook (elpaca-after-init . pitchfork-auto-start-mode)
   :bind
-  ("C-c p f" . pitchfork)
-  ("C-c p t" . pitchfork-open-config))
+  ("M-p f" . pitchfork)
+  ("M-p t" . pitchfork-open-config))
 
 (provide 'pitchfork-conf)
 ;;; pitchfork-conf.el ends here

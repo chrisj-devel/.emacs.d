@@ -14,7 +14,7 @@
   (("C-c SPC" . casual-editkit-main-tmenu)
     ("C-c w" . casual-editkit-windows-tmenu)
     ("C-c r" . casual-editkit-rectangle-tmenu)
-    ("C-c g" . casual-editkit-registers-tmenu)
+    ("C-c R" . casual-editkit-registers-tmenu)
     ("C-c p" . casual-editkit-project-tmenu)))
 
 ;; Dired
