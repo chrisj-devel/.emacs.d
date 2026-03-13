@@ -13,6 +13,14 @@
   :config
   (setopt magit-format-file-function #'magit-format-file-nerd-icons))
 
+(use-package magit-delta
+  :ensure-system-package (delta . git-delta)
+  :hook (magit-mode . magit-delta-mode)
+  :custom
+  (magit-delta-default-dark-theme "OneHalfDark")
+  (magit-delta-default-light-theme "GitHub")
+  (magit-delta-hide-plus-minus-markers nil))
+
 (use-package git-modes)
 
 (use-package git-link

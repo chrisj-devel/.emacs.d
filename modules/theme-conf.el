@@ -2,14 +2,13 @@
 ;;; Commentary:
 ;;; Code:
 
-;; (use-package doom-themes
-;;   :custom
-;;   (doom-themes-enable-bold t)
-;;   (doom-themes-enable-italic t)
-;;   :config
-;;   (load-theme 'doom-oceanic-next t)
-;;   (doom-themes-visual-bell-config)
-;;   (doom-themes-org-config))
+(use-package doom-themes
+  :custom
+  (doom-themes-enable-bold t)
+  (doom-themes-enable-italic t)
+  :config
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config))
 
 (use-package catppuccin-theme
   :config
