@@ -82,9 +82,9 @@
   :after (casual org)
   :bind
   (:map org-mode-map
-    ("M-m" . casual-org-tmenu))
+    ("M-c" . casual-org-tmenu))
   (:map org-table-fedit-map
-    ("M-m" . casual-org-table-fedit-tmenu)))
+    ("M-c" . casual-org-table-fedit-tmenu)))
 
 ;; Agenda
 (use-package casual-agenda
@@ -160,7 +160,7 @@
   :after (casual)
   :bind
   (:map emacs-lisp-mode-map
-    ("M-m" . casual-elisp-tmenu)))
+    ("M-c" . casual-elisp-tmenu)))
 
 ;; Ediff
 (use-package casual-ediff
@@ -260,7 +260,7 @@
   :after (casual make-mode)
   :bind
   (:map makefile-mode-map
-    ("M-m" . casual-make-tmenu)))
+    ("M-c" . casual-make-tmenu)))
 
 ;; CSV
 (use-package casual-csv
@@ -268,7 +268,7 @@
   :after (casual csv-mode)
   :bind
   (:map csv-mode-map
-    ("M-m" . casual-csv-tmenu))
+    ("M-c" . casual-csv-tmenu))
   :hook
   (csv-mode . (lambda ()
                 (visual-line-mode -1)
@@ -282,7 +282,7 @@
   :after (casual css-mode)
   :bind
   (:map css-mode-map
-    ("M-m" . casual-css-tmenu)))
+    ("M-c" . casual-css-tmenu)))
 
 ;; HTML
 (use-package casual-html
@@ -290,7 +290,7 @@
   :after (casual sgml-mode)
   :bind
   (:map html-mode-map
-    ("M-m" . casual-html-tmenu)
+    ("M-c" . casual-html-tmenu)
     ("C-c m" . casual-html-tags-tmenu)))
 
 ;; BibTeX
@@ -299,7 +299,7 @@
   :after (casual bibtex)
   :bind
   (:map bibtex-mode-map
-    ("M-m" . casual-bibtex-tmenu)
+    ("M-c" . casual-bibtex-tmenu)
     ("<TAB>" . bibtex-next-field)
     ("<backtab>" . previous-line)
     ("C-n" . bibtex-next-field)
@@ -318,7 +318,7 @@
   :after (casual eglot)
   :bind
   (:map eglot-mode-map
-    ("M-m" . casual-eglot-tmenu)))
+    ("M-c" . casual-eglot-tmenu)))
 
 (provide 'casual-conf)
 ;;; casual-conf.el ends here
