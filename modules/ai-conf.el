@@ -2,15 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package gptel
-  :hook (gptel-mode . visual-line-fill-column-mode)
-  :bind
-  ("C-c a m" . gptel-menu)
-  ("C-c a a" . gptel)
-  ("C-c a s" . gptel-send)
-  :custom (gptel-model 'gpt-4o-mini)
-  :custom-face (gptel-context-highlight ((t (:extend t)))))
-
 (use-package agent-shell
   :bind ([f5] . agent-shell)
   :custom

@@ -23,18 +23,6 @@
   (interactive)
   (delete-indentation t))
 
-(defun meow-unpop-to-global-mark ()
-  "Go forward in the global mark ring."
-  (interactive)
-  (meow--cancel-selection)
-  (when global-mark-ring
-    (let ((marker (car (last global-mark-ring))))
-      (setq global-mark-ring
-        (cons (copy-marker (point-marker))
-          (butlast global-mark-ring)))
-      (switch-to-buffer (marker-buffer marker))
-      (goto-char marker))))
-
 (use-package meow
   :demand t
   :custom
@@ -126,14 +114,6 @@
 
     ;; Buffer position
     '("`" . beginning-of-buffer)
-
-    ;; Scrolling
-    ;; '("C-d" . meow-page-down)
-    ;; '("C-u" . meow-page-up)
-
-    ;; Jump list
-    ;; '("C-o" . meow-pop-to-global-mark)
-    ;; '("C-i" . meow-unpop-to-global-mark)
 
     ;; Go to definition
     '("C-]" . xref-find-definitions)
