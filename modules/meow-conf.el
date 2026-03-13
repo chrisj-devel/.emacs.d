@@ -57,7 +57,8 @@
   (setq meow-mode-state-list
     (append '((git-commit-mode . insert)
                (vterm-mode . insert)
-               (agent-shell-mode . insert))
+               (agent-shell-mode . insert)
+               (verb-response-body-mode . motion))
       meow-mode-state-list))
 
 

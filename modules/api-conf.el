@@ -1,20 +1,18 @@
-;;; api.el --- API related configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; api-conf.el --- API related configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-
-(use-package restclient
-  :ensure (:host github :repo "pashky/restclient.el" :files ("restclient.el" "restclient-jq.el"))
-  ;; disable url redirections in restclient mode
-  :hook (restclient-mode . (lambda () (setq url-max-redirections 0))))
-
-(use-package jq-mode
-  :after (restclient))
-
-(use-package uuidgen
-  :after (restclient))
-
-(use-package hmac
-  :after (restclient))
+(use-package verb
+  :after org
+  :bind
+  (:map org-mode-map ("C-c C-r" . verb-command-map))
+  (:map verb-response-body-mode-map
+    ("q" . verb-kill-response-buffer-and-window))
+  :config
+  (add-to-list 'display-buffer-alist
+    '("\\*HTTP Response"
+       (display-buffer-reuse-mode-window display-buffer-pop-up-window)
+       (mode . verb-response-body-mode)
+       (reusable-frames . visible))))
 
 (provide 'api-conf)
-;;; api.el ends here
+;;; api-conf.el ends here
