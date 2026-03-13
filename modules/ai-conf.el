@@ -13,7 +13,6 @@
        (preserve-size . (t . nil)))))
 
 (use-package copilot
-  :hook (prog-mode . copilot-mode)
   :bind
   (:map copilot-completion-map
     ("<tab>"     . my/copilot-tab)
@@ -22,6 +21,9 @@
     ("C-<right>" . copilot-accept-completion-by-word)
     ("M-<right>" . copilot-accept-completion-by-line))
   :config
+  (add-to-list 'copilot-disable-predicates
+    (lambda () (derived-mode-p 'dotenv-mode 'envrc-file-mode)))
+
   (defun my/copilot-tab ()
     "Accept Copilot suggestion only if corfu popup is not active."
     (interactive)
