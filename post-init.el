@@ -11,6 +11,13 @@
   :custom (elpaca-queue-limit 10)
   :bind ("C-x P" . elpaca-manager))
 
+(use-package exec-path-from-shell
+  :ensure (:wait t)
+  :init (exec-path-from-shell-initialize))
+
+(use-package system-packages
+  :config (require 'use-package-ensure-system-package))
+
 (use-package el-patch
   :ensure (:wait t)
   :custom (el-patch-enable-use-package-integration t))

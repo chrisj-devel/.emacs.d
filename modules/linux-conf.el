@@ -2,9 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package exec-path-from-shell
-  :init (exec-path-from-shell-initialize))
-
 (add-to-list 'default-frame-alist '(undecorated . t))
 (add-to-list 'default-frame-alist '(font-backend . "harfbuzz"))
 

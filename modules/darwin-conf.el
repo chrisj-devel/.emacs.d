@@ -14,9 +14,6 @@
 (use-package ns-auto-titlebar
   :config (ns-auto-titlebar-mode))
 
-(use-package exec-path-from-shell
-  :init (exec-path-from-shell-initialize))
-
 (use-package emacs
   :ensure nil
   :custom
