@@ -1,6 +1,16 @@
 ;;; post-init.el --- General configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
+
+(if (eq system-type 'windows-nt) (elpaca-no-symlink-mode))
+
+(setq use-package-always-ensure t)
+
+(use-package elpaca
+  :ensure nil
+  :custom (elpaca-queue-limit 10)
+  :bind ("C-x P" . elpaca-manager))
+
 (use-package el-patch
   :ensure (:wait t)
   :custom (el-patch-enable-use-package-integration t))
