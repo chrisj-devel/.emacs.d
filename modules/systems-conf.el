@@ -1,4 +1,4 @@
-;;; systems.el --- Systems programming and container configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; systems-conf.el --- Systems programming and container configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 
@@ -8,11 +8,14 @@
 (use-package journalctl-mode
   :bind ("M-t" . journalctl))
 
-(use-package devcontainer
-  :ensure (:host github :repo "johannes-mueller/devcontainer.el"))
-
 (use-package coterm
   :hook (elpaca-after-init . coterm-mode))
 
+(use-package sudo-edit
+  :bind ("C-c C-S" . sudo-edit)
+  :config (sudo-edit-indicator-mode))
+
+(use-package rpm-spec-mode)
+
 (provide 'systems-conf)
-;;; systems.el ends here
+;;; systems-conf.el ends here

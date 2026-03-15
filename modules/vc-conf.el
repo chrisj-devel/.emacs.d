@@ -1,9 +1,15 @@
-;;; vc.el --- Version control configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; vc-conf.el --- Version control configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 
 (use-package cond-let
   :ensure (:host github :repo "tarsius/cond-let"))
+
+(use-package project
+  :ensure nil
+  :custom
+  (project-vc-merge-submodules nil)
+  (project-vc-extra-root-markers '(".osc")))
 
 (use-package magit
   :after (cond-let transient)
