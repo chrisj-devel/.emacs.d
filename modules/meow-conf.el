@@ -18,6 +18,7 @@
                (side . right)
                (window-width . 0.4))))))))
 
+
 (defun join-line-below ()
   "Join the next line onto the current line, like vim's J."
   (interactive)
@@ -103,14 +104,14 @@
     '("k" . meow-prev)
     '("l" . meow-right)
     ;; Movement with expand (HJKL)
-    '("H" . meow-left-expand)
+    '("H" . meow-beginning-of-thing)
     '("J" . meow-next-expand)
     '("K" . meow-prev-expand)
-    '("L" . meow-right-expand)
+    '("L" . meow-end-of-thing)
 
     ;; Line position
     '("^" . meow-back-to-indentation)
-    '("$" . end-of-line)
+    '("$" . meow-end-of-thing)
 
     ;; Buffer position
     '("`" . beginning-of-buffer)
@@ -181,6 +182,7 @@
     '("\"" . meow-comment)
     '("?" . meow-open-cheatsheet)
     '("C-g" . meow-cancel-selection)
+    '("z" . treesit-fold-map)
     '("<escape>" . ignore))
 
   (meow-global-mode 1))

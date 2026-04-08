@@ -13,6 +13,9 @@
   (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
   (dashboard-setup-startup-hook))
 
+(use-package buffer-guardian
+  :hook (elpaca-after-init . buffer-guardian-mode))
+
 (use-package consult
   :demand t
   ;; Replace bindings. Lazily loaded by `use-package'.

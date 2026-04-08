@@ -54,7 +54,7 @@
   :config
   (add-to-list 'apheleia-formatters
     '(rubocop . ("rubocop" "--stdin" filepath "-a" "--stderr" "--format" "quiet" "--fail-level" "fatal")))
-  (add-to-list 'apheleia-formatters '(htmlbeautifier . ("htmlbeautifier")))
+  (add-to-list 'apheleia-formatters '(htmlbeautifier . ("htmlbeautifier" "--keep-blank-lines" "1")))
   (add-to-list 'apheleia-mode-alist '(ruby-ts-mode . rubocop))
   (add-to-list 'apheleia-mode-alist '(ruby-mode . rubocop))
   (add-to-list 'apheleia-mode-alist '("\\.erb\\'" . htmlbeautifier))
@@ -89,6 +89,14 @@
   (global-treesit-auto-mode))
 
 (use-package treesit-fold
+  :init (define-prefix-command 'treesit-fold-map)
+  :bind (:map treesit-fold-map
+         ("a" . treesit-fold-toggle)
+         ("c" . treesit-fold-close)
+         ("o" . treesit-fold-open)
+         ("O" . treesit-fold-open-recursively)
+         ("M" . treesit-fold-close-all)
+         ("R" . treesit-fold-open-all))
   :config (global-treesit-fold-mode))
 
 (use-package indent-bars

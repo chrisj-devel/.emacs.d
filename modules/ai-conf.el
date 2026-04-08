@@ -5,6 +5,7 @@
 (use-package agent-shell
   :bind ([f5] . agent-shell)
   :custom
+  (agent-shell-session-strategy 'prompt)
   (agent-shell-display-action
     '(display-buffer-in-side-window
        (side . right)

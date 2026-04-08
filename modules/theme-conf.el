@@ -11,8 +11,25 @@
   (doom-themes-org-config))
 
 (use-package catppuccin-theme
+  :disabled t
   :config
   (load-theme 'catppuccin t))
+
+(use-package batppuccin-mocha-theme
+  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest)
+  :config
+  (load-theme 'batppuccin-mocha t))
+
+(defun cjv/toggle-theme ()
+  "Toggle between batppuccin-mocha (dark) and batppuccin-latte (light)."
+  (interactive)
+  (let ((current (car custom-enabled-themes)))
+    (mapc #'disable-theme custom-enabled-themes)
+    (if (eq current 'batppuccin-mocha)
+        (load-theme 'batppuccin-latte t)
+      (load-theme 'batppuccin-mocha t))))
+
+(keymap-global-set "C-x w t" #'cjv/toggle-theme)
 
 (use-package doom-modeline
   :config (doom-modeline-mode))
