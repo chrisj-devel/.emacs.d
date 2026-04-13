@@ -240,7 +240,7 @@
        compilation-mode
        rspec-compilation-mode
        exunit-compilation-mode
-       "^\\*.*vterm.*\\*$" vterm-mode
+       "^\\*.*ghostel.*\\*$" ghostel-mode
        "^\\*prodigy.*\\*$" prodigy-mode
        "^\\*RE-Builder.*\\*$" reb-mode
        "^\\*Heroku.*\\*$"

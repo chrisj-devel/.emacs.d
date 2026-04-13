@@ -91,12 +91,12 @@
 (use-package treesit-fold
   :init (define-prefix-command 'treesit-fold-map)
   :bind (:map treesit-fold-map
-         ("a" . treesit-fold-toggle)
-         ("c" . treesit-fold-close)
-         ("o" . treesit-fold-open)
-         ("O" . treesit-fold-open-recursively)
-         ("M" . treesit-fold-close-all)
-         ("R" . treesit-fold-open-all))
+          ("a" . treesit-fold-toggle)
+          ("c" . treesit-fold-close)
+          ("o" . treesit-fold-open)
+          ("O" . treesit-fold-open-recursively)
+          ("M" . treesit-fold-close-all)
+          ("R" . treesit-fold-open-all))
   :config (global-treesit-fold-mode))
 
 (use-package indent-bars
@@ -129,40 +129,17 @@
   :hook (eshell-load-hook . eat-eshell-mode)
   :bind ([f9] . eat-project))
 
-(use-package vterm
-  :if (not (eq system-type 'windows-nt))
+(use-package ghostel
   :after popper
-  :functions (vterm my/vterm-show my/project-vterm)
-  :defines (vterm-mode-map)
-  :hook (vterm-mode . visual-line-mode)
+  :defines (ghostel-mode-map)
   :custom
-  (vterm-tramp-shells '((t login-shell) ("podman" "/bin/sh")))
+  (ghostel-tramp-shells '(("ssh" login-shell) ("podman" "/bin/sh")))
+  (ghostel-tramp-shell-integration t)
   :bind
-  ([f11] . my/vterm-show)
-  (:map vterm-mode-map ([f11] . popper-toggle))
-  (:map vterm-mode-map ([f12] . popper-toggle))
-  :config
-  (defun my/project-vterm ()
-    "Open or switch to a vterm buffer for the current project.
-
-     If the prefix ARG is set, open another vterm buffer."
-    (interactive)
-    (let* ((default-directory (project-root (project-current t)))
-            (default-project-vterm-name (project-prefixed-buffer-name "vterm"))
-            (vterm-buffer (get-buffer default-project-vterm-name)))
-      (if (and vterm-buffer (not current-prefix-arg))
-        (pop-to-buffer vterm-buffer (bound-and-true-p display-comint-buffer-action))
-        (vterm (generate-new-buffer-name default-project-vterm-name)))))
-
-  (defun my/vterm-show ()
-    "Show or open a vterm buffer, context aware of whether it should be
-     a project buffer."
-    (interactive)
-    (if (and (fboundp 'project-current) (project-current))
-      (my/project-vterm)
-      (if-let* ((vterm-buffer (get-buffer "*vterm*")))
-        (pop-to-buffer vterm-buffer)
-        (vterm)))))
+  ([f11] . (lambda () (interactive) (if (project-current) (ghostel-project) (ghostel))))
+  (:map ghostel-mode-map
+    ([f11] . popper-toggle)
+    ([f12] . popper-toggle)))
 
 (use-package envrc
   :bind
