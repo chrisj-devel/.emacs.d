@@ -17,6 +17,7 @@
     "\\.leex\\'"))
 
 (use-package jest-test-mode
+  :disabled t
   :defines jest-test-mode-map
   :hook (js-ts-mode tsx-ts-mode js-mode typescript-mode typescript-tsx-mode typescript-ts-mode)
   :bind (:map jest-test-mode-map
