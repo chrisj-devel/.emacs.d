@@ -17,6 +17,12 @@
   (corfu-history-mode)
   (corfu-popupinfo-mode))
 
+(use-package corfu-prescient
+  :after (corfu prescient)
+  :custom
+  (corfu-prescient-enable-filtering nil)
+  :config (corfu-prescient-mode))
+
 (use-package dabbrev
   :ensure nil
   ;; Swap M-/ and C-M-/

@@ -154,6 +154,13 @@
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
+(use-package consult-eglot
+  :after (consult eglot))
+
+(use-package consult-eglot-embark
+  :after (consult-eglot embark)
+  :config (consult-eglot-embark-mode))
+
 ;; Enable Vertico.
 (use-package vertico
   :custom
@@ -162,6 +169,15 @@
   (vertico-resize t) ;; Grow and shrink the Vertico minibuffer
   ;; (vertico-cycle t) ;; Enable cycling for `vertico-next/previous'
   :hook (elpaca-after-init . vertico-mode))
+
+(use-package prescient
+  :config (prescient-persist-mode))
+
+(use-package vertico-prescient
+  :after (vertico prescient)
+  :custom
+  (vertico-prescient-enable-filtering nil)
+  :config (vertico-prescient-mode))
 
 (use-package savehist
   :ensure nil
