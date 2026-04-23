@@ -15,10 +15,9 @@
   (setq-default require-final-newline t)
   (setq-default tab-width 2))
 
-(use-package jsonrpc)
-
 (use-package eglot
-  :after (jsonrpc)
+  :ensure nil
+  :demand t
   :hook
   ((c++-mode
      c++-ts-mode
@@ -39,6 +38,7 @@
   (eglot-code-action-indications '())
   :config
   (add-to-list 'eglot-server-programs '(elixir-ts-mode "elixir-ls"))
+  (add-to-list 'eglot-server-programs '(ruby-ts-mode "ruby-lsp"))
   (setq-default eglot-workspace-configuration
     '(:elixirLS (:dialyzerEnabled t :dialyzerFormat "dialyxir_short" :mixEnv "dev" :mcpEnabled t))))
 
@@ -131,15 +131,15 @@
 
 (use-package ghostel
   :after popper
-  :defines (ghostel-mode-map)
   :custom
-  (ghostel-tramp-shells '(("ssh" login-shell) ("podman" "/bin/sh")))
   (ghostel-tramp-shell-integration t)
   :bind
   ([f11] . (lambda () (interactive) (if (project-current) (ghostel-project) (ghostel))))
   (:map ghostel-mode-map
     ([f11] . popper-toggle)
-    ([f12] . popper-toggle)))
+    ([f12] . popper-toggle))
+  :config
+  (add-to-list 'ghostel-tramp-shells '("podman" "/bin/sh")))
 
 (use-package envrc
   :bind
@@ -164,9 +164,6 @@
 (use-package dotenv-mode
   :mode
   ("\\.env\\..*\\'" . dotenv-mode))
-
-(use-package mise
-  :hook (elpaca-after-init . global-mise-mode))
 
 (use-package csv-mode
   :mode
