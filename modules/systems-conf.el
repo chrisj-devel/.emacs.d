@@ -17,5 +17,11 @@
 
 (use-package rpm-spec-mode)
 
+(use-package tramp-rpc
+  :after tramp
+  :vc (:url "https://github.com/ArthurHeymans/emacs-tramp-rpc"
+        :rev :newest
+        :lisp-dir "lisp"))
+
 (provide 'systems-conf)
 ;;; systems-conf.el ends here

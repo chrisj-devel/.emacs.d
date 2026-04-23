@@ -29,6 +29,7 @@
 (use-package flymake)
 (use-package project)
 (use-package track-changes)
+(use-package tramp)
 
 (add-to-list 'load-path (expand-file-name "modules/" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "packages/" user-emacs-directory))
