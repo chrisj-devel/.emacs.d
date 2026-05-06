@@ -39,6 +39,7 @@
   :config
   (add-to-list 'eglot-server-programs '(elixir-ts-mode "elixir-ls"))
   (add-to-list 'eglot-server-programs '(ruby-ts-mode "ruby-lsp"))
+  (add-to-list 'eglot-server-programs '(svelte-ts-mode . ("svelteserver" "--stdio")))
   (setq-default eglot-workspace-configuration
     '(:elixirLS (:dialyzerEnabled t :dialyzerFormat "dialyxir_short" :mixEnv "dev" :mcpEnabled t))))
 
@@ -160,6 +161,12 @@
           (find-file (concat envrc-dir ".envrc"))
           (find-file (concat envrc-dir ".env")))
         (message "No envrc file found in the current project.")))))
+
+(use-package inheritenv
+  :after (envrc ghostel)
+  :config
+  (inheritenv-add-advice 'ghostel)
+  (inheritenv-add-advice 'ghostel-project))
 
 (use-package dotenv-mode
   :mode

@@ -317,7 +317,12 @@
   :after project
   :hook
   (elpaca-after-init . otpp-mode)
-  (elpaca-after-init . otpp-override-mode))
+  (elpaca-after-init . otpp-override-mode)
+  :config
+  (setq switch-to-prev-buffer-skip
+        (lambda (_window buffer _bury-or-kill)
+          (when-let ((proj (project-current)))
+            (not (memq buffer (project-buffers proj)))))))
 
 (use-package tab-bar
   :ensure nil

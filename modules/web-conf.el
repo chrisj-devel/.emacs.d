@@ -16,6 +16,10 @@
     "\\.eex\\'"
     "\\.leex\\'"))
 
+(use-package svelte-ts-mode
+  :ensure (:host github :repo "leafOfTree/svelte-ts-mode")
+  :mode ("\\.svelte\\'"))
+
 (use-package jest-test-mode
   :disabled t
   :defines jest-test-mode-map
