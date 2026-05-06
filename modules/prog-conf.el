@@ -64,9 +64,7 @@
   (add-to-list 'apheleia-formatters '(ts-standard . ("apheleia-from-project-root" "tsconfig.json" "ts-standard" "--fix" file)))
   (add-to-list 'apheleia-mode-alist '(typescript-ts-mode . ts-standard))
   (add-to-list 'apheleia-mode-alist '(tsx-ts-mode . ts-standard))
-  (add-to-list 'apheleia-formatters '(standard . ("standard" "--fix" inplace)))
-  (add-to-list 'apheleia-mode-alist '(js-mode . standard))
-  (add-to-list 'apheleia-mode-alist '(js-ts-mode . standard)))
+  (add-to-list 'apheleia-formatters '(standard . ("standard" "--fix" inplace))))
 
 (use-package flymake
   :ensure nil
