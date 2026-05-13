@@ -25,7 +25,7 @@
 (use-package memoize)
 
 ;; Update inbuilt Emacs libraries
-(use-package compat)
+(use-package compat :ensure (:wait t))
 (use-package transient)
 (use-package flymake)
 (use-package project)

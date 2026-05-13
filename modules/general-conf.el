@@ -347,7 +347,10 @@
                               :inherit tab-bar-tab-ungrouped)))))
 
 (use-package vim-tab-bar
-  :hook (elpaca-after-init . vim-tab-bar-mode))
+  :hook (elpaca-after-init . vim-tab-bar-mode)
+  :custom
+  (vim-tab-bar-format-tabs
+    '(tab-bar-format-tabs tab-bar-separator tab-bar-format-align-right tab-bar-format-global)))
 
 (use-package iedit
   :bind ("C-;" . iedit-mode))

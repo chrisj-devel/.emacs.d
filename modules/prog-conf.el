@@ -137,6 +137,9 @@
   (:map ghostel-mode-map
     ([f11] . popper-toggle)
     ([f12] . popper-toggle))
+  (:map ghostel-semi-char-mode-map
+    ([f11] . popper-toggle)
+    ([f12] . popper-toggle))
   :config
   (add-to-list 'ghostel-tramp-shells '("podman" "/bin/sh")))
 
