@@ -40,6 +40,8 @@
 (elpaca `(,@elpaca-order))
 ;; End bootstrap code
 
+(setq elpaca-lock-file (expand-file-name "elpaca-lock.eld" user-emacs-directory))
+
 (elpaca elpaca-use-package
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
