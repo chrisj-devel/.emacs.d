@@ -6,7 +6,8 @@
   :mode ("README\\.md\\'" . gfm-mode))
 
 (use-package visual-fill-column
-  :bind ("C-c M-v" . visual-line-fill-column-mode)
+  :bind ("C-c M-v" . visual-line-mode)
+  :hook (visual-line-mode . visual-fill-column-for-vline)
   :custom
   (visual-fill-column-center-text t)
   (fill-column 120))
