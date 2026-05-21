@@ -41,7 +41,7 @@
   (meow-define-state ediff
     "Meow state for ediff buffers."
     :lighter " [E]"
-    :keymap (make-keymap))
+    :keymap (make-sparse-keymap))
 
   (setq meow-mode-state-list
     (append '((git-commit-mode . insert)
@@ -103,15 +103,15 @@
     '("j" . meow-next)
     '("k" . meow-prev)
     '("l" . meow-right)
-    ;; Movement with expand (HJKL)
-    '("H" . meow-beginning-of-thing)
+    ;; Expand variants (JK)
+    '("H" . meow-left-expand)
     '("J" . meow-next-expand)
     '("K" . meow-prev-expand)
-    '("L" . meow-end-of-thing)
+    '("L" . meow-right-expand)
 
     ;; Line position
     '("^" . meow-back-to-indentation)
-    '("$" . meow-end-of-thing)
+    '("$" . move-end-of-line)
 
     ;; Buffer position
     '("`" . beginning-of-buffer)
@@ -178,7 +178,7 @@
     '("G" . end-of-buffer)
     '(":" . meow-goto-line)
     '("Q" . meow-grab)
-    '("'" . repeat)
+    '("'" . meow-last-buffer)
     '("\"" . meow-comment)
     '("?" . meow-open-cheatsheet)
     '("C-g" . meow-cancel-selection)

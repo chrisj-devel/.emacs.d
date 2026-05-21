@@ -4,6 +4,7 @@
 
 (use-package pitchfork
   :ensure nil
+  :demand t
   :custom (pitchfork-auto-stop-on-project-switch t)
   :hook (elpaca-after-init . pitchfork-auto-start-mode)
   :bind

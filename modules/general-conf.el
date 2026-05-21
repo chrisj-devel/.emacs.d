@@ -319,6 +319,7 @@
   (elpaca-after-init . otpp-mode)
   (elpaca-after-init . otpp-override-mode)
   :config
+  (add-to-list 'otpp-override-commands 'consult-project-extra-find)
   (setq switch-to-prev-buffer-skip
         (lambda (_window buffer _bury-or-kill)
           (when-let ((proj (project-current)))

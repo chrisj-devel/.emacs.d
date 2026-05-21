@@ -13,16 +13,6 @@
        (window-width . 0.4)
        (preserve-size . (t . nil)))))
 
-(use-package agent-shell-attention
-  :ensure (:host github :repo "ultronozm/agent-shell-attention.el")
-  :after agent-shell
-  :demand t
-  :bind ("C-c a" . agent-shell-attention-jump)
-  :custom
-  (agent-shell-attention-indicator-location 'global-mode-string)
-  :config
-  (agent-shell-attention-mode))
-
 (use-package copilot
   :bind
   (:map copilot-completion-map

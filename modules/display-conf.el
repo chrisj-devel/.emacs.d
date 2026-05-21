@@ -111,7 +111,6 @@
        "^\\*Bundler\\*$"
        "^\\*EGLOT.*\\*$"
        "^\\*.*-eat.*\\*$"
-       "^\\*.*Agent.*\\*$" agent-shell-mode
        "^\\*Inf-Elixir.*\\*$" inf-elixir-mode
        "^\\*pitchfork\\*$" pitchfork-mode)))
 
