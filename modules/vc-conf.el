@@ -5,29 +5,11 @@
 (use-package cond-let
   :ensure (:host github :repo "tarsius/cond-let"))
 
-(defun my/project-magit-status ()
-  "Open Magit status full-frame for the current project.
-Used by `project-switch-project' so a freshly created otpp tab shows
-Magit instead of a stale buffer from another project, without
-affecting `magit-display-buffer-function' elsewhere.
-
-First display the project root in Dired so that burying Magit with
-`q' reveals the new project rather than the buffer left in the tab
-by otpp."
-  (interactive)
-  (let ((root (project-root (project-current t))))
-    (dired root)
-    (delete-other-windows)
-    (let ((magit-display-buffer-function
-           #'magit-display-buffer-fullframe-status-v1))
-      (magit-project-status))))
-
 (use-package project
   :ensure nil
   :custom
   (project-vc-merge-submodules nil)
-  (project-vc-extra-root-markers '(".osc"))
-  (project-switch-commands 'my/project-magit-status))
+  (project-vc-extra-root-markers '(".osc")))
 
 (use-package magit
   :after (cond-let transient)

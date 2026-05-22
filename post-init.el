@@ -40,6 +40,8 @@
 (if (eq system-type 'gnu/linux) (require 'linux-conf))
 (require 'theme-conf)
 (require 'general-conf)
+(require 'otpp-conf)
+(require 'bufferlo-conf)
 (require 'undo-conf)
 (require 'meow-conf)
 (require 'completion-conf)
