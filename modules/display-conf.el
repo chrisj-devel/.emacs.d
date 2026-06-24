@@ -111,8 +111,7 @@
        "^\\*Bundler\\*$"
        "^\\*EGLOT.*\\*$"
        "^\\*.*-eat.*\\*$"
-       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode
-       "^\\*pitchfork\\*$" pitchfork-mode)))
+       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode)))
 
 (use-package popper
   :after auto-side-windows ; Ensure auto-side-windows variables are defined

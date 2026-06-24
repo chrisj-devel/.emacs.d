@@ -264,8 +264,7 @@
        "^\\*Bundler\\*$"
        "^\\*EGLOT.*\\*$"
        "^\\*.*-eat.*\\*$"
-       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode
-       "^\\*pitchfork\\*$" pitchfork-mode)))
+       "^\\*Inf-Elixir.*\\*$" inf-elixir-mode)))
 
 (use-package sideline
   :hook
