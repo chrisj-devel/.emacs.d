@@ -22,8 +22,8 @@
   (dired-use-ls-dired nil)
   (warning-minimum-level :error)
   :config
-  (setq-default default-frame-alist '((font . "FiraCode Nerd Font:pixelsize=13:weight=regular")))
-  (set-frame-font "FiraCode Nerd Font:pixelsize=13:weight=regular" nil t))
+  (setq-default default-frame-alist '((font . "Monaspace Neon NF:pixelsize=13:weight=regular")))
+  (set-frame-font "Monaspace Neon NF:pixelsize=13:weight=regular" nil t))
 
 (provide 'darwin-conf)
 ;;; darwin.el ends here

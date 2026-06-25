@@ -31,6 +31,21 @@
 
 (keymap-global-set "C-x w t" #'cjv/toggle-theme)
 
+(defconst cjv/ui-font "Monaspace Xenon NF"
+  "Monospace font for UI chrome; code stays on the default font.")
+
+(defun cjv/apply-ui-font (&rest _)
+  "Apply `cjv/ui-font' to UI chrome faces.
+Runs from `enable-theme-functions' so it survives theme loads and toggles."
+  (dolist (face '(mode-line mode-line-inactive header-line
+                  tab-bar tab-line minibuffer-prompt
+                  completions-common-part))
+    (when (facep face)
+      (set-face-attribute face nil :family cjv/ui-font))))
+
+(add-hook 'enable-theme-functions #'cjv/apply-ui-font)
+(cjv/apply-ui-font)
+
 (use-package doom-modeline
   :config (doom-modeline-mode))
 
