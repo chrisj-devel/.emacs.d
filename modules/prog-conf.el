@@ -60,11 +60,7 @@
   (add-to-list 'apheleia-mode-alist '(ruby-mode . rubocop))
   (add-to-list 'apheleia-mode-alist '("\\.erb\\'" . htmlbeautifier))
   (add-to-list 'apheleia-mode-alist '(nxml-mode . html-tidy))
-  (add-to-list 'apheleia-mode-alist '(nix-ts-mode . nixfmt))
-  (add-to-list 'apheleia-formatters '(ts-standard . ("apheleia-from-project-root" "tsconfig.json" "ts-standard" "--fix" file)))
-  (add-to-list 'apheleia-mode-alist '(typescript-ts-mode . ts-standard))
-  (add-to-list 'apheleia-mode-alist '(tsx-ts-mode . ts-standard))
-  (add-to-list 'apheleia-formatters '(standard . ("standard" "--fix" inplace))))
+  (add-to-list 'apheleia-mode-alist '(nix-ts-mode . nixfmt)))
 
 (use-package flymake
   :ensure nil
