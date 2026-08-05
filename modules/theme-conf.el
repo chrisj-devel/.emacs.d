@@ -10,15 +10,14 @@
   (doom-themes-visual-bell-config)
   (doom-themes-org-config))
 
-(use-package catppuccin-theme
-  :disabled t
-  :config
-  (load-theme 'catppuccin t))
-
 (use-package batppuccin-mocha-theme
-  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest)
-  :config
-  (load-theme 'batppuccin-mocha t))
+  :vc (:url "https://github.com/bbatsov/batppuccin-emacs" :rev :newest))
+
+(defconst cjv/light-theme 'modus-operandi-tinted
+  "Light theme.")
+
+(defconst cjv/dark-theme 'batppuccin-mocha
+  "Dark theme.")
 
 (defun cjv/toggle-theme ()
   "Toggle between batppuccin-mocha (dark) and batppuccin-latte (light)."
@@ -26,10 +25,11 @@
   (let ((current (car custom-enabled-themes)))
     (mapc #'disable-theme custom-enabled-themes)
     (if (eq current 'batppuccin-mocha)
-        (load-theme 'batppuccin-latte t)
-      (load-theme 'batppuccin-mocha t))))
+      (load-theme cjv/light-theme t)
+      (load-theme cjv/dark-theme t))))
 
 (keymap-global-set "C-x w t" #'cjv/toggle-theme)
+(load-theme cjv/light-theme t)
 
 (defconst cjv/ui-font "Monaspace Xenon NF"
   "Monospace font for UI chrome; code stays on the default font.")
@@ -38,8 +38,8 @@
   "Apply `cjv/ui-font' to UI chrome faces.
 Runs from `enable-theme-functions' so it survives theme loads and toggles."
   (dolist (face '(mode-line mode-line-inactive header-line
-                  tab-bar tab-line minibuffer-prompt
-                  completions-common-part))
+                   tab-bar tab-line minibuffer-prompt
+                   completions-common-part))
     (when (facep face)
       (set-face-attribute face nil :family cjv/ui-font))))
 
