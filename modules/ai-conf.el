@@ -3,7 +3,15 @@
 ;;; Code:
 
 (use-package agent-shell
-  :bind ([f5] . agent-shell)
+  :preface
+  (defun my/agent-shell-switch-or-start ()
+    "Pick an agent shell buffer, or start one when none exist."
+    (interactive)
+    (require 'agent-shell)
+    (if (agent-shell-buffers)
+      (agent-shell-switch-buffer)
+      (agent-shell)))
+  :bind ([f5] . my/agent-shell-switch-or-start)
   :custom
   (agent-shell-session-strategy 'prompt)
   (agent-shell-display-action
