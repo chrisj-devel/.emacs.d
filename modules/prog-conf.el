@@ -139,31 +139,34 @@
   :config
   (add-to-list 'ghostel-tramp-shells '("podman" "/bin/sh")))
 
-(use-package envrc
-  :bind
-  ("C-c e" . my/open-envrc-file)
-  (:map envrc-file-mode-map
-    ("C-c , a" . envrc-allow)
-    ("C-c , d" . envrc-deny)
-    ("C-c , r" . envrc-reload))
-  :custom (envrc-show-summary-in-minibuffer nil)
-  :hook (elpaca-after-init . envrc-global-mode)
-  :config
-  (defun my/open-envrc-file ()
-    "Open the .envrc file in the current project."
-    (interactive)
-    (let ((envrc-dir (envrc--find-env-dir)))
-      (if envrc-dir
-        (if (file-exists-p (concat envrc-dir ".envrc"))
-          (find-file (concat envrc-dir ".envrc"))
-          (find-file (concat envrc-dir ".env")))
-        (message "No envrc file found in the current project.")))))
+(use-package mise
+  :hook (elpaca-after-init-hook . global-mise-mode))
 
-(use-package inheritenv
-  :after (envrc ghostel)
-  :config
-  (inheritenv-add-advice 'ghostel)
-  (inheritenv-add-advice 'ghostel-project))
+;; (use-package envrc
+;;   :bind
+;;   ("C-c e" . my/open-envrc-file)
+;;   (:map envrc-file-mode-map
+;;     ("C-c , a" . envrc-allow)
+;;     ("C-c , d" . envrc-deny)
+;;     ("C-c , r" . envrc-reload))
+;;   :custom (envrc-show-summary-in-minibuffer nil)
+;;   :hook (elpaca-after-init . envrc-global-mode)
+;;   :config
+;;   (defun my/open-envrc-file ()
+;;     "Open the .envrc file in the current project."
+;;     (interactive)
+;;     (let ((envrc-dir (envrc--find-env-dir)))
+;;       (if envrc-dir
+;;         (if (file-exists-p (concat envrc-dir ".envrc"))
+;;           (find-file (concat envrc-dir ".envrc"))
+;;           (find-file (concat envrc-dir ".env")))
+;;         (message "No envrc file found in the current project.")))))
+
+;; (use-package inheritenv
+;;   :after (envrc ghostel)
+;;   :config
+;;   (inheritenv-add-advice 'ghostel)
+;;   (inheritenv-add-advice 'ghostel-project))
 
 (use-package dotenv-mode
   :mode
