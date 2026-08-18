@@ -70,6 +70,14 @@
   (ring-bell-function 'ignore)
   (display-line-numbers-grow-only t)
   (custom-file (concat user-emacs-directory "custom.el"))
+  ;; minimal-emacs.d sets this to nil, which drops file-local `eval:' cookies
+  ;; outright — no prompt, and `safe-local-eval-forms' never gets consulted.
+  ;; Back to the Emacs default: ask, and remember the answer when told to.
+  (enable-local-eval 'maybe)
+  ;; Lower the width threshold so side-by-side happens easily
+  (split-width-threshold 80)
+  ;; Raise the height threshold to stop top-to-bottom splits
+  (split-height-threshold nil)
   :hook
   (elpaca-after-init . global-auto-revert-mode)
   (elpaca-after-init . (lambda() (let ((inhibit-message t)) (recentf-mode 1))))
