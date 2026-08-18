@@ -4,22 +4,34 @@
 
 (use-package agent-shell
   :preface
-  (defun my/agent-shell-switch-or-start ()
-    "Pick an agent shell buffer, or start one when none exist."
-    (interactive)
+  (defun my/agent-shell-switch-or-start (&optional arg)
+    "Pick an agent shell buffer, or start one when none exist.
+With prefix ARG, always start a new shell."
+    (interactive "P")
     (require 'agent-shell)
-    (if (agent-shell-buffers)
-      (agent-shell-switch-buffer)
-      (agent-shell)))
+    (cond (arg (agent-shell-new-shell))
+      ((agent-shell-buffers) (agent-shell-switch-buffer))
+      (t (agent-shell))))
   :bind ([f5] . my/agent-shell-switch-or-start)
   :custom
   (agent-shell-session-strategy 'prompt)
   (agent-shell-display-action
-    '(display-buffer-in-side-window
-       (side . right)
-       (slot . 0)
-       (window-width . 0.4)
-       (preserve-size . (t . nil)))))
+    '(display-buffer-in-direction
+       (direction . right)
+       (window-width . 0.5)
+       (preserve-size . (t . nil))))
+  :config
+  (defun my/switch-to-buffer-in-owning-tab (buffer)
+    "Select BUFFER's bufferlo tab when one owns it, then BUFFER."
+    (bufferlo-find-buffer buffer)
+    (switch-to-buffer buffer))
+
+  ;; `agent-shell-switch-buffer' calls `switch-to-buffer' as a function, so the
+  ;; bufferlo remap never fires and a shell picked from another project opens in
+  ;; the current tab instead of its own.
+  (el-patch-define-and-eval-template
+    (defun agent-shell-switch-buffer)
+    ((el-patch-swap switch-to-buffer my/switch-to-buffer-in-owning-tab) ...)))
 
 (use-package gptel
   :custom (gptel-use-tools t)
