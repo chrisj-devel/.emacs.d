@@ -81,7 +81,9 @@
     '("9" . meow-digit-argument)
     '("0" . meow-digit-argument)
     '("/" . meow-keypad-describe-key)
-    '("?" . meow-cheatsheet))
+    ;; `?' is the gptel Emacs-help prompt (see ai-conf.el); the meow leader
+    ;; writes into `mode-specific-map', so both would fight over C-c ?.
+    '("H" . meow-cheatsheet))
 
   ;; Normal mode
   (meow-normal-define-key
