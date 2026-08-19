@@ -1,11 +1,25 @@
 ;;; api-conf.el --- API related configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
+(defun my/verb-copy-exchange ()
+  "Copy this response buffer's request and response to the kill ring.
+The request is written as a curl command; the response keeps its status
+line, headers and body."
+  (interactive)
+  (unless verb-response-body-mode
+    (user-error "%s" "This buffer is not showing an HTTP response"))
+  (kill-new (concat (verb--export-to-curl
+                      (oref verb-http-response request) t t)
+              "\n\n"
+              (verb-response-to-string verb-http-response (current-buffer))))
+  (message "Request and response copied"))
+
 (use-package verb
   :after org
   :bind
   (:map verb-response-body-mode-map
-    ("q" . verb-kill-response-buffer-and-window))
+    ("q" . verb-kill-response-buffer-and-window)
+    ("C-c C-r M-w" . my/verb-copy-exchange))
   :config
   ;; `verb-command-map' is a keymap variable, not a command, so it has to be
   ;; bound as a value here. Through `:bind' use-package autoloads it as a
