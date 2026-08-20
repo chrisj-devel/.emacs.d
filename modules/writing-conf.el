@@ -5,6 +5,11 @@
 (use-package markdown-mode
   :mode ("README\\.md\\'" . gfm-mode))
 
+(use-package org
+  :ensure nil
+  :hook (org-mode . visual-line-mode)
+  :custom (org-src-fontify-natively t))
+
 (use-package visual-fill-column
   :bind ("C-c M-v" . visual-line-mode)
   :hook (visual-line-mode . visual-fill-column-for-vline)
