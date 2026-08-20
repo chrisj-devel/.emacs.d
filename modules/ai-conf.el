@@ -16,7 +16,8 @@ With prefix ARG, always start a new shell."
   :custom
   (agent-shell-session-strategy 'prompt)
   (agent-shell-display-action
-    '(display-buffer-in-direction
+    '((display-buffer-reuse-mode-window
+        display-buffer-in-direction)
        (direction . right)
        (window-width . 0.5)
        (preserve-size . (t . nil))))
