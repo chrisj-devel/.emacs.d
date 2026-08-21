@@ -14,14 +14,18 @@ affecting `magit-display-buffer-function' elsewhere.
 
 First display the project root in Dired so that burying Magit with
 `q' reveals the new project rather than the buffer left in the tab
-by otpp."
+by otpp.
+
+Projects rooted by a marker rather than by VC have no repository to
+show, so those stop at Dired."
   (interactive)
   (let ((root (project-root (project-current t))))
     (dired root)
     (delete-other-windows)
-    (let ((magit-display-buffer-function
-           #'magit-display-buffer-fullframe-status-v1))
-      (magit-project-status))))
+    (when (magit-toplevel root)
+      (let ((magit-display-buffer-function
+             #'magit-display-buffer-fullframe-status-v1))
+        (magit-project-status)))))
 
 (use-package otpp
   :after project

@@ -12,5 +12,14 @@
   (visual-fill-column-center-text t)
   (fill-column 120))
 
+(use-package org-edna
+  :after org
+  :config
+  ;; Tickets are one file each, so blocking has to cross files.  Org's built-in
+  ;; dependencies are subtree-scoped and cannot; edna's :BLOCKER: can.  Targets
+  ;; are written as olp("file.org" "exact heading") — see
+  ;; ~/.claude/docs/agents/issue-tracker.md.
+  (org-edna-mode 1))
+
 (provide 'writing-conf)
 ;;; writing.el ends here

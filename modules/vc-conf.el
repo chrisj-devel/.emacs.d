@@ -9,7 +9,8 @@
   :ensure nil
   :custom
   (project-vc-merge-submodules nil)
-  (project-vc-extra-root-markers '(".osc")))
+  ;; setup.org roots the org ticket tree, which has no VC of its own.
+  (project-vc-extra-root-markers '(".osc" "setup.org")))
 
 (use-package magit
   :after (cond-let transient)
