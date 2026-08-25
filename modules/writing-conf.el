@@ -17,14 +17,28 @@
   (visual-fill-column-center-text t)
   (fill-column 120))
 
+(defun cjv/apply-org-fonts (&rest _)
+  "Keep code-like Org faces monospaced under `variable-pitch-mode'."
+  (dolist (face '(org-table org-code org-verbatim org-block
+                   org-block-begin-line org-block-end-line org-meta-line
+                   org-drawer org-property-value org-special-keyword))
+    (when (facep face)
+      (set-face-attribute face nil :inherit 'fixed-pitch))))
+
+(use-package org
+  :ensure nil
+  :hook ((org-mode . visual-line-mode)
+          (org-mode . variable-pitch-mode))
+  :config
+  (add-hook 'enable-theme-functions #'cjv/apply-org-fonts)
+  (cjv/apply-org-fonts))
+
+(use-package org-modern
+  :hook (elpaca-after-init . global-org-modern-mode))
+
 (use-package org-edna
   :after org
-  :config
-  ;; Tickets are one file each, so blocking has to cross files.  Org's built-in
-  ;; dependencies are subtree-scoped and cannot; edna's :BLOCKER: can.  Targets
-  ;; are written as olp("file.org" "exact heading") — see
-  ;; ~/.claude/docs/agents/issue-tracker.md.
-  (org-edna-mode 1))
+  :config (org-edna-mode 1))
 
 (provide 'writing-conf)
 ;;; writing.el ends here

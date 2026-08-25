@@ -34,17 +34,23 @@
 (defconst cjv/ui-font "Monaspace Xenon NF"
   "Monospace font for UI chrome; code stays on the default font.")
 
-(defun cjv/apply-ui-font (&rest _)
-  "Apply `cjv/ui-font' to UI chrome faces.
+(defconst cjv/reading-font "Charter"
+  "Proportional font for prose buffers.")
+
+(defun cjv/apply-fonts (&rest _)
+  "Apply `cjv/ui-font' and `cjv/reading-font' to their faces.
 Runs from `enable-theme-functions' so it survives theme loads and toggles."
   (dolist (face '(mode-line mode-line-inactive header-line
                    tab-bar tab-line minibuffer-prompt
                    completions-common-part))
     (when (facep face)
-      (set-face-attribute face nil :family cjv/ui-font))))
+      (set-face-attribute face nil :family cjv/ui-font)))
+  (set-face-attribute 'variable-pitch nil :family cjv/reading-font :height 1.2)
+  (set-face-attribute 'fixed-pitch nil
+    :family (face-attribute 'default :family)))
 
-(add-hook 'enable-theme-functions #'cjv/apply-ui-font)
-(cjv/apply-ui-font)
+(add-hook 'enable-theme-functions #'cjv/apply-fonts)
+(cjv/apply-fonts)
 
 (use-package doom-modeline
   :config (doom-modeline-mode))
