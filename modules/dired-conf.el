@@ -5,37 +5,36 @@
 (use-package dired
   :ensure nil
   :custom
+  (dired-listing-switches "-Alh --group-directories-first")
   (dired-clean-confirm-killing-deleted-buffers nil)
   (dired-kill-when-opening-new-dired-buffer t))
 
 (use-package dired-filter)
-(use-package dired-subtree)
 
-(use-package dired-sidebar
+(use-package dirvish
+  :hook (elpaca-after-init . dirvish-override-dired-mode)
   :custom
-  (dired-sidebar-should-follow-file t)
-  (dired-sidebar-theme 'nerd-icons)
-  (dired-sidebar-width 30)
+  (dirvish-attributes '(nerd-icons subtree-state vc-state file-size))
+  (dirvish-side-attributes '(nerd-icons subtree-state vc-state))
+  (dirvish-side-width 30)
   :bind
-  (([f1] . dired-sidebar-toggle-sidebar)
-    :map dired-sidebar-mode-map
-    ("l" . dired-sidebar-subtree-expand)
-    ("h" . dired-sidebar-subtree-collapse))
+  (([f1] . dirvish-side)
+    :map dirvish-mode-map
+    ("l" . dirvish-subtree-toggle)
+    ("h" . dirvish-subtree-up))
+  :config/el-patch
+  ;; Projects rooted by `project-vc-extra-root-markers' alone have no
+  ;; `vc-root-dir', which leaves side sessions at `default-directory'.
+  (defun dirvish--vc-root-dir ()
+    "Get expanded `vc-root-dir'."
+    (when-let* ((root (el-patch-swap
+                        (vc-root-dir)
+                        (or (vc-root-dir)
+                            (when-let* ((pr (project-current)))
+                              (project-root pr))))))
+      (expand-file-name root)))
   :config
-  (defun dired-sidebar-subtree-expand ()
-    "Expand subtree at point with icon refresh."
-    (interactive)
-    (dired-subtree-insert)
-    (dired-sidebar-redisplay-icons))
-  (defun dired-sidebar-subtree-collapse ()
-    "Collapse subtree at point, or move to parent directory line."
-    (interactive)
-    (if (dired-subtree--is-expanded-p)
-      (progn
-        (dired-next-line 1)
-        (dired-subtree-remove)
-        (dired-sidebar-redisplay-icons))
-      (dired-subtree-up))))
+  (dirvish-side-follow-mode))
 
 (provide 'dired-conf)
 ;;; dired-conf.el ends here

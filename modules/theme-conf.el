@@ -58,10 +58,6 @@ Runs from `enable-theme-functions' so it survives theme loads and toggles."
 (use-package nerd-icons
   :defines (nerd-icons-octicon))
 
-(use-package nerd-icons-dired
-  :after (nerd-icons)
-  :hook (dired-mode . nerd-icons-dired-mode))
-
 (use-package nerd-icons-completion
   :after (nerd-icons marginalia)
   :hook

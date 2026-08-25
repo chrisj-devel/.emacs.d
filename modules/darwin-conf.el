@@ -19,9 +19,11 @@
   :custom
   (frame-resize-pixelwise t)
   (ns-use-native-fullscreen nil)
-  (dired-use-ls-dired nil)
   (warning-minimum-level :error)
   :config
+  (if (executable-find "gls")
+    (setq insert-directory-program "gls")
+    (setq dired-use-ls-dired nil))
   (setq-default default-frame-alist '((font . "Monaspace Neon NF:pixelsize=13:weight=regular")))
   (set-frame-font "Monaspace Neon NF:pixelsize=13:weight=regular" nil t))
 
