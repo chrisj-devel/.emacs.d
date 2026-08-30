@@ -16,6 +16,7 @@
 (require 'keys)
 (require 'sessions)
 (require 'tickets)
+(require 'tracker)
 (require 'dev)
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
