@@ -1,0 +1,12 @@
+elpa/
+eln-cache/
+custom.el
+projects.eld
+recentf.eld
+history
+backup/
+autosave/
+user-lisp/*.elc
+user-lisp/.user-lisp-autoloads.el*
+places.eld
+tramp

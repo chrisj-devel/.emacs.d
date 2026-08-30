@@ -1,0 +1,183 @@
+#+TITLE: Meow Cheatsheet (Vim-Transitional)
+#+STARTUP: overview
+
+Remember: *select first, then act*
+
+* Movement
+| Key | Action              |
+|-----+---------------------|
+| h   | left (expand sel)   |
+| j   | down (expand sel)   |
+| k   | up (expand sel)     |
+| l   | right (expand sel)  |
+| w   | next word           |
+| W   | next symbol (WORD)  |
+| b   | back word           |
+| B   | back symbol (WORD)  |
+| f   | find char (expand)  |
+| t   | till char (expand)  |
+| ^   | first non-blank     |
+| $   | end of line         |
+| `   | beginning of buffer |
+| G   | goto line           |
+| C-d | page down           |
+| C-u | page up             |
+| C-] | go to definition    |
+
+* Selection
+| Key | Action                        |
+|-----+-------------------------------|
+| e   | mark word (expandable)        |
+| E   | mark symbol (expandable)      |
+| v   | select line (expandable)      |
+| V   | expand line selection         |
+| s   | select tree-sitter node/block |
+| S   | expand to next block level    |
+| ,   | inner of thing (like vim =i=) |
+| .   | bounds of thing (like vim =a=)|
+| [   | to beginning of thing         |
+| ]   | to end of thing               |
+| ;   | reverse selection direction   |
+| g   | cancel selection              |
+
+* Thing Keys (after =,= or =.=)
+| Key | Thing              |
+|-----+--------------------|
+| r   | round ()           |
+| s   | square []          |
+| c   | curly {}           |
+| g   | string             |
+| e   | symbol             |
+| w   | window             |
+| b   | buffer             |
+| p   | paragraph          |
+| l   | line               |
+| v   | visual-line        |
+| d   | defun              |
+| .   | sentence           |
+|-----+--------------------|
+| f   | function (treesit) |
+| a   | class (treesit)    |
+| t   | test (treesit)     |
+| y   | entry (treesit)    |
+| ,   | parameter (treesit)|
+| /   | comment (treesit)  |
+
+* Actions
+| Key | Action                       |
+|-----+------------------------------|
+| d   | kill (delete) selection       |
+| c   | change selection (del+insert) |
+| y   | copy selection               |
+| Y   | copy and append to kill ring  |
+| p   | paste                        |
+| P   | paste (cycle kill ring)       |
+| J   | join lines                   |
+| r   | replace selection with paste  |
+| x   | delete char forward          |
+| X   | delete char backward         |
+| u   | undo                         |
+| U   | undo in selection            |
+| >   | indent right                 |
+| <   | indent left                  |
+| =   | auto-indent region           |
+| "   | toggle comment               |
+
+* Insert Mode
+| Key | Action       |
+|-----+--------------|
+| i   | insert         |
+| a   | append         |
+| o   | open below     |
+| O   | open above     |
+| c   | change         |
+| ESC | back to normal |
+
+* Search
+| Key | Action              |
+|-----+---------------------|
+| /   | search (completion) |
+| n   | next match          |
+| N   | previous match      |
+
+* Other
+| Key | Action                 |
+|-----+------------------------|
+| q   | quit window            |
+| Q   | grab (secondary sel)   |
+| '   | repeat last command    |
+| ?   | this cheatsheet        |
+| SPC | leader (keypad)        |
+| 0-9 | expand hint            |
+
+* Casual Menus (Transient)
+
+** Global (any buffer)
+| Key       | Menu                     |
+|-----------+--------------------------|
+| SPC SPC   | EditKit main menu        |
+| SPC w     | Windows menu             |
+| SPC r     | Rectangles menu          |
+| SPC g     | Registers menu           |
+| SPC p     | Project menu             |
+
+** Mode-specific (C-o in motion state)
+| Mode          | Key  | Menu                   |
+|---------------+------+------------------------|
+| Dired         | C-o  | Dired menu             |
+| IBuffer       | C-o  | IBuffer menu           |
+| Info          | C-o  | Info menu              |
+| Calc          | C-o  | Calc menu              |
+| Org Agenda    | C-o  | Agenda menu            |
+| Calendar      | C-o  | Calendar menu          |
+| Bookmarks     | C-o  | Bookmarks menu         |
+| I-Search      | C-o  | I-Search menu          |
+| Help          | C-o  | Help menu              |
+| Eshell        | C-o  | Eshell menu            |
+| Ediff         | C-o  | Ediff menu             |
+| EWW           | C-o  | EWW menu               |
+| Image         | C-o  | Image menu             |
+| RE-Builder    | C-o  | RE-Builder menu        |
+| Compile/Grep  | C-o  | Compile menu           |
+| Man           | C-o  | Man menu               |
+
+** Mode-specific (M-m in normal/insert state)
+| Mode          | Key  | Menu                   |
+|---------------+------+------------------------|
+| Org           | M-m  | Org menu               |
+| Emacs Lisp    | M-m  | Elisp menu             |
+| Makefile      | M-m  | Make menu              |
+| CSV           | M-m  | CSV menu               |
+| CSS           | M-m  | CSS menu               |
+| HTML          | M-m  | HTML menu              |
+| BibTeX        | M-m  | BibTeX menu            |
+
+* Common Workflows
+
+** Delete a word
+=e= (mark word) then =d= (kill)
+or: =w= (to next word) then =d=
+
+** Delete a line
+=v= (select line) then =d= (kill)
+
+** Copy a line
+=v= (select line) then =y= (copy)
+
+** Change a word
+=e= (mark word) then =c= (change)
+
+** Select multiple lines
+=v= then keep pressing =v= to expand
+
+** Select inside parens
+=,= then =r= (inner of round)
+
+** Select around parens
+=.= then =r= (bounds of round)
+
+** Select inside function (tree-sitter)
+=,= then =f= (inner of function)
+
+** Select around class (tree-sitter)
+=.= then =a= (bounds of class)
