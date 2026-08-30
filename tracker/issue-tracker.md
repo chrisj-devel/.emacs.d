@@ -11,9 +11,9 @@ here. If it is absent, the slots are simply unused.
 ## Conventions
 
 - One file per feature: `tickets/<feature-slug>.org`
-- The PRD is a top-level heading with `KIND: prd`
-- Implementation tickets are sibling top-level headings with `KIND: ticket`,
-  numbered from `01` in their heading text
+- Its first top-level heading describes the whole feature: a `KIND: prd` for
+  work with a specification, or a `KIND: map` for an exploratory effort
+- Work headings are siblings of it, numbered from `01` in their heading text
 - Comments and conversation history append under a `** Comments` heading
   beneath the heading they belong to
 
@@ -30,9 +30,27 @@ Every heading's TODO keyword is its canonical state. Never duplicate it in a
 :END:
 ```
 
-`FEATURE` and `KIND` (`ticket` or `prd`) are required. `TYPE` is required on
-every `NEXT` heading. `PRIORITY` and `BRANCH` are optional. A repo may declare
-further required properties — **slot: extra properties**.
+`FEATURE` and `KIND` are required. `TYPE` is required on every `NEXT` heading.
+`PRIORITY` and `BRANCH` are optional. A repo may declare further required
+properties — **slot: extra properties**.
+
+## `KIND`
+
+`KIND` says what a heading *is*. `TYPE` says who executes it; the two are
+independent, so a grilling that needs a human is `KIND: grilling` with
+`TYPE: HITL`.
+
+| Kind | Meaning |
+| --- | --- |
+| `prd` | Specification of a feature. First heading in its file. |
+| `map` | Parent of an exploratory effort, in place of a PRD. |
+| `ticket` | Implementation work. |
+| `research` | Answering an open question. |
+| `prototype` | Throwaway work to test an approach. |
+| `grilling` | Stress-testing a plan or decision. |
+
+Exploratory kinds resolve by recording their answer under `** Answer` and
+moving to `DONE`; summarise the outcome under the map's `** Decisions so far`.
 
 ## States
 
@@ -125,8 +143,30 @@ additional verification commands — **slot: verification**.
 
 ## Decomposition
 
-A PRD heading with no sibling `KIND: ticket` headings in its file has not been
+A `prd` or `map` heading with no sibling work headings in its file has not been
 decomposed. That is a structural fact; do not record it as a state.
+
+## Skills that do not speak this tracker
+
+Most skills are unaffected by where tickets live — they read code, write docs,
+or run a conversation. Some publish into the tracker while describing their
+output with Markdown-shaped templates. The template supplies content, not
+storage syntax: render it into the shape above rather than publishing Markdown.
+
+- "Publish to the issue tracker" means add a heading to
+  `tickets/<feature-slug>.org`, creating the file if it does not exist. Never
+  publish a Markdown tracker file, and never keep a Markdown mirror.
+- "Fetch the relevant ticket" means read that heading in full, including its
+  `** Comments`.
+- A template `##` section becomes `**` beneath the heading
+- Fenced code becomes `#+begin_src <language>` / `#+end_src`
+- Links become Org links, inline code becomes `=code=`, checkboxes stay `- [ ]`
+- A template's status or label field becomes the TODO keyword and the property
+  drawer, never prose
+
+A skill publishing a specification writes the file's `prd` heading; one
+publishing implementation work writes sibling `ticket` headings; an
+exploratory skill writes its own kind beside a `map`.
 
 ## Completion and commit boundary
 

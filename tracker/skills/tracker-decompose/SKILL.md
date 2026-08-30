@@ -11,8 +11,11 @@ in the same file as the PRD — one file per feature, never one file per ticket.
 Read `docs/agents/issue-tracker.md` first; it owns tracker semantics. Read
 `docs/agents/tracker.local.md` if it exists; it supplies this repo's vocabulary.
 
-A PRD with no sibling `KIND: ticket` headings has not been decomposed. That is
-the structural fact this skill changes; there is no state for it.
+A `prd` or `map` heading with no sibling work headings has not been decomposed.
+That is the structural fact this skill changes; there is no state for it.
+
+Implementation slices are `KIND: ticket`. An exploratory effort decomposes
+under a `map` into `research`, `prototype`, or `grilling` headings instead.
 
 ## Shape
 
