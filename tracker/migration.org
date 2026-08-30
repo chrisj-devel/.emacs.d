@@ -1,0 +1,310 @@
+#+title: Migrating a repo onto the flat Org tracker
+
+Procedure for moving an existing tracker to =tickets/<feature>.org=. Runs once
+per repo, in roughly one session, almost all of it in path rewriting.
+
+[[file:issue-tracker.md][issue-tracker.md]] owns the contract and is authoritative; this file owns only the
+procedure and the traps. Read it first. This runbook stays in the configuration
+— =my/tracker-install= copies a fixed list and does not carry it into repos, and
+a permanent document about a one-time event is clutter in the repo it describes.
+
+The source tracker can be Org or Markdown, one file per ticket or many tickets
+per file, inside the repo or outside it. None of that changes the target, so
+work backwards from the target.
+
+* What must be true when it is done
+
+- =tickets/= at the repo root holds one =.org= file per live feature, and no
+  subdirectories
+- Every heading in a file is top-level; a feature's spec heading is first, work
+  headings are its siblings, and =** Comments= and friends live beneath their
+  own heading
+- Every heading carries =FEATURE= and =KIND=; every =NEXT= carries =TYPE=
+- State lives in the TODO keyword and nowhere else: no =Status:= line, no state
+  property, no state in a filename or directory name
+- Dependencies live in =:BLOCKER:= and nowhere else, as bare =olp()= paths that
+  =M-x my/tracker-validate= resolves with no cycles and no ambiguity
+- Nothing in the repo describes tracker semantics any more: no
+  directory-local TODO vocabulary, no repo-side validator or dependency
+  tooling, no label or state reference doc, no archive directory
+- =docs/agents/tracker.local.md= fills the slots this repo uses
+- Every reference anywhere in the repo that named the old tracker resolves
+- The old tracker is gone
+
+The last two are the bulk of the work.
+
+* Order is load-bearing
+
+Install the contract and rewrite the agent-facing documentation *before*
+touching data. Agents read the docs each session; if the ground moves first they
+keep writing the old shape into the new files.
+
+1. =M-x my/tracker-install= against the repo root
+2. Recover whatever repo-specific prose the old tracker doc carried into
+   =docs/agents/tracker.local.md=, filling the slots
+3. Only then transform the data
+
+=my/tracker-install= refuses to overwrite an existing =docs/agents/issue-tracker.md=
+— it reports =differs= and needs the prefix argument. Recover the prose *before*
+forcing, or it is gone.
+
+If the old tracker lives outside the repo, steps 1 and 2 are unchanged. What
+changes is that "delete the old tracker" becomes "stop writing to it", and the
+reference sweep covers whatever pointed into it from outside. Nothing outside
+the repo can be an edge target: the contract admits no absolute paths and no
+cross-repo edges.
+
+* Survey before transforming
+
+** Is every source file a single heading?
+
+This is the assumption that makes or breaks the approach. If it holds, the merge
+is a straight concatenation with no promotion or demotion, and the mechanical
+core is an afternoon. If it does not, decide per file whether to promote its
+headings or to treat it as prose.
+
+#+begin_src sh
+for f in <old-tracker>/**/*.org; do
+  [ "$(grep -cE '^\* ' "$f")" -eq 1 ] || echo "NOT SINGLE-HEADING: $f"
+done
+for f in <old-tracker>/**/*.md; do
+  [ "$(grep -cE '^# ' "$f")" -eq 1 ] || echo "NOT SINGLE-HEADING: $f"
+done
+#+end_src
+
+Run it as a step, not as a sanity check. In the reference migration exactly two
+files failed, and both turned out not to be tracker files at all — multi-heading
+research documents that needed the ancillary path below.
+
+** Inventory
+
+Count these before writing anything, because they are the numbers the migration
+is checked against afterwards:
+
+- features, source files, headings
+- the old state vocabulary, and how each value maps
+- every distinct value of every routing-ish or classification field
+- dependency edges — count =olp(= occurrences, or whatever encodes them, *in the
+  raw text*
+- files in the old tracker that are not tickets
+- references to the old tracker from outside it
+
+* The transform
+
+Whatever you write is shaped to one repo's old layout and is throwaway. Do not
+try to generalise it; the next repo's source differs more than the target does.
+What generalises is the list of things it must get right.
+
+** A repeated property in one drawer silently loses data
+
+Org keeps only the *last* of a repeated property. A drawer with six =:BLOCKER:=
+lines has five dependencies that were never enforced, and any naive parser
+(~props[key] = value~) reproduces the bug in the output. Merge repeated values,
+then dedupe.
+
+This is a data defect in the source, not a migration artifact. Fix it in
+passing and say so.
+
+** Where two fields disagree, the one the old tooling read wins
+
+If the old shape recorded routing or state twice — a keyword and a property, a
+directory and a field — they will disagree somewhere. Keep the one the views and
+run skills actually consumed; the other was decorative. In the reference
+migration seven headings had a state that contradicted their own =TYPE=, and the
+state won.
+
+** Fields with no slot are dropped, not parked
+
+=TYPE= in the new shape is routing and nothing else: =AFK= or =HITL=. Old
+=TYPE=-like fields carrying categories — =PRD=, =issue=, =chore=, =bug=,
+=task=, =polish= — are not routing. Drop them; =KIND= and the categories slot
+already carry that. Likewise drop effort, complexity and size fields outright
+rather than mapping them to a new property; the contract says why.
+
+** Deriving KIND
+
+- the file's specification document → =prd=, first heading in the file
+- an exploratory effort with no specification → =map=
+- ticket files → =ticket=
+- prose folded in from ancillary documents → =research=
+
+A feature whose spec was never decomposed needs no marker. A =prd= with no
+sibling work headings is the structural fact.
+
+** A Markdown source makes conversion the main road
+
+Headings demote to the right level, fenced code becomes
+=#+begin_src <language>= / =#+end_src=, inline code becomes ~=code=~, links
+become Org links, table separator rows are rewritten, checkboxes stay.
+
+=Status:= and =Type:= frontmatter must die on the way in — the contract bans
+recording state as prose. A =Date:= line is a fact and survives as body text.
+An H1 that becomes the Org heading is dropped rather than duplicated.
+
+** Edges
+
+Rewrite each finder to name the flat file and the bare heading text, with the
+TODO keyword stripped. A bare path matches whatever state the target currently
+holds, so the whole class of "refresh the dependency keywords" tooling stops
+existing. Resolve the old path against the source file's own directory before
+mapping it to a feature, and report anything that does not resolve rather than
+guessing.
+
+* Path rewriting is where the time goes
+
+Every regex needs an explicit right-hand boundary. Three separate attempts
+mangled paths in the reference migration:
+
+- =.scratch/second-language/french/x.md= → =tickets/second-language.orgfrench/x.md=
+- a brace list =issues/{06,07}= → =tickets/f.org,07}=
+
+An optional trailing =/= before a negative lookahead does not stop the match.
+Order the patterns most-specific first, anchor the right-hand side on an
+explicit terminator set, and diff and eyeball every pass. Do not trust the count
+of changed files — all three of those were in passes that reported a plausible
+count.
+
+Sweep for stale references while you are here. Some will have been broken
+*before* the migration, pointing at paths that moved earlier; they surface now
+because the sweep touches every one of them. Fix them rather than leaving them
+alone — deciding what they meant is much cheaper with the old tree still on
+disk.
+
+Finish when =git grep <old-tracker-path>= returns nothing outside the ticket
+recording the migration.
+
+* Counts are the check that catches dropped data
+
+Count edges in the raw source text, count them in the output, and reconcile both
+against what =M-x my/tracker-validate= reports. A mismatch is a dropped edge, not
+a rounding error — that is how the six-line drawer was found.
+
+=my/tracker-validate= reports unresolvable edges, ambiguous heading text and
+cycles. Ambiguity matters as much as resolvability here: concatenating a
+feature's files can put two identically-titled headings in one file, and
+org-edna only refuses an ambiguous path at the moment a state change tries to
+follow it. Detect duplicate heading text per output file during the transform.
+
+* Files the flat layout has no slot for
+
+=tickets/<feature>.org= holds headings. A =tickets/<feature>/= sidecar directory
+is the wrong answer: it rebuilds the nesting the migration exists to remove.
+Split by what the file *is*.
+
+| Kind of file | Where it goes |
+|---+---|
+| Prose: research, findings, design notes | folds into the feature file as a =KIND: research= heading after the tickets |
+| Generated artifacts | out of the repo, to a gitignored cache — and the tasks that write them must be repointed |
+| Design output, binaries | wherever that kind of file already lives in this repo |
+
+A feature that is *only* documents becomes a =KIND: map= heading with them
+folded beneath it.
+
+Repointing the writers is part of the ticket, not a follow-up. A generated
+artifact whose producer still targets the old path comes back.
+
+* What the old tracker leaves behind
+
+- *An archive of closed features.* The contract abolishes archiving — a closed
+  feature is a file whose headings are all terminal — so the archive cannot stay
+  inside =tickets/=, and converting finished work buys nothing. Move it out
+  wholesale to a documentation path and rewrite the references. Deleting it
+  discards readable history for no gain over a rename.
+- *Repo-side Emacs glue.* Directory-local TODO keywords and org setup files go:
+  the configuration owns the vocabulary globally and derives agenda files from
+  live sessions.
+- *Dependency tooling.* A repo-side validator is replaced by
+  =my/tracker-validate=. A "refresh the dependency keywords" task is not merely
+  unimplemented but unnecessary. One-shot migration tasks from earlier eras are
+  dead against the new layout. Check for a shared module underneath them before
+  deleting the callers.
+- *Label and state reference docs.* Their tables no longer map one-to-one once
+  routing lives in =TYPE=.
+
+** Negating a gitignore inside an ignored directory does not work
+
+If skills land under an ignored directory, =!/.agents/skills/= at the top of the
+file has no effect until the ignoring pattern itself stops excluding the parent:
+=/.agents/= must become =/.agents/*=. Git will not descend into an excluded
+directory to find the negation.
+
+* Branches that predate the migration
+
+Do this after the migration lands on the default branch. Measure against a named
+commit and re-triage if the branches move.
+
+** Triage before planning any rebase
+
+#+begin_src sh
+git cherry main <branch>
+#+end_src
+
+Of four live branches in the reference migration, one was already entirely on
+=main= under different SHAs (delete it), one was ten duplicates plus a single
+unique commit (cherry-pick the one, drop the rest), and one touched no
+migration-owned path at all (an ordinary rebase). Only one needed real work.
+Triage first or you will carefully rebase branches that want deleting.
+
+** Recover the branch's tracker edits before rebasing
+
+#+begin_src sh
+git diff main...<branch> -- <old-tracker-dir>
+#+end_src
+
+The loop below throws these away deliberately — they are written in a shape that
+no longer exists. Read them out first and replay them by hand afterwards. They
+are small: some state changes, a new spec, a branch property. Discard any edit
+that only refreshed a dependency keyword; bare paths make that whole class of
+edit unnecessary.
+
+** Auto-resolve the classes the migration owns, halt on everything else
+
+A branch whose commits touch migration-owned paths stops on the same
+=CONFLICT (modify/delete)= once per commit — 36 times out of 45 commits in the
+reference migration. Every one resolves identically, so drive it with a loop and
+let it stop on the first conflict it does not own.
+
+#+begin_src sh
+git checkout <branch>
+git rebase main   # stops on the first conflict
+
+while :; do
+  stop=""
+  for f in $(git diff --name-only --diff-filter=U); do
+    case "$f" in
+      <old-tracker-dir>/*|<retired-skills>/*|<retired-tooling>/*|<retired-docs>)
+        git rm -q -f "$f" ;;
+      docs/agents/issue-tracker.md)
+        # Generated by my/tracker-install; the base's copy is authoritative.
+        git checkout --ours -- "$f" && git add "$f" ;;
+      *) stop="$stop $f" ;;
+    esac
+  done
+  [ -n "$stop" ] && { echo "resolve by hand:$stop"; break; }
+  rm -rf <old-tracker-dir>
+  out=$(git -c core.editor=true rebase --continue 2>&1) || true
+  echo "$out" | grep -q 'nothing to commit\|--skip' && out=$(git rebase --skip 2>&1)
+  echo "$out" | grep -q 'Successfully rebased' && { echo done; break; }
+done
+#+end_src
+
+=rm -rf <old-tracker-dir>= inside the loop is not cleanup. =git rm= clears the
+index entry but leaves the worktree file behind, and the next =--continue=
+re-stages it.
+
+A stop is the point of the loop, not a failure of it: a genuine code conflict
+deserves a human. Finish with =M-x my/tracker-validate=.
+
+** The worktrees move too
+
+Sessions live at =~/Source/worktrees/<repo>/<feature>= and are created by
+=C-c s n=. Tear down worktrees under retired conventions rather than moving
+them — a session is derived, not persisted, so respawning costs nothing. Run
+=git worktree prune= and drop the retired paths from =.gitignore=.
+
+* Record the decisions
+
+Migrate the migration into the tracker itself: a =prd= for the move and a ticket
+per decision that took judgment — archive disposition, ancillary files, dead
+tooling, stale references, the branch plan. Each ticket's reasoning is the thing
+worth keeping; the diffs carry the scale on their own.

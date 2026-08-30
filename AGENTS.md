@@ -36,6 +36,9 @@ completion must keep prefix semantics for completion-preview.
   spawn/teardown, dashboard. Keep it small; prefer deleting to extending.
 - `user-lisp/tickets.el` — org + cross-session agenda
 - `user-lisp/dev.el` — treesit, eglot, magit, envrc, ghostel, agent stack
+- `tracker/` — the portable tracker contract and skills `my/tracker-install`
+  copies into repos. `migration.org` is the runbook for moving an existing
+  repo onto the contract; it stays here and is not installed.
 
 ## Verifying changes
 
