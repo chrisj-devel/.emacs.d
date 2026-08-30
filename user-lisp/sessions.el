@@ -24,7 +24,12 @@
   :group 'convenience)
 
 (defcustom my/session-tickets-subdir "tickets"
-  "Directory under a worktree root that holds feature ticket directories."
+  "Directory under a root holding <feature>.org ticket files."
+  :type 'string)
+
+(defcustom my/session-ticket-template
+  "#+title: %s\n\n* %s\n:PROPERTIES:\n:FEATURE: %s\n:KIND: prd\n:END:\n\n** Problem Statement\n\n** Solution\n"
+  "Template for a new feature ticket file; %s is the feature name."
   :type 'string)
 
 (defcustom my/session-worktree-directory-function
@@ -33,9 +38,9 @@
   :type 'function)
 
 (defun my/session-default-worktree-directory (repo-root feature)
-  "Sibling directory <repo>--<FEATURE> next to REPO-ROOT."
+  "Directory worktrees/<repo>/<FEATURE> beside REPO-ROOT."
   (let ((repo (directory-file-name (expand-file-name repo-root))))
-    (expand-file-name (format "%s--%s" (file-name-nondirectory repo) feature)
+    (expand-file-name (format "worktrees/%s/%s" (file-name-nondirectory repo) feature)
                       (file-name-directory repo))))
 
 (cl-defstruct my/session name root branch agent-buffer)
@@ -116,23 +121,22 @@
       (agent-shell-status :shell-buffer buffer)
     'none))
 
-(defun my/session-tickets-dir (session)
-  "Ticket directory for SESSION: tickets/<feature> if present, else tickets/."
-  (let* ((root (my/session-root session))
-         (base (expand-file-name my/session-tickets-subdir root))
-         (feature (and (my/session-branch session)
-                       (file-name-nondirectory (my/session-branch session)))))
-    (cond ((and feature (file-directory-p (expand-file-name feature base)))
-           (expand-file-name feature base))
-          ((file-directory-p base) base))))
+(defun my/session--features (root)
+  "Feature names having a ticket file under ROOT."
+  (let ((base (expand-file-name my/session-tickets-subdir root)))
+    (when (file-directory-p base)
+      (mapcar #'file-name-base
+              (directory-files base nil "\\`[^.].*\\.org\\'")))))
 
-(defun my/session--ticket-file (session)
-  "Preferred ticket file to display for SESSION."
-  (when-let* ((dir (my/session-tickets-dir session)))
-    (seq-find #'file-exists-p
-              (list (expand-file-name "issues.org" dir)
-                    (expand-file-name "prd.org" dir)
-                    dir))))
+(defun my/session-ticket-file (session)
+  "Ticket file tickets/<feature>.org for SESSION, when it exists."
+  (when-let* ((feature (my/session-branch session))
+              (file (expand-file-name
+                     (concat my/session-tickets-subdir "/"
+                             (file-name-nondirectory feature) ".org")
+                     (my/session-root session)))
+              ((file-exists-p file)))
+    file))
 
 (defun my/session--read (prompt)
   "Read a session by name with PROMPT."
@@ -152,7 +156,7 @@
 (defun my/session-layout (session)
   "Apply the standard layout: tickets left, agent right."
   (delete-other-windows)
-  (if-let* ((ticket (my/session--ticket-file session)))
+  (if-let* ((ticket (my/session-ticket-file session)))
       (find-file ticket)
     (dired (my/session-root session)))
   (when-let* ((agent (or (and (buffer-live-p (my/session-agent-buffer session))
@@ -176,7 +180,9 @@
 
 (defun my/session-spawn (repo-root feature)
   "Create worktree, branch, and ticket scaffold for FEATURE off REPO-ROOT."
-  (interactive (list (funcall project-prompter) (read-string "Feature: ")))
+  (interactive
+   (let ((root (funcall project-prompter)))
+     (list root (completing-read "Feature: " (my/session--features root)))))
   (let ((worktree (funcall my/session-worktree-directory-function repo-root feature)))
     (unless (file-directory-p worktree)
       (condition-case nil
@@ -184,14 +190,12 @@
         ;; Branch already exists: check it out instead.
         (error (my/session--git repo-root "worktree" "add" worktree feature))))
     (project-remember-project (project-current nil worktree))
-    (let ((tickets (expand-file-name (concat my/session-tickets-subdir "/" feature)
-                                     worktree)))
-      (make-directory tickets t)
-      (dolist (spec '(("prd.org" . "#+title: %s PRD\n\n* Overview\n\n* Requirements\n")
-                      ("issues.org" . "#+title: %s Issues\n\n")))
-        (let ((file (expand-file-name (car spec) tickets)))
-          (unless (file-exists-p file)
-            (write-region (format (cdr spec) feature) nil file)))))
+    (let* ((base (expand-file-name my/session-tickets-subdir worktree))
+           (file (expand-file-name (concat feature ".org") base)))
+      (make-directory base t)
+      (unless (file-exists-p file)
+        (write-region (format my/session-ticket-template feature feature feature)
+                      nil file)))
     (my/session-open
      (make-my/session :name feature :root worktree :branch feature))))
 

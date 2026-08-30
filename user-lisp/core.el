@@ -106,6 +106,12 @@
   (tab-bar-mode 1)
   (tab-bar-history-mode 1))
 
+;;; Theme
+
+(use-package gruvbox-theme
+  :config
+  (load-theme 'gruvbox-dark-hard :no-confirm))
+
 ;;; Dired
 
 (use-package dirvish

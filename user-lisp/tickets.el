@@ -1,20 +1,16 @@
 ;;; tickets.el --- Org ticket workflow -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; Tickets live in <worktree>/tickets/<feature>/ as prd.org + issues.org.
+;; Tickets live in <worktree>/<tickets-dir>/<feature>.org: the PRD and each
+;; issue are top-level headings.
 ;; The "s" agenda view rolls up TODOs across all live sessions' tickets.
 ;;; Code:
 
 (declare-function my/sessions "sessions")
-(declare-function my/session-tickets-dir "sessions")
+(declare-function my/session-ticket-file "sessions")
 
 (defun my/session-ticket-org-files ()
-  "All org files under the tickets directory of every live session."
-  (seq-uniq
-   (seq-mapcat (lambda (session)
-                 (when-let* ((dir (my/session-tickets-dir session))
-                             ((file-directory-p dir)))
-                   (directory-files-recursively dir "\\.org\\'")))
-               (my/sessions))))
+  "Ticket file of every live session."
+  (seq-uniq (delq nil (mapcar #'my/session-ticket-file (my/sessions)))))
 
 (use-package org
   :ensure nil
