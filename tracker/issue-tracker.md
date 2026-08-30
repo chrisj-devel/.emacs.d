@@ -216,5 +216,7 @@ file with no open headings.
 `C-c a` opens the agenda; its `s` view rolls up open tickets across every live
 session. `C-c s n` spawns a session, `C-c s k` tears one down.
 
-Tracker views require `org-ql`; dependency enforcement requires `org-edna`.
-Both are declared in the Emacs configuration.
+`M-x org-ql-view` offers **Tracker: Workboard** and **Tracker: Frontier**, both
+spanning every live session. Views require `org-ql`; dependency enforcement
+requires `org-edna`. Both packages and both views are declared in the Emacs
+configuration, not in the repo.

@@ -46,9 +46,11 @@ the most useful thing this skill reports.
 
 ## Emacs
 
-`C-c a` then `s` rolls up open tickets across every live session. With
-`org-ql` installed, repo-defined views may offer a workboard; this skill does
-not depend on them.
+`C-c a` then `s` rolls up open tickets across every live session. `M-x
+org-ql-view` offers two cross-session views defined in the Emacs configuration:
+**Tracker: Frontier** is the query above, grouped by `TYPE`, and
+**Tracker: Workboard** is every open tracker heading, grouped by state. This
+skill does not depend on either; it reads the files.
 
 ## Scope
 
