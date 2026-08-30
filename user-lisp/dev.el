@@ -70,7 +70,13 @@ With prefix ARG, always start a new shell."
       display-buffer-in-direction)
      (direction . right)
      (window-width . 0.5)
-     (preserve-size . (t . nil)))))
+     (preserve-size . (t . nil))))
+  ;; Default is same-window, which makes a followed link eat the shell's own
+  ;; half of the split. Reuse a window on the left rather than splitting —
+  ;; pop-up-window splits the largest window and slices get tiny fast.
+  (agent-shell-file-display-action
+   '((display-buffer-reuse-window display-buffer-use-some-window)
+     (inhibit-same-window . t))))
 
 ;;; Agent attention
 ;;
