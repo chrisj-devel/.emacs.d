@@ -60,7 +60,10 @@ Never commit batch-test droppings: `projects.eld`, `recentf.eld`, `history`,
 - Teardown of a dirty worktree needs `git worktree remove --force`; always
   confirm with the user-facing prompt first (fresh spawns are always dirty —
   the ticket scaffold is untracked).
-- agent-shell-attention loads lazily `:after agent-shell`; its tally renders
-  in the tab bar via `global-mode-string` + `tab-bar-format-global`.
+- Agent attention (dev.el) rides only `agent-shell-subscribe-to`, the public
+  event API; its tally renders in the tab bar via `global-mode-string` +
+  `tab-bar-format-global`. agent-shell-attention.el was dropped — it advised
+  `agent-shell--send-command` and rebound `acp-send-request` to track busy
+  state, and both packages ship daily MELPA snapshots. Don't re-add it.
 - Byte-compile warnings about meow/agent-shell functions in `:config` blocks
   are expected use-package noise; a clean boot is the real check.

@@ -17,12 +17,13 @@ persisted. Sessions are an overlay, not a mode: no session ⇒ stock Emacs.
 - `f5` agent shell, `f11` ghostel, `f12` toggle side windows
 
 Scoping comes from project.el (`C-x p …`) since each worktree is a project
-root. Attention (busy/blocked/ready, notifications, mode-line tally in the
-tab bar) comes from `agent-shell-attention`.
+root. Attention (which shells are waiting on you, as a tab-bar tally plus a
+macOS notification) is ~60 lines in `dev.el` over `agent-shell`'s public
+event API.
 
 ## Packages (everything else is built-in)
 
 magit, meow (+meow-tree-sitter), dirvish, envrc, ghostel, acp, agent-shell,
-agent-shell-attention, orderless (minibuffer-only; native styles can't match
-out of order). The UI is still native Emacs 31 (eager live-updating
-*Completions*); add vertico only if that chafes after real use.
+orderless (minibuffer-only; native styles can't match out of order). The UI
+is still native Emacs 31 (eager live-updating *Completions*); add vertico
+only if that chafes after real use.

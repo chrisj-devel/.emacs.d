@@ -4,48 +4,26 @@
 
 ;;; Tree-sitter (all built-in modes)
 
+;; Emacs 31 ships the grammar recipes (each `*-ts-mode' registers its own) and
+;; `*-ts-mode-maybe' auto-mode entries that fall back when a grammar is absent.
+;; Only the languages without a `-maybe' variant need remapping.
+
 (use-package treesit
   :ensure nil
   :custom
-  (treesit-language-source-alist
-   '((ruby "https://github.com/tree-sitter/tree-sitter-ruby")
-     (rust "https://github.com/tree-sitter/tree-sitter-rust")
-     (elixir "https://github.com/elixir-lang/tree-sitter-elixir")
-     (heex "https://github.com/phoenixframework/tree-sitter-heex")
-     (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
-     (typescript "https://github.com/tree-sitter/tree-sitter-typescript" nil "typescript/src")
-     (tsx "https://github.com/tree-sitter/tree-sitter-typescript" nil "tsx/src")
-     (json "https://github.com/tree-sitter/tree-sitter-json")
-     (yaml "https://github.com/ikatyang/tree-sitter-yaml")
-     (toml "https://github.com/tree-sitter/tree-sitter-toml")
-     (dockerfile "https://github.com/camdencheek/tree-sitter-dockerfile")
-     (bash "https://github.com/tree-sitter/tree-sitter-bash")))
+  (treesit-auto-install-grammar 'always)
   :config
   (setq major-mode-remap-alist
-        '((ruby-mode . ruby-ts-mode)
+        '((javascript-mode . js-ts-mode)   ; the alias `auto-mode-alist' actually uses
           (js-mode . js-ts-mode)
-          (sh-mode . bash-ts-mode)))
-  (dolist (entry '(("\\.rs\\'" . rust-ts-mode)
-                   ("\\.exs?\\'" . elixir-ts-mode)
-                   ("\\.heex\\'" . heex-ts-mode)
-                   ("\\.ts\\'" . typescript-ts-mode)
-                   ("\\.tsx\\'" . tsx-ts-mode)
-                   ("\\.ya?ml\\'" . yaml-ts-mode)
-                   ("\\.toml\\'" . toml-ts-mode)))
-    (add-to-list 'auto-mode-alist entry)))
-
-(defun my/treesit-install-missing ()
-  "Install any tree-sitter grammars from `treesit-language-source-alist'."
-  (interactive)
-  (dolist (source treesit-language-source-alist)
-    (unless (treesit-language-available-p (car source))
-      (treesit-install-language-grammar (car source)))))
+          (js-json-mode . json-ts-mode)
+          (sh-mode . bash-ts-mode))))
 
 ;;; LSP (built-in)
 
 (use-package eglot
   :ensure nil
-  :hook ((ruby-ts-mode rust-ts-mode elixir-ts-mode typescript-ts-mode tsx-ts-mode)
+  :hook ((rust-ts-mode elixir-ts-mode typescript-ts-mode tsx-ts-mode)
          . eglot-ensure))
 
 ;;; VC
@@ -62,7 +40,6 @@
 ;;; Terminal
 
 (use-package ghostel
-  :vc (:url "https://github.com/dakra/ghostel")
   :custom
   (ghostel-tramp-shell-integration t)
   :bind
@@ -73,11 +50,9 @@
 
 ;;; Agents
 
-(use-package acp
-  :vc (:url "https://github.com/xenodium/acp.el"))
+(use-package acp)
 
 (use-package agent-shell
-  :vc (:url "https://github.com/xenodium/agent-shell")
   :preface
   (defun my/agent-shell-switch-or-start (&optional arg)
     "Pick an agent shell buffer, or start one when none exist.
@@ -97,22 +72,95 @@ With prefix ARG, always start a new shell."
      (window-width . 0.5)
      (preserve-size . (t . nil)))))
 
-(use-package agent-shell-attention
-  :vc (:url "https://github.com/ultronozm/agent-shell-attention.el")
-  :after agent-shell
-  :demand t
-  :custom
-  ;; Tally lives in global-mode-string, which core.el routes into the
-  ;; tab bar (tab-bar-format-global), so it is visible from every tab.
-  (agent-shell-attention-indicator-location 'global-mode-string)
-  (agent-shell-attention-notify-function #'my/agent-attention-notify)
-  :preface
-  (defun my/agent-attention-notify (title body)
-    "macOS notification via osascript (notifications-notify is dbus-only)."
-    (start-process "agent-notify" nil "osascript" "-e"
-                   (format "display notification %S with title %S" body title)))
-  :config
-  (agent-shell-attention-mode 1))
+;;; Agent attention
+;;
+;; Which shells are waiting on me, tallied in the tab bar, plus a macOS
+;; notification when I am not looking at the shell. Rides `agent-shell's
+;; public event API only; agent-shell-attention.el does the same but advises
+;; `agent-shell--send-command' and rebinds `acp-send-request' to also track
+;; busy state, which is more surface than a counter is worth.
+
+(require 'map)
+(declare-function agent-shell-subscribe-to "agent-shell")
+
+(defvar my/agent-attention--pending (make-hash-table :test #'eq)
+  "Agent shell buffers awaiting input, mapped to why they are waiting.")
+
+(defun my/agent-attention--live ()
+  "Pending buffers, reaping any that died."
+  (let (live)
+    (maphash (lambda (buffer _label)
+               (if (buffer-live-p buffer)
+                   (push buffer live)
+                 (remhash buffer my/agent-attention--pending)))
+             my/agent-attention--pending)
+    live))
+
+(defun my/agent-attention--indicator ()
+  "Tally for `global-mode-string', which core.el routes into the tab bar."
+  (let ((n (length (my/agent-attention--live))))
+    (when (> n 0)
+      (propertize (format " AS:%d " n) 'face 'mode-line-emphasis))))
+
+(defun my/agent-attention--away-p (buffer)
+  "Non-nil when BUFFER is not what I am currently looking at."
+  (or (not (eq buffer (window-buffer (selected-window))))
+      (not (seq-some #'frame-focus-state (frame-list)))))
+
+(defun my/agent-attention--notify (buffer label)
+  "Notify LABEL for BUFFER via osascript (notifications-notify is dbus-only)."
+  (start-process "agent-notify" nil "osascript" "-e"
+                 (format "display notification %S with title %S"
+                         label (buffer-name buffer))))
+
+(defun my/agent-attention--mark (buffer label)
+  (puthash buffer label my/agent-attention--pending)
+  (when (my/agent-attention--away-p buffer)
+    (my/agent-attention--notify buffer label))
+  (force-mode-line-update t))
+
+(defun my/agent-attention--clear (buffer)
+  (remhash buffer my/agent-attention--pending)
+  (force-mode-line-update t))
+
+(defun my/agent-attention--on-event (buffer event)
+  (pcase (map-elt event :event)
+    ('permission-request (my/agent-attention--mark buffer "Permission requested"))
+    ('permission-response (my/agent-attention--clear buffer))
+    ('turn-complete
+     (let* ((data (map-elt event :data))
+            (reason (or (map-elt data 'stopReason)
+                        (map-elt data :stop-reason)))
+            (label (pcase reason
+                     ("max_tokens" "Max token limit reached")
+                     ("max_turn_requests" "Exceeded request limit")
+                     ("refusal" "Refused")
+                     ("cancelled" "Cancelled")
+                     (_ "Finished"))))
+       ;; Only end_turn means it is my move; the rest are just worth knowing.
+       (if (equal reason "end_turn")
+           (my/agent-attention--mark buffer label)
+         (when (my/agent-attention--away-p buffer)
+           (my/agent-attention--notify buffer label))
+         (my/agent-attention--clear buffer))))))
+
+(defun my/agent-attention--subscribe ()
+  (let ((buffer (current-buffer)))
+    (agent-shell-subscribe-to
+     :shell-buffer buffer
+     :on-event (lambda (event)
+                 (when (buffer-live-p buffer)
+                   (my/agent-attention--on-event buffer event))))))
+
+(defun my/agent-attention--maybe-clear ()
+  "Clear attention once I actually visit the shell."
+  (when (and (derived-mode-p 'agent-shell-mode)
+             (gethash (current-buffer) my/agent-attention--pending))
+    (my/agent-attention--clear (current-buffer))))
+
+(add-hook 'agent-shell-mode-hook #'my/agent-attention--subscribe)
+(add-hook 'buffer-list-update-hook #'my/agent-attention--maybe-clear)
+(add-to-list 'global-mode-string '(:eval (my/agent-attention--indicator)) t)
 
 (provide 'dev)
 ;;; dev.el ends here
