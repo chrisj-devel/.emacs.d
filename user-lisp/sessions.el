@@ -5,6 +5,9 @@
 ;; git worktree in `project-known-project-roots' is a session; an
 ;; agent-shell buffer outside any worktree is a bare session.
 ;;
+;; A session has two layouts, each in its own tab: the work tab (ticket +
+;; agent) and the browse tab (dirvish sidebar + code).
+;;
 ;; Lifecycle: `my/session-spawn' -> work -> `my/session-teardown'.
 ;; Mission control: `my/session-dashboard'.
 ;;; Code:
@@ -13,11 +16,13 @@
 (require 'seq)
 (require 'subr-x)
 (require 'project)
+(require 'recentf)
 (require 'tab-bar)
 (require 'tabulated-list)
 
 (declare-function agent-shell-status "agent-shell")
 (declare-function agent-shell "agent-shell")
+(declare-function dirvish-side "dirvish-side")
 
 (defgroup my/sessions nil
   "Feature-in-flight sessions over git worktrees."
@@ -30,6 +35,10 @@
 (defcustom my/session-ticket-template
   "#+title: %s\n\n* %s\n:PROPERTIES:\n:FEATURE: %s\n:KIND: prd\n:END:\n\n** Problem Statement\n\n** Solution\n"
   "Template for a new feature ticket file; %s is the feature name."
+  :type 'string)
+
+(defcustom my/session-browse-tab-suffix " code"
+  "Suffix distinguishing a session's browse tab from its work tab."
   :type 'string)
 
 (defcustom my/session-worktree-directory-function
@@ -166,15 +175,50 @@
                             (direction . right)
                             (window-width . 0.5)))))
 
-(defun my/session-open (session)
-  "Jump to SESSION's tab, creating tab and layout when missing."
-  (interactive (list (my/session--read "Session: ")))
-  (let* ((name (my/session-name session))
-         (existing (seq-some (lambda (tab) (equal name (alist-get 'name tab)))
-                             (funcall tab-bar-tabs-function))))
+(defun my/session--recent-file (root)
+  "Most recently visited file under ROOT, if any."
+  (seq-find (lambda (file)
+              (and (file-in-directory-p file root) (file-exists-p file)))
+            (mapcar #'expand-file-name recentf-list)))
+
+(defun my/session-browse-layout (session)
+  "Apply the browse layout: dirvish sidebar left, code right."
+  (require 'dirvish-side)
+  (delete-other-windows)
+  (let ((root (my/session-root session)))
+    (if-let* ((file (my/session--recent-file root)))
+        (find-file file)
+      (let ((default-directory root))
+        (switch-to-buffer "*scratch*")))
+    ;; `dirvish-side--new' lays out from `with-selected-window', so point
+    ;; stays in the code window.
+    (dirvish-side root)))
+
+(defun my/session-browse-tab-name (session)
+  "Name of SESSION's browse tab."
+  (concat (my/session-name session) my/session-browse-tab-suffix))
+
+(defun my/session--tab-p (name)
+  (seq-some (lambda (tab) (equal name (alist-get 'name tab)))
+            (funcall tab-bar-tabs-function)))
+
+(defun my/session--open-tab (name layout)
+  "Switch to tab NAME, calling LAYOUT on it only when newly created."
+  (let ((existing (my/session--tab-p name)))
     (tab-bar-switch-to-tab name)
-    (unless existing
-      (my/session-layout session))))
+    (unless existing (funcall layout))))
+
+(defun my/session-open (session)
+  "Jump to SESSION's work tab, creating tab and layout when missing."
+  (interactive (list (my/session--read "Session: ")))
+  (my/session--open-tab (my/session-name session)
+                        (lambda () (my/session-layout session))))
+
+(defun my/session-browse (session)
+  "Jump to SESSION's browse tab, creating tab and layout when missing."
+  (interactive (list (my/session--read "Browse session: ")))
+  (my/session--open-tab (my/session-browse-tab-name session)
+                        (lambda () (my/session-browse-layout session))))
 
 ;;; Lifecycle
 
@@ -227,9 +271,9 @@
           (project-forget-project root)))
       (when-let* ((buffer (my/session-agent-buffer session)))
         (kill-buffer buffer))
-      (when (seq-some (lambda (tab) (equal name (alist-get 'name tab)))
-                      (funcall tab-bar-tabs-function))
-        (tab-bar-close-tab-by-name name))
+      (dolist (tab (list name (my/session-browse-tab-name session)))
+        (when (my/session--tab-p tab)
+          (tab-bar-close-tab-by-name tab)))
       (message "Session %s torn down (branch kept)" name))))
 
 ;;; Mission control
@@ -260,6 +304,12 @@
   (when-let* ((session (tabulated-list-get-id)))
     (my/session-open session)))
 
+(defun my/session-dashboard-browse ()
+  "Open the browse tab of the session at point."
+  (interactive)
+  (when-let* ((session (tabulated-list-get-id)))
+    (my/session-browse session)))
+
 (defun my/session-dashboard-teardown ()
   "Tear down the session at point."
   (interactive)
@@ -270,6 +320,7 @@
 (defvar-keymap my/session-dashboard-mode-map
   :parent tabulated-list-mode-map
   "RET" #'my/session-dashboard-open
+  "b" #'my/session-dashboard-browse
   "n" #'my/session-spawn
   "k" #'my/session-dashboard-teardown)
 
@@ -299,6 +350,7 @@
 (keymap-global-set "C-c s d" #'my/session-dashboard)
 (keymap-global-set "C-c s n" #'my/session-spawn)
 (keymap-global-set "C-c s j" #'my/session-open)
+(keymap-global-set "C-c s b" #'my/session-browse)
 (keymap-global-set "C-c s k" #'my/session-teardown)
 
 (provide 'sessions)
