@@ -52,7 +52,52 @@ If the old tracker lives outside the repo, steps 1 and 2 are unchanged. What
 changes is that "delete the old tracker" becomes "stop writing to it", and the
 reference sweep covers whatever pointed into it from outside. Nothing outside
 the repo can be an edge target: the contract admits no absolute paths and no
-cross-repo edges.
+cross-repo edges. See "A tracker the repo does not version" below.
+
+* A tracker the repo does not version
+
+Some repos are shared, and the breakdown is not. Where an upstream tracker is
+the source of truth and =tickets/= only holds the local decomposition of it, the
+tracker belongs in its own local repo at =~/Source/trackers/<repo>/= and never
+enters the shared one.
+
+Do not simply add =tickets/= to =.gitignore= and leave it at that. A session is
+a linked worktree, git checks out tracked files only, and an ignored directory
+therefore does not exist in a fresh worktree at all. Every session would start
+on an empty scaffold instead of the specification, every cross-feature edge
+would be unresolvable, and the agenda and both org-ql views would see only
+stubs. The failure is silent.
+
+Symlink it instead, so every repo-relative path in the contract stays literally
+true and agents learn no special case:
+
+#+begin_src sh
+ln -s ~/Source/trackers/<repo> <repo>/tickets
+printf '/tickets\n' >> <repo>/.git/info/exclude
+#+end_src
+
+- =.git/info/exclude=, not =.gitignore=. It is never committed, so the
+  arrangement leaves no trace in the shared repo, and it lives in the common
+  git directory — one line covers every linked worktree.
+- =/tickets=, *without* a trailing slash. =/tickets/= matches directories only
+  and does not match the symlink, which then shows as untracked in every
+  worktree and is one =git add -A= away from committing an absolute path out of
+  the repo.
+- =C-c s n= replicates the link into each worktree it creates, so all sessions
+  share the one directory. That is safe precisely because the layout is flat:
+  session = feature = file, so two sessions never write the same file.
+- Name the ticket file after the last segment of the branch. The session layer
+  derives one from the other, so a mandated branch prefix like
+  =feature/KEY-123-thing= wants =KEY-123-thing.org=.
+
+Record the upstream key on each heading through the extra-properties slot in
+=tracker.local.md= — it is a repo-required property, not a new contract rule.
+
+Two rules in the contract assume the tracker versions alongside the code: the
+commit boundary staging both together, and ticket state travelling with the
+feature branch. Neither can hold here. Settle how they read for this repo before
+migrating, in =issue-tracker.md= — =tracker.local.md= fills slots and cannot
+override a rule.
 
 * Survey before transforming
 

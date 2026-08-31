@@ -190,9 +190,16 @@
         ;; Branch already exists: check it out instead.
         (error (my/session--git repo-root "worktree" "add" worktree feature))))
     (project-remember-project (project-current nil worktree))
-    (let* ((base (expand-file-name my/session-tickets-subdir worktree))
+    (let* ((source (expand-file-name my/session-tickets-subdir repo-root))
+           (external (and (file-symlink-p source) (file-truename source)))
+           (base (expand-file-name my/session-tickets-subdir worktree))
            (file (expand-file-name (concat feature ".org") base)))
-      (make-directory base t)
+      ;; A tracker the repo does not version is one directory shared by every
+      ;; worktree, reached by a symlink the main checkout already carries.
+      ;; Replicate that link; a fresh worktree would otherwise start empty,
+      ;; since git checks out tracked files only.
+      (cond ((null external) (make-directory base t))
+            ((not (file-symlink-p base)) (make-symbolic-link external base)))
       (unless (file-exists-p file)
         (write-region (format my/session-ticket-template feature feature feature)
                       nil file)))
