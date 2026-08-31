@@ -181,6 +181,12 @@ ticket's acceptance criteria and required verification pass:
 Never leave a `DONE` ticket as uncommitted work. If the work should remain
 uncommitted, leave the ticket `DOING`.
 
+Some repos do not version the tracker with the code. Where the breakdown is
+local and an upstream tracker is the source of truth, `tickets/` lives outside
+the repository and is reached by a symlink. The boundary is unchanged and step 2
+stages the implementation alone; the tracker is committed in its own repository.
+`DONE` still gates on the code commit succeeding.
+
 ## Sessions
 
 A feature is worked in its own session: one git worktree, one tab, one agent,
@@ -194,6 +200,11 @@ inside the session.
 The session's copy of the tracker is the one being worked. Ticket state travels
 with the feature branch and merges alongside the code that justifies it, so
 there is nothing to reconcile against the default branch mid-feature.
+
+A tracker the repo does not version has no copy per worktree: every session
+shares the one directory, so a heading is edited once and seen everywhere, and
+ticket state neither carries a branch nor merges. The `BRANCH` property is
+unaffected — it names where the code lives, not where the ticket does.
 
 While a feature is in flight its PRD carries the branch holding the code:
 
