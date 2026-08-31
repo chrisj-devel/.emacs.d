@@ -19,6 +19,8 @@
   (global-auto-revert-non-file-buffers t)
   (project-mode-line t)
   :config
+  ;; Emacs creates the backup directory on demand but not the auto-save one.
+  (make-directory (expand-file-name "autosave/" user-emacs-directory) t)
   (savehist-mode 1)
   (recentf-mode 1)
   (save-place-mode 1)
