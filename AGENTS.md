@@ -17,20 +17,26 @@ keybindings first. This file is the working contract for agents.
    Without a session this must behave like clean Emacs 31 + listed packages.
 4. **Tab = session, 1:1 with worktree.** Scoping comes from project.el
    commands (`C-x p …`), not buffer-list filtering.
+5. **The minibuffer is a carve-out from rule 1** (taken after real use — the
+   native eager *Completions* chafed). vertico + consult + marginalia +
+   embark live in `completing.el`; the gaps they fill are named in that
+   file's header. The carve-out ends at the minibuffer: in-buffer completion
+   keeps native styles and *Completions* so completion-preview retains prefix
+   semantics, and orderless stays minibuffer-scoped. Scoping still comes from
+   project.el — consult resolves roots via `consult-project-function`, not
+   its own notion of a workspace.
 
 Already rejected (with reasons — don't re-add): elpaca (package.el + `:vc`
 suffices), bufferlo/otpp (project.el scoping replaced them), popper /
 auto-side-windows (native side windows), evil (meow won), activities.el
 (persists state; conflicts with rule 2), undo-fu (native undo-only/redo).
-Deliberately deferred: vertico — only if the native eager *Completions* UI
-chafes after real use. orderless is minibuffer-scoped only; in-buffer
-completion must keep prefix semantics for completion-preview.
 
 ## Layout
 
 - `init.el` — package setup + requires. `user-lisp/` is auto-compiled and
   added to load-path by Emacs 31 (`prepare-user-lisp`); no manual load-path.
 - `user-lisp/core.el` — defaults, native completion, side windows, tab-bar
+- `user-lisp/completing.el` — the minibuffer stack (rule 5)
 - `user-lisp/keys.el` — meow (vim-transitional; see meow-cheatsheet.org)
 - `user-lisp/sessions.el` — the only real custom code: session derivation,
   spawn/teardown, dashboard. Keep it small; prefer deleting to extending.

@@ -21,9 +21,20 @@ root. Attention (which shells are waiting on you, as a tab-bar tally plus a
 macOS notification) is ~60 lines in `dev.el` over `agent-shell`'s public
 event API.
 
+## Minibuffer (the one carve-out from native-first)
+
+vertico + consult + marginalia + embark, scoped to the minibuffer;
+in-buffer completion stays native. See `user-lisp/completing.el`.
+
+- `C-x p g` / `M-s r` — consult-ripgrep, scoped to the session's worktree
+  (`#` splits input: `#regexp#filter` — rg sees the first, live narrowing the rest)
+- `M-s l` consult-line, `M-g i` imenu, `M-g o` outline, `M-g f` flymake
+- `C-x b` consult-buffer, `C-x p b` project buffers, `<` narrows by source
+- `C-.` embark-act on the candidate (export a search to a grep buffer, etc.)
+- `C-j` / `C-k` move in the candidate list
+
 ## Packages (everything else is built-in)
 
 magit, meow (+meow-tree-sitter), dirvish, envrc, ghostel, acp, agent-shell,
-orderless (minibuffer-only; native styles can't match out of order). The UI
-is still native Emacs 31 (eager live-updating *Completions*); add vertico
-only if that chafes after real use.
+orderless (minibuffer-only; native styles can't match out of order), plus the
+minibuffer stack above.

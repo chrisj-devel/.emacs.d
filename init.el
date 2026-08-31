@@ -13,6 +13,7 @@
 
 ;; user-lisp/ is auto-compiled and added to load-path (Emacs 31).
 (require 'core)
+(require 'completing)
 (require 'keys)
 (require 'sessions)
 (require 'tickets)
