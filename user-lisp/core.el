@@ -1,7 +1,19 @@
-;;; core.el --- Defaults, completion, windows, tabs -*- lexical-binding: t; -*-
+;;; core.el --- Environment, defaults, completion, windows, tabs -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; Everything here is built-in except dirvish.
+;; Built-in except gruvbox-theme, dirvish, and exec-path-from-shell.
 ;;; Code:
+
+;;; Environment
+
+;; A GUI Emacs is launched by launchd, not a shell, so it inherits a bare PATH
+;; with no homebrew and no mise.  Nothing built-in recovers it: the PATH is
+;; assembled in ~/.zshrc, which launchd never runs, and mise's entries move with
+;; every tool version so they cannot be hardcoded into `exec-path'.  This runs
+;; first because everything below resolves executables.
+(use-package exec-path-from-shell
+  :config
+  (when (or (daemonp) (memq window-system '(mac ns x pgtk)))
+    (exec-path-from-shell-initialize)))
 
 ;;; Defaults
 
@@ -51,14 +63,9 @@
   (completion-eager-update t)
   (minibuffer-visible-completions 'up-down))
 
-;; Out-of-order matching in the minibuffer only; in-buffer completion keeps
-;; the native styles so completion-preview retains prefix semantics.
-(use-package orderless
-  :demand t
-  :config
-  (add-hook 'minibuffer-setup-hook
-            (lambda () (setq-local completion-styles '(orderless basic)))))
-
+;; Minibuffer-scoped out-of-order matching lives in completing.el with the rest
+;; of the carve-out; in-buffer completion keeps the native styles above so
+;; completion-preview retains prefix semantics.
 (add-hook 'prog-mode-hook #'completion-preview-mode)
 
 ;;; Windows: side windows replace popper/auto-side-windows

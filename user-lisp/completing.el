@@ -1,4 +1,4 @@
-;;; completing.el --- Minibuffer stack: vertico, consult, marginalia, embark -*- lexical-binding: t; -*-
+;;; completing.el --- Minibuffer stack: vertico, orderless, consult, marginalia, embark -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;; The carve-out from built-in > package.  The native eager *Completions*
 ;; (core.el) is a fine selection UI, but three gaps have no built-in answer:
@@ -40,6 +40,17 @@
         ("DEL" . vertico-directory-delete-char)
         ("M-DEL" . vertico-directory-delete-word))
   :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+
+;;; Orderless — out-of-order matching, minibuffer only
+
+;; Set buffer-locally on minibuffer setup rather than globally, so in-buffer
+;; completion keeps core.el's native styles and completion-preview retains
+;; prefix semantics.
+(use-package orderless
+  :demand t
+  :config
+  (add-hook 'minibuffer-setup-hook
+            (lambda () (setq-local completion-styles '(orderless basic)))))
 
 ;;; Marginalia — annotations; supersedes completions-detailed
 
