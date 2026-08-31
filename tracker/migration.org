@@ -93,11 +93,14 @@ printf '/tickets\n' >> <repo>/.git/info/exclude
 Record the upstream key on each heading through the extra-properties slot in
 =tracker.local.md= — it is a repo-required property, not a new contract rule.
 
-Two rules in the contract would otherwise assume the tracker versions alongside
-the code: the commit boundary staging both together, and ticket state travelling
-with the feature branch. =issue-tracker.md= carves this arrangement out in both
-places — read it rather than inventing local wording, and do not restate it in
-=tracker.local.md=, which fills slots and cannot override a rule.
+The commit boundary otherwise assumes the tracker versions alongside the code.
+Fill the tracker-versioning slot in =tracker.local.md=: name the upstream source
+of truth, say that step 2 stages the implementation alone, and say where the
+tracker is committed. =DONE= still gates on the code commit succeeding.
+
+Ticket state carries no branch and merges nowhere here, and every session shares
+the one directory rather than holding a copy. Neither is worth stating in the
+repo — an agent edits its feature's file either way.
 
 * Survey before transforming
 

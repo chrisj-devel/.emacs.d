@@ -32,6 +32,13 @@ allowed.
 Declare any properties this repo requires beyond `FEATURE`, `KIND`, and `TYPE`,
 and say which headings require them.
 
+## Slot: tracker versioning
+
+Declare this only if `tickets/` is not versioned with the code — a local
+breakdown of an upstream tracker, symlinked in from its own repository. Name
+the upstream source of truth, say what the commit boundary stages, and say
+where the tracker itself is committed.
+
 ## Slot: verification
 
 Declare the commands a ticket must pass before it can be marked `DONE`, and any
