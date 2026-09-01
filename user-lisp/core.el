@@ -30,7 +30,11 @@
   (auto-revert-interval 2)
   (global-auto-revert-non-file-buffers t)
   (project-mode-line t)
+  (standard-indent 2)
+  (js-indent-level 2)
   :config
+  (setq-default require-final-newline t)
+  (setq-default tab-width 2)
   ;; Emacs creates the backup directory on demand but not the auto-save one.
   (make-directory (expand-file-name "autosave/" user-emacs-directory) t)
   (savehist-mode 1)

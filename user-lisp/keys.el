@@ -10,6 +10,24 @@
   (interactive)
   (delete-indentation t))
 
+;; Folding lives on `z', where the old config had treesit-fold-map.  Outline's
+;; own prefix map is all control chords under `C-c @', which is folding you do
+;; not use; dev.el turns `outline-minor-mode' on in prog-mode.
+(require 'outline)
+
+(defvar-keymap my/fold-map
+  :doc "Vim-shaped folding over `outline-minor-mode'."
+  "a" #'outline-cycle
+  "c" #'outline-hide-subtree
+  "o" #'outline-show-children
+  "O" #'outline-show-subtree
+  "M" #'outline-hide-body
+  "R" #'outline-show-all)
+
+;; meow binds through `define-key', which resolves a symbol through its
+;; function cell, so the keymap has to live there too.
+(fset 'my/fold-map my/fold-map)
+
 (use-package meow
   :demand t
   :custom
@@ -167,6 +185,7 @@
    '("Q" . meow-grab)
    '("'" . meow-last-buffer)
    '("\"" . meow-comment)
+   '("z" . my/fold-map)
    '("C-g" . meow-cancel-selection)
    '("<escape>" . ignore))
 

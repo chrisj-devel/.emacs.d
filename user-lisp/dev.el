@@ -26,6 +26,27 @@
   :hook ((rust-ts-mode elixir-ts-mode typescript-ts-mode tsx-ts-mode)
          . eglot-ensure))
 
+;;; Diagnostics
+
+;; eglot only reports in the buffers a server manages.  Flymake's own backends
+;; cover the rest — elisp and shell, which is most of this repo.
+(use-package flymake
+  :ensure nil
+  :hook (prog-mode . flymake-mode))
+
+;;; Folding
+
+;; The only folding in the config; keys.el puts the buffer-wide commands on
+;; meow's `z'.  The cycle filter matters in Lisp, where every top-level `('
+;; is a heading: without it TAB anywhere on such a line cycles instead of
+;; indenting.
+(use-package outline
+  :ensure nil
+  :hook (prog-mode . outline-minor-mode)
+  :custom
+  (outline-minor-mode-cycle t)
+  (outline-minor-mode-cycle-filter 'bolp))
+
 ;;; VC
 
 (use-package magit

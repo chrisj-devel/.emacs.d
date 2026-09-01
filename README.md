@@ -34,6 +34,16 @@ in-buffer completion stays native. See `user-lisp/completing.el`.
 - `C-.` embark-act on the candidate (export a search to a grep buffer, etc.)
 - `C-j` / `C-k` move in the candidate list
 
+## Code buffers
+
+`prog-mode` gets flymake in every buffer (not only the eglot-managed ones),
+`outline-minor-mode`, and completion-preview.
+
+- `z` — fold prefix: `a` cycle, `c` close, `o` open, `O` open recursively,
+  `M` fold the buffer, `R` unfold the buffer
+- `TAB` / `S-TAB` at the start of a heading line — cycle it / the whole buffer
+- `M-g f` — consult-flymake over the buffer's diagnostics
+
 ## Packages (everything else is built-in)
 
 magit, meow (+meow-tree-sitter), dirvish, envrc, ghostel, acp, agent-shell,
