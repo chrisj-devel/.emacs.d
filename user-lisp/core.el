@@ -61,7 +61,16 @@
   (completions-sort 'historical)
   (completion-eager-display t)
   (completion-eager-update t)
-  (minibuffer-visible-completions 'up-down))
+  (minibuffer-visible-completions 'up-down)
+  ;; Run a command that prompts from inside a prompt — `embark-act' on a
+  ;; candidate then answering its own minibuffer, or M-x mid-prompt.
+  (enable-recursive-minibuffers t)
+  ;; M-x offers only the commands that work in this buffer's mode.
+  (read-extended-command-predicate #'command-completion-default-include-p)
+  :config
+  ;; Recursive minibuffers with no depth in the prompt is how you lose track of
+  ;; which prompt you are answering; this is what makes the above survivable.
+  (minibuffer-depth-indicate-mode 1))
 
 ;; Minibuffer-scoped out-of-order matching lives in completing.el with the rest
 ;; of the carve-out; in-buffer completion keeps the native styles above so

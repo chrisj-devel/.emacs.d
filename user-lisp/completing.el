@@ -76,13 +76,25 @@
    ("M-y" . consult-yank-pop)
    ("M-g g" . consult-goto-line)
    ("M-g i" . consult-imenu)
+   ("M-g I" . consult-imenu-multi)
    ("M-g o" . consult-outline)
    ("M-g m" . consult-mark)
    ("M-g f" . consult-flymake)
    ("M-s l" . consult-line)
+   ("M-s L" . consult-line-multi)
+   ("M-s d" . consult-find)
+   ("M-s e" . consult-isearch-history)
    ("M-s r" . consult-ripgrep)
+   ("C-c h" . consult-history)
+   ;; consult-isearch-history detects an active isearch and offers its ring;
+   ;; consult-line needs the same map to hand isearch's string over.
+   :map isearch-mode-map
+   ("M-s e" . consult-isearch-history)
+   ("M-s l" . consult-line)
    :map minibuffer-local-map
    ("M-r" . consult-history))
+  ;; Only the native *Completions* path, which in-buffer completion still uses.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
   :init
   ;; project-prefix-map exists only once project.el loads.
   (with-eval-after-load 'project
