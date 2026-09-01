@@ -58,6 +58,14 @@
   :config
   (add-to-list 'ghostel-tramp-shells '("podman" "/bin/sh")))
 
+;;; Markup
+
+;; Emacs 31 ships no markdown mode at all, so every CLAUDE.md, AGENTS.md and
+;; skill file opens in fundamental-mode: no highlighting, no heading folding,
+;; no list or table editing.  Nothing built-in is close.
+(use-package markdown-mode
+  :mode ("README\\.md\\'" . gfm-mode))
+
 ;;; Agents
 
 (use-package acp)
