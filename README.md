@@ -14,8 +14,9 @@ persisted. Sessions are an overlay, not a mode: no session ⇒ stock Emacs.
 - `C-c s n` — spawn: worktree + branch + ticket scaffold + tab + agent
 - `C-c s b` — browse tab: dirvish sidebar + code, same session, second tab
 - `C-c s k` — teardown: kill buffers, remove worktree, close both tabs (branch kept)
-- `C-c a` then `w` / `f` — tracker workboard / unblocked frontier, across all
-  in-flight sessions' tickets
+- `C-c a` then `w` / `f` — tracker workboard / unblocked frontier over the
+  whole tracker of the repo at point; a feature in a worktree shows that
+  worktree's copy
 - `f5` agent shell, `f11` ghostel, `f12` toggle side windows
 
 Scoping comes from project.el (`C-x p …`) since each worktree is a project

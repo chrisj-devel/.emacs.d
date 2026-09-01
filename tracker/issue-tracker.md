@@ -216,10 +216,15 @@ file with no open headings.
 
 ## Emacs
 
-`C-c a` opens the agenda. Two views roll up every live session's tickets:
+`C-c a` opens the agenda. Two views cover the tracker of the repo you are in:
 
 - `w` — **workboard**: every open tracker heading, grouped by state
 - `f` — **frontier**: unblocked `NEXT` headings only, split by `TYPE`
+
+Both span every feature, not just the ones in flight — a feature checked out in
+a worktree resolves to that worktree's copy, so in-flight state wins, and every
+other feature resolves to the main checkout. Scope comes from `git worktree
+list` in the repo at point, so other repos are never touched.
 
 `C-c s n` spawns a session, `C-c s k` tears one down.
 

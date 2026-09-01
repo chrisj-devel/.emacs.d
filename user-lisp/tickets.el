@@ -2,16 +2,54 @@
 ;;; Commentary:
 ;; Tickets live in <worktree>/<tickets-dir>/<feature>.org: the PRD and each
 ;; issue are top-level headings.
-;; The "w" and "f" agenda views roll up across all live sessions' tickets.
+;; The "w" and "f" agenda views cover one repo's whole tracker: every feature
+;; in the main checkout, each shown in its worktree's copy when one exists.
 ;;; Code:
 
-(declare-function my/sessions "sessions")
-(declare-function my/session-ticket-file "sessions")
+(require 'subr-x)
+
+(declare-function my/session--git "sessions")
+(declare-function my/session--main-root "sessions")
 (defvar my/session-tickets-subdir)
 
-(defun my/session-ticket-org-files ()
-  "Ticket file of every live session."
-  (seq-uniq (delq nil (mapcar #'my/session-ticket-file (my/sessions)))))
+;; Scope is derived from `git worktree list' in the repo at point, not from
+;; `project-known-project-roots'. Walking known roots would stat every project
+;; Emacs has ever seen — including remote ones, where `file-directory-p' opens
+;; a Tramp connection just to build an agenda for an unrelated repo.
+(defun my/tracker--repo-root (dir)
+  "Main checkout of the repo containing DIR, or nil."
+  (unless (file-remote-p dir)
+    (ignore-errors (my/session--main-root dir))))
+
+(defun my/tracker--worktree-branches (root)
+  "Alist of (BRANCH . WORKTREE) for every worktree of the repo at ROOT."
+  (let (out worktree)
+    (dolist (line (split-string (my/session--git root "worktree" "list" "--porcelain")
+                                "\n")
+                  (nreverse out))
+      (cond ((string-prefix-p "worktree " line)
+             (setq worktree (substring line 9)))
+            ((string-prefix-p "branch " line)
+             (push (cons (substring line 7) worktree) out))))))
+
+(defun my/tracker-org-files (&optional dir)
+  "Ticket file of every feature in the repo containing DIR.
+A feature checked out in a worktree resolves to that worktree's copy, so
+in-flight state wins; every other feature resolves to the main checkout."
+  (when-let* ((root (my/tracker--repo-root (or dir default-directory))))
+    (let ((files (make-hash-table :test 'equal))
+          (base (expand-file-name my/session-tickets-subdir root)))
+      (when (file-directory-p base)
+        (dolist (file (directory-files base t "\\`[^.].*\\.org\\'"))
+          (puthash (file-name-base file) file files)))
+      (pcase-dolist (`(,branch . ,worktree) (my/tracker--worktree-branches root))
+        (let* ((feature (file-name-nondirectory branch))
+               (file (expand-file-name
+                      (concat my/session-tickets-subdir "/" feature ".org")
+                      worktree)))
+          (when (file-exists-p file)
+            (puthash feature file files))))
+      (sort (hash-table-values files) #'string<))))
 
 (defconst my/tracker-columns-format
   "%30ITEM(Title) %10TODO(State) %10KIND(Kind) %6TYPE(Type) %20FEATURE(Feature) %20TRACKER_CATEGORY(Category) %10PRIORITY(Priority) %24BRANCH(Branch)"
@@ -51,14 +89,14 @@ The format names tracker properties, so it stays out of other Org buffers."
   (org-agenda-custom-commands
    '(("w" "Tracker workboard"
       ((todo "DOING") (todo "NEXT") (todo "WAIT") (todo "TODO"))
-      ((org-agenda-files (my/session-ticket-org-files))))
+      ((org-agenda-files (my/tracker-org-files))))
      ("f" "Tracker frontier"
       ((tags-todo "KIND={.}+TYPE=\"HITL\"/NEXT"
                   ((org-agenda-overriding-header "Mine")))
        (tags-todo "KIND={.}+TYPE=\"AFK\"/NEXT"
                   ((org-agenda-overriding-header "Agent"))))
       ;; Frontier means startable, so blocked entries drop out rather than dim.
-      ((org-agenda-files (my/session-ticket-org-files))
+      ((org-agenda-files (my/tracker-org-files))
        (org-agenda-dim-blocked-tasks 'invisible)))))
   :config
   (require 'org-tempo)                  ; <s TAB

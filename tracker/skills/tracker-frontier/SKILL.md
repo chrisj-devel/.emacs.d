@@ -46,10 +46,10 @@ the most useful thing this skill reports.
 
 ## Emacs
 
-`C-c a` offers two cross-session views defined in the Emacs configuration: `f`
-(**frontier**) is the query above, split by `TYPE`, and `w` (**workboard**) is
-every open tracker heading, grouped by state. This skill does not depend on
-either; it reads the files.
+`C-c a` offers two views defined in the Emacs configuration, both over the whole
+tracker of the repo at point: `f` (**frontier**) is the query above, split by
+`TYPE`, and `w` (**workboard**) is every open tracker heading, grouped by state.
+This skill does not depend on either; it reads the files.
 
 ## Scope
 
