@@ -66,6 +66,22 @@
 (use-package markdown-mode
   :mode ("README\\.md\\'" . gfm-mode))
 
+;;; HTTP
+
+;; The built-ins are url.el and eww — a library and a browser, neither of which
+;; composes a request from a document or keeps the response.  verb makes an org
+;; heading the request, and is what the verb-api agent skill drives.
+(use-package verb
+  :after org
+  :demand t                             ; nothing else pulls it in, and :config
+                                        ; is what installs the prefix
+  :bind (:map verb-response-body-mode-map
+              ("q" . verb-kill-response-buffer-and-window))
+  :config
+  ;; `verb-command-map' is a keymap value, not a command.  Through `:bind'
+  ;; use-package autoloads it as a function and the prefix fails to define.
+  (keymap-set org-mode-map "C-c C-r" verb-command-map))
+
 ;;; Agents
 
 (use-package acp)

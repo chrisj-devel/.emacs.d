@@ -100,6 +100,10 @@
      ("\\*.*ghostel.*\\*"
       (display-buffer-reuse-mode-window display-buffer-in-side-window)
       (side . bottom) (window-height . 0.3))
+     ;; verb (dev.el) sends from an org heading; the response belongs beside it.
+     ("\\`\\*HTTP Response"
+      (display-buffer-reuse-mode-window display-buffer-in-direction)
+      (direction . right) (window-width . 0.5))
      ("\\*Sessions\\*"
       (display-buffer-reuse-mode-window display-buffer-in-side-window)
       (side . bottom) (window-height . 0.3)))))
