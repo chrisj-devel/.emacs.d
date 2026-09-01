@@ -123,7 +123,34 @@
 
 ;;; Dired
 
+(use-package dired
+  :ensure nil
+  :custom
+  ;; --group-directories-first is GNU-only; the macOS block below adds it when
+  ;; gls is available.
+  (dired-listing-switches "-Alh")
+  (dired-kill-when-opening-new-dired-buffer t)
+  (dired-clean-confirm-killing-deleted-buffers nil))
+
+(declare-function dirvish-side-follow-mode "dirvish-side")
+
+;; `dirvish-icons' only declares the nerd-icons functions, so nothing loads the
+;; library on our behalf.  "Symbols Nerd Font Mono" (the nerd-icons default) is
+;; not installed; the patched Monaspace already carries the glyphs.
+(use-package nerd-icons
+  :custom (nerd-icons-font-family "Monaspace Neon NF"))
+
 (use-package dirvish
+  :demand t
+  :custom
+  (dirvish-attributes '(nerd-icons subtree-state vc-state file-size))
+  (dirvish-side-attributes '(nerd-icons subtree-state vc-state))
+  (dirvish-side-width 30)
+  :bind
+  ([f1] . dirvish-side)
+  (:map dirvish-mode-map
+        ("l" . dirvish-subtree-toggle)
+        ("h" . dirvish-subtree-up))
   :config
   ;; GNU ELPA ships the extensions in a subdirectory that the package autoloads
   ;; never put on `load-path'.  Without this, `dirvish-side' (sessions.el) and
@@ -132,7 +159,11 @@
   (add-to-list 'load-path
                (expand-file-name "extensions"
                                  (file-name-directory (locate-library "dirvish"))))
-  (dirvish-override-dired-mode))
+  ;; f1 reaches `dirvish-side' before any session exists, and the extension has
+  ;; no autoload to pull it in.  Subtree arrives via the subtree-state attribute.
+  (require 'dirvish-side)
+  (dirvish-override-dired-mode)
+  (dirvish-side-follow-mode))
 
 ;;; macOS
 
@@ -141,7 +172,8 @@
         delete-by-moving-to-trash t
         trash-directory "~/.Trash")
   (if (executable-find "gls")
-      (setq insert-directory-program "gls")
+      (setq insert-directory-program "gls"
+            dired-listing-switches "-Alh --group-directories-first")
     (setq dired-use-ls-dired nil))
   (set-face-attribute 'default nil :font "Monaspace Neon NF" :height 130))
 
