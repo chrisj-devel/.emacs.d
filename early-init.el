@@ -25,6 +25,7 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (setq package-archive-priorities '(("gnu" . 3) ("nongnu" . 2) ("melpa" . 1)))
+(setq package-review-policy t)
 
 (setq use-package-always-ensure t
       use-package-vc-prefer-newest t)
