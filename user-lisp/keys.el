@@ -5,19 +5,6 @@
 ;; treesit-fold dropped (native outline-minor-mode covers folding).
 ;;; Code:
 
-(defun meow-open-cheatsheet ()
-  "Open the meow cheatsheet in a side window."
-  (interactive)
-  (let ((file (expand-file-name "user-lisp/meow-cheatsheet.org" user-emacs-directory)))
-    (when (file-exists-p file)
-      (with-current-buffer (find-file-noselect file)
-        (read-only-mode 1)
-        (select-window
-         (display-buffer (current-buffer)
-                         '(display-buffer-in-side-window
-                           (side . right)
-                           (window-width . 0.4))))))))
-
 (defun join-line-below ()
   "Join the next line onto the current line, like vim's J."
   (interactive)
@@ -180,7 +167,6 @@
    '("Q" . meow-grab)
    '("'" . meow-last-buffer)
    '("\"" . meow-comment)
-   '("?" . meow-open-cheatsheet)
    '("C-g" . meow-cancel-selection)
    '("<escape>" . ignore))
 

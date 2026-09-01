@@ -38,7 +38,7 @@ auto-side-windows (native side windows), evil (meow won), activities.el
 - `user-lisp/core.el` — shell environment, defaults, native completion, side
   windows, tab-bar
 - `user-lisp/completing.el` — the minibuffer stack (rule 5)
-- `user-lisp/keys.el` — meow (vim-transitional; see meow-cheatsheet.org)
+- `user-lisp/keys.el` — meow (vim-transitional)
 - `user-lisp/sessions.el` — the only real custom code: session derivation,
   spawn/teardown, dashboard. Keep it small; prefer deleting to extending.
 - `user-lisp/tickets.el` — org + cross-session agenda
