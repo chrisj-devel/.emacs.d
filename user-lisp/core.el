@@ -182,6 +182,14 @@
   (dirvish-override-dired-mode)
   (dirvish-side-follow-mode))
 
+;;; Server
+
+(use-package server
+  :ensure nil
+  :config
+  (unless (server-running-p)
+    (server-start)))
+
 ;;; macOS
 
 (when (eq system-type 'darwin)
