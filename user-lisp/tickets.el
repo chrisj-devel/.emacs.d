@@ -8,48 +8,32 @@
 
 (require 'subr-x)
 
-(declare-function my/session--git "sessions")
-(declare-function my/session--main-root "sessions")
+(declare-function my/session--repo-root "sessions")
+(declare-function my/session--worktrees "sessions")
 (defvar my/session-tickets-subdir)
 
-;; Scope is derived from `git worktree list' in the repo at point, not from
+;; Scope is one repo, derived from `git worktree list', not from
 ;; `project-known-project-roots'. Walking known roots would stat every project
 ;; Emacs has ever seen — including remote ones, where `file-directory-p' opens
 ;; a Tramp connection just to build an agenda for an unrelated repo.
-(defun my/tracker--repo-root (dir)
-  "Main checkout of the repo containing DIR, or nil."
-  (unless (file-remote-p dir)
-    (ignore-errors (my/session--main-root dir))))
-
-(defun my/tracker--worktree-branches (root)
-  "Alist of (BRANCH . WORKTREE) for every worktree of the repo at ROOT."
-  (let (out worktree)
-    (dolist (line (split-string (my/session--git root "worktree" "list" "--porcelain")
-                                "\n")
-                  (nreverse out))
-      (cond ((string-prefix-p "worktree " line)
-             (setq worktree (substring line 9)))
-            ((string-prefix-p "branch " line)
-             (push (cons (substring line 7) worktree) out))))))
-
-(defun my/tracker-org-files (&optional dir)
-  "Ticket file of every feature in the repo containing DIR.
+(defun my/tracker-org-files (&optional repo)
+  "Ticket file of every feature in REPO, the repo at point by default.
 A feature checked out in a worktree resolves to that worktree's copy, so
 in-flight state wins; every other feature resolves to the main checkout."
-  (when-let* ((root (my/tracker--repo-root (or dir default-directory))))
-    (let ((files (make-hash-table :test 'equal))
-          (base (expand-file-name my/session-tickets-subdir root)))
-      (when (file-directory-p base)
-        (dolist (file (directory-files base t "\\`[^.].*\\.org\\'"))
-          (puthash (file-name-base file) file files)))
-      (pcase-dolist (`(,branch . ,worktree) (my/tracker--worktree-branches root))
-        (let* ((feature (file-name-nondirectory branch))
-               (file (expand-file-name
-                      (concat my/session-tickets-subdir "/" feature ".org")
-                      worktree)))
-          (when (file-exists-p file)
-            (puthash feature file files))))
-      (sort (hash-table-values files) #'string<))))
+  (let* ((root (or repo (my/session--repo-root)))
+         (base (expand-file-name my/session-tickets-subdir root))
+         (files (make-hash-table :test 'equal)))
+    (when (file-directory-p base)
+      (dolist (file (directory-files base t "\\`[^.].*\\.org\\'"))
+        (puthash (file-name-base file) file files)))
+    (pcase-dolist (`(,branch . ,worktree) (my/session--worktrees root))
+      (let* ((feature (file-name-nondirectory branch))
+             (file (expand-file-name
+                    (concat my/session-tickets-subdir "/" feature ".org")
+                    worktree)))
+        (when (file-exists-p file)
+          (puthash feature file files))))
+    (sort (hash-table-values files) #'string<)))
 
 (defconst my/tracker-columns-format
   "%30ITEM(Title) %10TODO(State) %10KIND(Kind) %6TYPE(Type) %20FEATURE(Feature) %20TRACKER_CATEGORY(Category) %10PRIORITY(Priority) %24BRANCH(Branch)"

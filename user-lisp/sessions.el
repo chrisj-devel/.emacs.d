@@ -2,8 +2,8 @@
 ;;; Commentary:
 ;; A session = (worktree, tickets/<feature>/, agent buffer, tab), derived
 ;; from disk and live buffers on every access — never persisted.  A linked
-;; git worktree in `project-known-project-roots' is a session; an
-;; agent-shell buffer outside any worktree is a bare session.
+;; git worktree of the repo in hand is a session; an agent-shell buffer
+;; outside any worktree is a bare session.
 ;;
 ;; A session has two layouts, each in its own tab: the work tab (ticket +
 ;; agent) and the browse tab (dirvish sidebar + code).
@@ -86,6 +86,24 @@
       (my/session--git root "rev-parse" "--abbrev-ref" "HEAD")
     (error nil)))
 
+(defun my/session--worktrees (root)
+  "Alist of (BRANCH . WORKTREE) for every worktree of the repo at ROOT.
+Includes the main checkout; a detached worktree has no branch and is omitted."
+  (let (out worktree)
+    (dolist (line (split-string
+                   (my/session--git root "worktree" "list" "--porcelain") "\n")
+                  (nreverse out))
+      (cond ((string-prefix-p "worktree " line)
+             (setq worktree (substring line 9)))
+            ((string-prefix-p "branch " line)
+             (push (cons (substring line 7) worktree) out))))))
+
+(defun my/session--repo-root ()
+  "Main checkout of the repo at point, prompting when there is none."
+  (or (and (not (file-remote-p default-directory))
+           (ignore-errors (my/session--main-root default-directory)))
+      (funcall project-prompter)))
+
 ;;; Derivation
 
 (defun my/session--agent-buffer (root)
@@ -96,10 +114,16 @@
                      (file-in-directory-p default-directory root))))
             (buffer-list)))
 
-(defun my/sessions ()
-  "Derive the list of live sessions from disk and buffers."
+(defun my/sessions (&optional repo)
+  "Derive the list of live sessions from disk and buffers.
+With REPO, consider only that repo's worktrees, which `git worktree list'
+answers in one call.  Without it every known project root is stat'd —
+including remote ones, where that alone opens a Tramp connection.
+Bare sessions belong to no repo, so they are listed either way."
   (let (sessions roots)
-    (dolist (root (project-known-project-roots))
+    (dolist (root (if repo
+                      (mapcar #'cdr (my/session--worktrees repo))
+                    (seq-remove #'file-remote-p (project-known-project-roots))))
       (when (my/session--linked-worktree-p root)
         (push root roots)
         (let ((branch (my/session--branch root)))
@@ -148,8 +172,8 @@
     file))
 
 (defun my/session--read (prompt)
-  "Read a session by name with PROMPT."
-  (let* ((sessions (my/sessions))
+  "Read a session of the repo at point by name with PROMPT."
+  (let* ((sessions (my/sessions (my/session--repo-root)))
          (name (completing-read prompt (mapcar #'my/session-name sessions) nil t)))
     (seq-find (lambda (s) (equal (my/session-name s) name)) sessions)))
 
@@ -287,6 +311,10 @@
     ('ready (propertize "● ready" 'face 'success))
     (_ (propertize "– none" 'face 'shadow))))
 
+(defvar-local my/session-dashboard--repo nil
+  "Repo whose sessions this dashboard lists, resolved when it was opened.
+Held so reverting does not re-prompt from the dashboard's own buffer.")
+
 (defun my/session-dashboard--entries ()
   (mapcar (lambda (session)
             (list session
@@ -296,7 +324,7 @@
                               (buffer-name buffer)
                             "")
                           (abbreviate-file-name (my/session-root session)))))
-          (my/sessions)))
+          (my/sessions my/session-dashboard--repo)))
 
 (defun my/session-dashboard-open ()
   "Open the session at point."
@@ -334,12 +362,17 @@
             nil t)
   (tabulated-list-init-header))
 
-(defun my/session-dashboard ()
-  "Show mission control: all sessions with agent status."
-  (interactive)
+(defun my/session-dashboard (repo)
+  "Show mission control: REPO's sessions with agent status.
+REPO is the repo at point, prompted for when there is none.  It is read
+before the dashboard buffer is current, whose own `default-directory'
+would otherwise decide it."
+  (interactive (list (my/session--repo-root)))
   (with-current-buffer (get-buffer-create my/session-dashboard-buffer)
     (unless (derived-mode-p 'my/session-dashboard-mode)
       (my/session-dashboard-mode))
+    ;; After the mode, which kills buffer-local variables.
+    (setq my/session-dashboard--repo repo)
     (setq tabulated-list-entries (my/session-dashboard--entries))
     (tabulated-list-print t)
     (pop-to-buffer (current-buffer))))

@@ -10,7 +10,8 @@ One custom abstraction: a **session** = (git worktree, `tickets/<feature>/`,
 agent buffer, tab), derived from disk + live buffers on every access — never
 persisted. Sessions are an overlay, not a mode: no session ⇒ stock Emacs.
 
-- `f6` / `C-c s d` — mission control dashboard (`RET` jump, `b` browse, `n` spawn, `k` teardown)
+- `f6` / `C-c s d` — mission control dashboard for the repo at point (`RET`
+  jump, `b` browse, `n` spawn, `k` teardown)
 - `C-c s n` — spawn: worktree + branch + ticket scaffold + tab + agent
 - `C-c s b` — browse tab: dirvish sidebar + code, same session, second tab
 - `C-c s k` — teardown: kill buffers, remove worktree, close both tabs (branch kept)
