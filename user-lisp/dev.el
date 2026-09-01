@@ -31,6 +31,16 @@
 (use-package magit
   :bind ("C-x g" . magit-status))
 
+;; Ediff is launched from magit; keys.el gives it its own meow state.  Its
+;; default control window is a separate frame, which on macOS is a floating
+;; window that outlives the comparison.
+(use-package ediff
+  :ensure nil
+  :custom
+  (ediff-window-setup-function #'ediff-setup-windows-plain)
+  (ediff-split-window-function #'split-window-horizontally)
+  (ediff-keep-variants nil))
+
 ;;; Per-project env (direnv) — worktrees need their own envs
 
 (use-package envrc
