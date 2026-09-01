@@ -21,15 +21,12 @@ Do not create a worktree. In particular do not use `EnterWorktree`, which would
 nest one inside the session. If you are not in a session worktree, say so and
 stop — the human spawns it with `C-c s n`.
 
-The session's tracker copy is the one being worked. Ticket state travels with
-the feature branch and merges alongside the code, so there is nothing to
-reconcile against the default branch mid-feature.
+The tracker is shared, not per-session: `tickets/` is a symlink, so every
+session reads the same files on whatever branch the tracker repository holds.
+Ticket state does not travel with the feature branch.
 
-Record the branch on the PRD when it is cut:
-
-```org
-:BRANCH: agent/<feature>
-```
+The session's branch is the feature name. Do not record it on the PRD; add
+`BRANCH` to a work heading only when its branch differs.
 
 ## Before writing code
 

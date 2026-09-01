@@ -52,7 +52,9 @@ Every heading's TODO keyword is its canonical state. Never duplicate it in a
 ```
 
 `FEATURE` and `KIND` are required. `TYPE` is required on every `NEXT` heading.
-`PRIORITY` and `BRANCH` are optional. No repo requires any further property.
+`PRIORITY` is optional. `BRANCH` is optional on a work heading, where it names
+the branch that implements it — never on a `prd` or `map`, whose branch is the
+feature name. No repo requires any further property.
 
 ## `KIND`
 
@@ -259,14 +261,8 @@ session of every repo reads the same files, on whatever branch the tracker
 repository is checked out at. Ticket state does not travel with a feature branch
 and there is nothing to merge.
 
-While a feature is in flight its PRD carries the branch holding the code:
-
-```org
-:BRANCH: agent/<feature>
-```
-
-Add it when the branch is cut. Delete it when the branch merges. A PRD without
-`BRANCH` is built on the default branch.
+The session layer names the branch after the feature, so a PRD records no
+branch: the file name already is it.
 
 ## Closing a feature
 
