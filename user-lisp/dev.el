@@ -62,6 +62,24 @@
   (ediff-split-window-function #'split-window-horizontally)
   (ediff-keep-variants nil))
 
+;;; Secrets
+
+;; Built-in auth-source reads ~/.authinfo(.gpg) and, on Linux, the D-Bus Secret
+;; Service.  Neither reaches 1Password, so the alternative is a second copy of
+;; every secret in a file.  Serves magit forge, tramp and the agent keys.
+;;
+;; Stock defaults, as the old config ran them: a search for HOST and USER runs
+;; `op read op://Personal/<host>/<user>'.  So the item is named for the host,
+;; lives in the Personal vault, and the field is named for the user —
+;; op://Personal/github.com/chrisj-devel.  A miss is silent and falls through
+;; to the remaining backends, so ~/.authinfo still answers for anything not
+;; kept in 1Password.  `auth-source-1password-vault' and
+;; `-construct-secret-reference' are the knobs if that convention changes.
+(use-package auth-source-1password
+  :demand t
+  :config
+  (auth-source-1password-enable))
+
 ;;; Per-project env (direnv) — worktrees need their own envs
 
 (use-package envrc
