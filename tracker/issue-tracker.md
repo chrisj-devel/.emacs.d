@@ -166,6 +166,11 @@ Org, not Markdown: `=verbatim=` for code and identifiers, `*bold*`, `/italic/`,
 `+strikethrough+`, `#+begin_src`/`#+end_src`. Checkboxes are the one carry-over —
 org reads `- [ ]` / `- [X]` and rolls a `[/]` cookie up to the heading.
 
+Never hard-wrap. A paragraph is one line, a list item is one line. Org wraps
+them for display through `visual-line-mode`; hand-inserted newlines survive into
+the file, so they break re-flow and turn a one-word edit into a whole-paragraph
+diff.
+
 Links: another feature `[[file:<feature>.org][<feature>]]`; a Jira issue
 `[[jira:ABC-123]]`; source with a line target
 `[[file:~/Source/<org>/<repo>/<path>::39][<file>:39]]`. The `jira:`
