@@ -216,10 +216,13 @@ file with no open headings.
 
 ## Emacs
 
-`C-c a` opens the agenda; its `s` view rolls up open tickets across every live
-session. `C-c s n` spawns a session, `C-c s k` tears one down.
+`C-c a` opens the agenda. Two views roll up every live session's tickets:
 
-`M-x org-ql-view` offers **Tracker: Workboard** and **Tracker: Frontier**, both
-spanning every live session. Views require `org-ql`; dependency enforcement
-requires `org-edna`. Both packages and both views are declared in the Emacs
+- `w` — **workboard**: every open tracker heading, grouped by state
+- `f` — **frontier**: unblocked `NEXT` headings only, split by `TYPE`
+
+`C-c s n` spawns a session, `C-c s k` tears one down.
+
+Both are stock `org-agenda-custom-commands`; only dependency enforcement needs a
+package (`org-edna`). The views and the package are declared in the Emacs
 configuration, not in the repo.

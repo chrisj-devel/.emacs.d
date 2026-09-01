@@ -65,8 +65,8 @@ Do not simply add =tickets/= to =.gitignore= and leave it at that. A session is
 a linked worktree, git checks out tracked files only, and an ignored directory
 therefore does not exist in a fresh worktree at all. Every session would start
 on an empty scaffold instead of the specification, every cross-feature edge
-would be unresolvable, and the agenda and both org-ql views would see only
-stubs. The failure is silent.
+would be unresolvable, and both agenda views would see only stubs. The failure
+is silent.
 
 Symlink it instead, so every repo-relative path in the contract stays literally
 true and agents learn no special case:

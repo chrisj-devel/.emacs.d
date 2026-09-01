@@ -2,13 +2,12 @@
 ;;; Commentary:
 ;; Tickets live in <worktree>/<tickets-dir>/<feature>.org: the PRD and each
 ;; issue are top-level headings.
-;; The "s" agenda view rolls up TODOs across all live sessions' tickets.
+;; The "w" and "f" agenda views roll up across all live sessions' tickets.
 ;;; Code:
 
 (declare-function my/sessions "sessions")
 (declare-function my/session-ticket-file "sessions")
 (defvar my/session-tickets-subdir)
-(defvar org-ql-views)
 
 (defun my/session-ticket-org-files ()
   "Ticket file of every live session."
@@ -47,9 +46,20 @@ The format names tracker properties, so it stays out of other Org buffers."
   (org-src-preserve-indentation t)
   (org-src-tab-acts-natively t)
   (org-edit-src-content-indentation 0)
+  ;; KIND is what distinguishes a tracker heading from any other Org heading,
+  ;; so both views work across sessions without naming a repo.
   (org-agenda-custom-commands
-   '(("s" "In-flight session tickets" alltodo ""
-      ((org-agenda-files (my/session-ticket-org-files))))))
+   '(("w" "Tracker workboard"
+      ((todo "DOING") (todo "NEXT") (todo "WAIT") (todo "TODO"))
+      ((org-agenda-files (my/session-ticket-org-files))))
+     ("f" "Tracker frontier"
+      ((tags-todo "KIND={.}+TYPE=\"HITL\"/NEXT"
+                  ((org-agenda-overriding-header "Mine")))
+       (tags-todo "KIND={.}+TYPE=\"AFK\"/NEXT"
+                  ((org-agenda-overriding-header "Agent"))))
+      ;; Frontier means startable, so blocked entries drop out rather than dim.
+      ((org-agenda-files (my/session-ticket-org-files))
+       (org-agenda-dim-blocked-tasks 'invisible)))))
   :config
   (require 'org-tempo)                  ; <s TAB
   (org-babel-do-load-languages
@@ -62,31 +72,6 @@ The format names tracker properties, so it stays out of other Org buffers."
 (use-package org-edna
   :after org
   :config (org-edna-mode))
-
-;; org-agenda matches on tags and keywords; the tracker's views need queries
-;; over arbitrary properties. Pulls in org-super-agenda for :super-groups.
-(use-package org-ql
-  :after org
-  :config
-  ;; `org-ql-views' lives in org-ql-view.el, which org-ql itself never loads.
-  (with-eval-after-load 'org-ql-view
-    ;; KIND is what distinguishes a tracker heading from any other Org heading,
-    ;; so both views work across sessions without naming a repo.
-    (setf (alist-get "Tracker: Workboard" org-ql-views nil nil #'equal)
-          '(:buffers-files my/session-ticket-org-files
-            :query (and (property "KIND") (todo))
-            :sort (priority todo)
-            :super-groups ((:name "Doing" :todo "DOING" :order 1)
-                           (:name "Next" :todo "NEXT" :order 2)
-                           (:name "Waiting" :todo "WAIT" :order 3)
-                           (:name "Inbox" :todo "TODO" :order 4))
-            :title "Tracker workboard"))
-    (setf (alist-get "Tracker: Frontier" org-ql-views nil nil #'equal)
-          '(:buffers-files my/session-ticket-org-files
-            :query (and (property "KIND") (todo "NEXT") (not (org-entry-blocked-p)))
-            :sort (priority)
-            :super-groups ((:auto-property "TYPE"))
-            :title "Unblocked tracker frontier"))))
 
 (provide 'tickets)
 ;;; tickets.el ends here
