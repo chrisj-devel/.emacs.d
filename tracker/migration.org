@@ -58,8 +58,9 @@ cross-repo edges. See "A tracker the repo does not version" below.
 
 Some repos are shared, and the breakdown is not. Where an upstream tracker is
 the source of truth and =tickets/= only holds the local decomposition of it, the
-tracker belongs in its own local repo at =~/Source/trackers/<repo>/= and never
-enters the shared one.
+tracker belongs in its own local repository beside the repos it describes, at
+=tracker/<repo>/= in their shared parent directory, and never enters the shared
+one — =~/Source/<org>/tracker/<repo>/=.
 
 Do not simply add =tickets/= to =.gitignore= and leave it at that. A session is
 a linked worktree, git checks out tracked files only, and an ignored directory
@@ -72,8 +73,8 @@ Symlink it instead, so every repo-relative path in the contract stays literally
 true and agents learn no special case:
 
 #+begin_src sh
-ln -s ~/Source/trackers/<repo> <repo>/tickets
-printf '/tickets\n' >> <repo>/.git/info/exclude
+ln -s ~/Source/<org>/tracker/<repo> ~/Source/<org>/<repo>/tickets
+printf '/tickets\n' >> ~/Source/<org>/<repo>/.git/info/exclude
 #+end_src
 
 - =.git/info/exclude=, not =.gitignore=. It is never committed, so the
@@ -345,8 +346,9 @@ deserves a human. Finish with =M-x my/tracker-validate=.
 
 ** The worktrees move too
 
-Sessions live at =~/Source/worktrees/<repo>/<feature>= and are created by
-=C-c s n=. Tear down worktrees under retired conventions rather than moving
+Sessions live beside the repo at =worktrees/<repo>/<feature>= in its parent
+directory — =~/Source/<org>/worktrees/= for these repos — and are created
+by =C-c s n=. Tear down worktrees under retired conventions rather than moving
 them — a session is derived, not persisted, so respawning costs nothing. Run
 =git worktree prune= and drop the retired paths from =.gitignore=.
 
