@@ -4,13 +4,8 @@
 ;; Launch with: emacs --init-directory ~/Source/dotfiles/emacs31/.emacs.d
 ;;; Code:
 
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(setq package-archive-priorities '(("gnu" . 3) ("nongnu" . 2) ("melpa" . 1)))
-
-(setq use-package-always-ensure t
-      use-package-vc-prefer-newest t)
-
+;; Package archives and use-package defaults live in early-init.el; the
+;; user-lisp/ compile that installs them runs before this file.
 ;; user-lisp/ is auto-compiled and added to load-path (Emacs 31).
 (require 'core)
 (require 'completing)

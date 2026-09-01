@@ -125,6 +125,13 @@
 
 (use-package dirvish
   :config
+  ;; GNU ELPA ships the extensions in a subdirectory that the package autoloads
+  ;; never put on `load-path'.  Without this, `dirvish-side' (sessions.el) and
+  ;; every attribute library `dirvish--check-dependencies' requires — vc,
+  ;; subtree, collapse, icons, peek — are unreachable.
+  (add-to-list 'load-path
+               (expand-file-name "extensions"
+                                 (file-name-directory (locate-library "dirvish"))))
   (dirvish-override-dired-mode))
 
 ;;; macOS

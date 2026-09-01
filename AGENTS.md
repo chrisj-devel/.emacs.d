@@ -49,9 +49,12 @@ auto-side-windows (native side windows), evil (meow won), activities.el
 
 ## Verifying changes
 
-Batch boot (must stay clean; batch skips startup, so emulate it):
+Batch boot (must stay clean; batch skips startup, so emulate it — including
+early-init.el, which batch does not load and which now carries the package
+bootstrap):
 
     emacs --batch --init-directory <this dir> \
+      -l <this dir>/early-init.el \
       --eval "(progn (package-activate-all) (prepare-user-lisp))" \
       -l <this dir>/init.el --eval '(message "OK")'
 
@@ -77,3 +80,11 @@ Never commit batch-test droppings: `projects.eld`, `recentf.eld`, `history`,
   state, and both packages ship daily MELPA snapshots. Don't re-add it.
 - Byte-compile warnings about meow/agent-shell functions in `:config` blocks
   are expected use-package noise; a clean boot is the real check.
+- use-package installs `:ensure` packages at **byte-compile** time, and Emacs
+  31 compiles `user-lisp/` during startup, before init.el. Anything the
+  compile depends on — `package-archives`, `use-package-always-ensure` —
+  belongs in early-init.el; in init.el it arrives too late and nothing is ever
+  installed (silently, since already-present packages still load).
+- GNU ELPA's dirvish keeps its extensions in a subdirectory its autoloads
+  never add to `load-path`. core.el adds it; without that, `dirvish-side` and
+  the attribute libraries are unreachable.

@@ -1,4 +1,4 @@
-;;; early-init.el --- Pre-init frame and GC setup -*- lexical-binding: t; -*-
+;;; early-init.el --- Package bootstrap, frame and GC setup -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 
@@ -15,5 +15,18 @@
 (push '(vertical-scroll-bars) default-frame-alist)
 (when (eq system-type 'darwin)
   (push '(ns-transparent-titlebar . t) default-frame-alist))
+
+;; Package setup has to happen here, not in init.el.  Emacs 31 byte-compiles
+;; `user-lisp-directory' during startup (`prepare-user-lisp'), and use-package
+;; installs `:ensure' packages at byte-compile time rather than at load time.
+;; That compile runs before init.el, so anything configured there — the MELPA
+;; entry, the priorities, `use-package-always-ensure' — arrives too late and
+;; nothing is ever installed.
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(setq package-archive-priorities '(("gnu" . 3) ("nongnu" . 2) ("melpa" . 1)))
+
+(setq use-package-always-ensure t
+      use-package-vc-prefer-newest t)
 
 ;;; early-init.el ends here
