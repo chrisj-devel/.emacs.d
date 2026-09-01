@@ -31,15 +31,31 @@ The format names tracker properties, so it stays out of other Org buffers."
 (use-package org
   :ensure nil
   :bind ("C-c a" . org-agenda)
-  :hook (org-mode . my/tracker-columns-setup)
+  ;; Ticket files carry one logical line per paragraph and list item, so the
+  ;; wrapping is visual-line-mode's job.
+  :hook ((org-mode . my/tracker-columns-setup)
+         (org-mode . visual-line-mode))
   :custom
   (org-todo-keywords
    '((sequence "TODO(t)" "NEXT(n)" "DOING(p)" "WAIT(w@/!)"
                "|" "DONE(d)" "CANCELED(c@)")))
   (org-log-done 'time)
+  (org-log-into-drawer t)
+  (org-use-fast-todo-selection t)
+  ;; Edna-blocked tickets dim, so the frontier reads at a glance.
+  (org-agenda-dim-blocked-tasks t)
+  (org-src-preserve-indentation t)
+  (org-src-tab-acts-natively t)
+  (org-edit-src-content-indentation 0)
   (org-agenda-custom-commands
    '(("s" "In-flight session tickets" alltodo ""
-      ((org-agenda-files (my/session-ticket-org-files)))))))
+      ((org-agenda-files (my/session-ticket-org-files))))))
+  :config
+  (require 'org-tempo)                  ; <s TAB
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (shell . t))))
 
 ;; Built-in dependency enforcement is ORDERED plus parent/child only; the
 ;; tracker's edges are cross-file, so Edna's BLOCKER property is the gap.
