@@ -30,6 +30,19 @@
 
 ;; eglot only reports in the buffers a server manages.  Flymake's own backends
 ;; cover the rest — elisp and shell, which is most of this repo.
+;;
+;; Elisp gets checkdoc here but not the byte-compiler: Emacs 30 gated
+;; `elisp-flymake-byte-compile' on `trusted-content-p', and `trusted-content'
+;; is nil, so it disables itself with "untrusted content" in every buffer but
+;; init.el.  The fix is per-machine — it names directories on *this* disk and
+;; states what elisp you will let an editor command run — so it belongs in the
+;; gitignored custom.el, not here:
+;;
+;;   M-x customize-variable RET trusted-content RET   ; e.g. "~/Source/"
+;;
+;; Matching is on the abbreviated `buffer-file-truename', and a "/" suffix
+;; makes an entry a directory prefix, so one entry covers the session
+;; worktrees too.
 (use-package flymake
   :ensure nil
   :hook (prog-mode . flymake-mode))
