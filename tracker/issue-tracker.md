@@ -9,22 +9,10 @@
 
 Issues and PRDs live as Org files in `tickets/`.
 
-## Where the tracker lives
-
-`tickets/` is a symlink. `<org>` below stands for the directory holding the
-repo working copies; the agent configuration names it, this file does not. The
-tracker is one local git repository at
-`~/Source/<org>/tracker`, sibling to the repo working copies and to
-`worktrees/`, holding `<repo>/<feature>.org`. It has no remote and none is ever
-to be added: commit freely, never push.
-
-Nothing tracker-related is committed to a repo — not the symlink, not a
-`.gitignore`, not this file. The symlink is excluded in `.git/info/exclude`, and
-the skills are covered by the global ignore. This is a personal setup living
-inside shared repositories, and it leaves no trace in any of them.
-
-Every repo shares this one structure, so there is no per-repo tracker document
-and no `tracker.local.md`. Anything repo-specific is declared in this file.
+Repo-specific vocabulary lives in `tickets/tracker.local.md`. That file fills
+the slots named below and may override a default this file calls out as
+overridable. It supplies values; it never overrides a rule. If it is absent, the
+slots are unused and the defaults stand.
 
 `~/.claude/scratch/` is the superseded pre-org markdown tree. Never read, edit
 or resume from a file in it, and never copy its shape.
@@ -54,7 +42,8 @@ Every heading's TODO keyword is its canonical state. Never duplicate it in a
 `FEATURE` and `KIND` are required. `TYPE` is required on every `NEXT` heading.
 `PRIORITY` is optional. `BRANCH` is optional on a work heading, where it names
 the branch that implements it — never on a `prd` or `map`, whose branch is the
-feature name. No repo requires any further property.
+feature name. A repo may declare further required properties —
+**slot: extra properties**.
 
 ## `KIND`
 
@@ -111,9 +100,9 @@ under, which is why routing is a property and not a state.
 
 ## Priority
 
-No repo defines a vocabulary for how a feature relates to its current
-priorities. If one is added, decide it once, when the spec is written, and do
-not revisit it.
+A repo may define a vocabulary describing how a feature relates to its current
+priorities, and where that bar is written down — **slot: alignment**. Decide it
+once, when the spec is written, and do not revisit it.
 
 Work that scores low is recorded, not refused. Name what a feature does not
 move and what it displaces, once, at spec time, and then build it. Never
@@ -131,11 +120,13 @@ alignment slot says what is on the bar, the states say what is undecided
 (`WAIT`, `TYPE: HITL`, or no tickets at all), and counting a feature's open
 tickets says how much is left.
 
-Do not store what can be counted.
+Do not store what can be counted. A repo that has tested this may record its
+own evidence in `tracker.local.md`.
 
 ## Categories
 
-`TRACKER_CATEGORY` is optional and no vocabulary is defined, so omit it.
+`TRACKER_CATEGORY` is optional and its vocabulary is repo-defined —
+**slot: categories**. Absent a declared vocabulary, omit the property.
 
 ## Dependencies
 
@@ -161,7 +152,8 @@ Do not add a `** Blocked by` section; historical or soft sequencing belongs
 under `** Comments`.
 
 Sweep the graph with `M-x my/tracker-validate` after changing dependency
-metadata. It reports unresolvable edges and cycles.
+metadata. It reports unresolvable edges and cycles. A repo may declare
+additional verification commands — **slot: verification**.
 
 ## Decomposition
 
@@ -232,17 +224,15 @@ exploratory skill writes its own kind beside a `map`.
 ticket's acceptance criteria and required verification pass:
 
 1. Mark its acceptance criteria complete and change the state to `DONE`.
-2. Commit the implementation in the repo.
-3. Commit the tracker update in `~/Source/<org>/tracker`.
-4. Report completion only after both commits succeed.
-
-No repo versions its tracker with the code — `tickets/` is a symlink out — so
-the boundary spans two repositories and neither commit is complete without the
-other. Never name a ticket in a commit message, a code comment, or anything else
-the repo tracks: the tracker is local and means nothing to anyone else.
+2. Stage the implementation and the tracker update together.
+3. Commit immediately.
+4. Report completion only after the commit succeeds.
 
 Never leave a `DONE` ticket as uncommitted work. If the work should remain
 uncommitted, leave the ticket `DOING`.
+
+A repo that does not version its tracker with the code says so, and says what
+step 2 stages instead — **slot: tracker versioning**.
 
 ## Sessions
 
@@ -256,10 +246,11 @@ An agent started inside a session is already in its worktree. Do not create
 another worktree; in particular do not use `EnterWorktree`, which would nest one
 inside the session.
 
-The tracker is shared, not per-session. Because `tickets/` is a symlink, every
-session of every repo reads the same files, on whatever branch the tracker
-repository is checked out at. Ticket state does not travel with a feature branch
-and there is nothing to merge.
+The session's copy of the tracker is the one being worked. Ticket state travels
+with the feature branch and merges alongside the code that justifies it, so
+there is nothing to reconcile against the default branch mid-feature. A repo
+whose tracker is not versioned with the code overrides this —
+**slot: tracker versioning**.
 
 The session layer names the branch after the feature, so a PRD records no
 branch: the file name already is it.
