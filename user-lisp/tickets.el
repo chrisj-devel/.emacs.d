@@ -41,12 +41,12 @@ in-flight state wins; every other feature resolves to the main checkout."
 
 (defun my/tracker-columns-setup ()
   "Use `my/tracker-columns-format' in ticket files.
-The format names tracker properties, so it stays out of other Org buffers."
-  (when (and buffer-file-name
-             (equal (file-name-nondirectory
-                     (directory-file-name
-                      (file-name-directory buffer-file-name)))
-                    my/session-tickets-subdir))
+The format names tracker properties, so it stays out of other Org buffers.
+Every tracker heading carries FEATURE, and the file is reached through a
+symlink whose path says nothing reliable about what it holds."
+  (when (save-excursion
+          (goto-char (point-min))
+          (re-search-forward "^:FEATURE:" nil t))
     (setq-local org-columns-default-format my/tracker-columns-format)))
 
 (use-package org
