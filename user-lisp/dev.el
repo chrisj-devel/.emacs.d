@@ -63,7 +63,11 @@
 ;;; VC
 
 (use-package magit
-  :bind ("C-x g" . magit-status))
+  :bind
+  ("C-x g" . magit-status)
+  ;; Default x is magit-reset-quickly; k for discard collides with meow's
+  ;; motion keys.
+  (:map magit-mode-map ("x" . magit-delete-thing)))
 
 ;; Ediff is launched from magit; keys.el gives it its own meow state.  Its
 ;; default control window is a separate frame, which on macOS is a floating
