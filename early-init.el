@@ -16,6 +16,16 @@
 (when (eq system-type 'darwin)
   (push '(ns-transparent-titlebar . t) default-frame-alist))
 
+;; Native compilation shells out to Homebrew's gcc driver by name, so it needs
+;; /opt/homebrew/bin on PATH.  A GUI launch inherits launchd's PATH, which lacks
+;; it, and every native compile dies with "error invoking gcc driver".
+;; exec-path-from-shell fixes this too late: it runs from init.el, long after
+;; the user-lisp compile below.
+(let ((brew "/opt/homebrew/bin"))
+  (when (and (file-directory-p brew) (not (member brew exec-path)))
+    (setenv "PATH" (concat brew ":" (getenv "PATH")))
+    (push brew exec-path)))
+
 ;; Package setup has to happen here, not in init.el.  Emacs 31 byte-compiles
 ;; `user-lisp-directory' during startup (`prepare-user-lisp'), and use-package
 ;; installs `:ensure' packages at byte-compile time rather than at load time.
