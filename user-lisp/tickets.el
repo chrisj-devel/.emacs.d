@@ -51,7 +51,12 @@ symlink whose path says nothing reliable about what it holds."
 
 (use-package org
   :ensure nil
-  :bind ("C-c a" . org-agenda)
+  ;; `consult-outline' (M-g o) reads headings as text; in Org they are real
+  ;; entries, so the Org-aware command takes the key here — it matches on the
+  ;; outline path and narrows by TODO keyword and tag.
+  :bind (("C-c a" . org-agenda)
+         :map org-mode-map
+         ("M-g o" . consult-org-heading))
   ;; Ticket files carry one logical line per paragraph and list item, so the
   ;; wrapping is visual-line-mode's job.
   :hook ((org-mode . my/tracker-columns-setup)
