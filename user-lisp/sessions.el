@@ -1,9 +1,10 @@
 ;;; sessions.el --- Feature-in-flight session layer -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;; A session = (worktree, tickets/<feature>/, agent buffer, tab), derived
-;; from disk and live buffers on every access — never persisted.  A linked
-;; git worktree of the repo in hand is a session; an agent-shell buffer
-;; outside any worktree is a bare session.
+;; from disk and live buffers on every access — never persisted.  Every
+;; worktree of the repo in hand is a session, the main checkout included —
+;; it is where the branch work lands, so it is worth a tab like any other.
+;; An agent-shell buffer outside any worktree is a bare session.
 ;;
 ;; A session has two layouts, each in its own tab: the work tab (ticket +
 ;; agent) and the browse tab (dirvish sidebar + code).
@@ -155,14 +156,17 @@ included.  A path outside the list is still accepted."
 (defun my/sessions (&optional repo)
   "Derive the list of live sessions from disk and buffers.
 With REPO, consider only that repo's worktrees, which `git worktree list'
-answers in one call.  Without it every known project root is stat'd —
-including remote ones, where that alone opens a Tramp connection.
+answers in one call, and take them all: the main checkout is a worktree
+git names like the rest, and a repo's own state is a thing to sit in.
+Without REPO every known project root is stat'd — including remote ones,
+where that alone opens a Tramp connection — and only linked worktrees
+count, since a project root is not a session merely by being known.
 Bare sessions belong to no repo, so they are listed either way."
   (let (sessions roots)
     (dolist (root (if repo
                       (mapcar #'cdr (my/session--worktrees repo))
                     (seq-remove #'file-remote-p (project-known-project-roots))))
-      (when (my/session--linked-worktree-p root)
+      (when (or repo (my/session--linked-worktree-p root))
         (push root roots)
         (let ((branch (my/session--branch root)))
           (push (make-my/session
@@ -338,12 +342,18 @@ Interactively the repo is the one at point; a prefix argument reads it."
      (make-my/session :name feature :root worktree :branch feature))))
 
 (defun my/session-teardown (session)
-  "Kill SESSION's buffers, close its tab, and remove its worktree."
+  "Kill SESSION's buffers, close its tab, and remove its worktree.
+The main checkout is a session too and is never removed; tearing it down
+closes its tabs and kills its agent, and it is derived again next time."
   (interactive (list (my/session--read "Tear down session: ")))
-  (let ((name (my/session-name session))
-        (root (my/session-root session)))
-    (when (yes-or-no-p (format "Tear down %s (removes worktree %s)? " name root))
-      (when (my/session--linked-worktree-p root)
+  (let* ((name (my/session-name session))
+         (root (my/session-root session))
+         (linked (my/session--linked-worktree-p root)))
+    (when (yes-or-no-p
+           (if linked
+               (format "Tear down %s (removes worktree %s)? " name root)
+             (format "Tear down %s (keeps the checkout %s)? " name root)))
+      (when linked
         (let ((main (my/session--main-root root))
               (dirty (not (string-empty-p
                            (my/session--git root "status" "--porcelain")))))

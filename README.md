@@ -9,12 +9,16 @@ Launch alongside the existing config:
 One custom abstraction: a **session** = (git worktree, `tickets/<feature>/`,
 agent buffer, tab), derived from disk + live buffers on every access — never
 persisted. Sessions are an overlay, not a mode: no session ⇒ stock Emacs.
+Every worktree of a repo is a session, the main checkout included — that one
+has no ticket file, so it opens on dired, and is where git work belongs.
 
 - `f6` / `C-c s d` — mission control dashboard for the repo at point (`RET`
   jump, `b` browse, `n` spawn, `k` teardown)
 - `C-c s n` — spawn: worktree + branch + ticket scaffold + tab + agent
+- `C-c s j` — jump to a session's work tab, main checkout included
 - `C-c s b` — browse tab: dirvish sidebar + code, same session, second tab
-- `C-c s k` — teardown: kill buffers, remove worktree, close both tabs (branch kept)
+- `C-c s k` — teardown: kill buffers, remove worktree, close both tabs (branch
+  kept; the main checkout is never removed)
 - `C-c a` then `w` / `f` — tracker workboard / unblocked frontier over the
   whole tracker of the repo at point; a feature in a worktree shows that
   worktree's copy
