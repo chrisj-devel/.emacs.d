@@ -105,10 +105,10 @@ Do not add `EFFORT`, `COMPLEXITY`, or any other size estimate.
 Effort is a sum over a decomposition that does not exist at PRD stage, so
 estimating it there guesses at slicing rather than at the work. Complexity
 either reads process state off the spec text or fails to discriminate once
-most work lands in one bucket. What both reach for is already free: the
-alignment slot says what is on the bar, the states say what is undecided
-(`WAIT`, `TYPE: HITL`, or no tickets at all), and counting a feature's open
-tickets says how much is left.
+most work lands in one bucket. What both reach for is already free: the states
+say what is undecided (`WAIT`, `TYPE: HITL`, or no tickets at all), and counting
+a feature's open tickets says how much is left. A repo that declares an
+alignment slot reads what is on its bar there as well.
 
 Do not store what can be counted. A repo that has tested this may record its
 own evidence in `tracker.local.md`.

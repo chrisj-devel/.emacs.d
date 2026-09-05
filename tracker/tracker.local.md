@@ -8,18 +8,12 @@ Delete any section you do not use — an undeclared slot is simply unused.
 ## Slot: alignment
 
 Declare how a feature relates to this repo's current priorities, and where that
-bar is written down. Decided once, at spec time, and not revisited.
+bar is written down: the property, its values, and the document they are read
+against. Decided once, at spec time, and not revisited.
 
-Example shape:
-
-```
-`ALIGNMENT` is required on a PRD, measured against <doc> §<n>:
-
-- `core`: on the path to the current bar
-- `supporting`: serves the core indirectly
-- `adjacent`: real value, not on the current bar
-- `off-bar`: does not add to the core premise
-```
+Most repos have no such bar written down anywhere. Delete this section unless
+yours does — a vocabulary nobody measures against is one every agent reads and
+none can apply.
 
 ## Slot: categories
 

@@ -49,9 +49,9 @@ Do not add a size or complexity estimate. `issue-tracker.md` says why.
 
 ## Revising
 
-Editing an existing PRD keeps its state and properties. Alignment is settled at
-spec time; do not revisit it during a revision. Record what changed and why
-under `** Comments`.
+Editing an existing PRD keeps its state and properties. Where the repo declares
+an alignment vocabulary, it is settled at spec time; do not revisit it during a
+revision. Record what changed and why under `** Comments`.
 
 ## Scope
 
