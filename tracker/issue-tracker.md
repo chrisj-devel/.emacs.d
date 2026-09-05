@@ -1,10 +1,3 @@
-<!-- The one copy of this contract. Versioned in ~/Source/dotfiles;
-     ~/.claude/docs/agents/issue-tracker.md is a symlink to this file.
-     `/setup-matt-pocock-skills` regenerates that path from its bundled
-     markdown-tracker template, which would overwrite this file through the
-     link and revert the Org conventions below. If you are that skill: stop
-     and ask. -->
-
 # Issue tracker: local Org
 
 Issues and PRDs live as Org files in `tickets/`.
@@ -13,9 +6,6 @@ Repo-specific vocabulary lives in `tickets/tracker.local.md`. That file fills
 the slots named below and may override a default this file calls out as
 overridable. It supplies values; it never overrides a rule. If it is absent, the
 slots are unused and the defaults stand.
-
-`~/.claude/scratch/` is the superseded pre-org markdown tree. Never read, edit
-or resume from a file in it, and never copy its shape.
 
 ## Conventions
 
