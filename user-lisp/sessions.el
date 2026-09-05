@@ -87,10 +87,17 @@ session is spawned off, not from the buffer in hand."
          (error nil))))
 
 (defun my/session--main-root (root)
-  "Main checkout root for the worktree at ROOT."
-  (file-name-directory
-   (directory-file-name
-    (my/session--git root "rev-parse" "--path-format=absolute" "--git-common-dir"))))
+  "Main checkout root for ROOT.
+A linked worktree resolves to the checkout it was created from.  Anything
+else resolves to its own toplevel — notably a submodule, whose common dir
+lives under its superproject and so names no checkout at all."
+  (file-name-as-directory
+   (if (my/session--linked-worktree-p root)
+       (directory-file-name
+        (file-name-directory
+         (directory-file-name
+          (my/session--git root "rev-parse" "--path-format=absolute" "--git-common-dir"))))
+     (my/session--git root "rev-parse" "--show-toplevel"))))
 
 (defun my/session--branch (root)
   (condition-case nil
@@ -109,11 +116,31 @@ Includes the main checkout; a detached worktree has no branch and is omitted."
             ((string-prefix-p "branch " line)
              (push (cons (substring line 7) worktree) out))))))
 
-(defun my/session--repo-root ()
-  "Main checkout of the repo at point, prompting when there is none."
-  (or (and (not (file-remote-p default-directory))
+(defun my/session--repos ()
+  "Known main checkouts, each linked worktree folded into the one it came from.
+`project-known-project-roots' also holds every worktree `my/session-spawn'
+remembered, and a session command always means the checkout behind one."
+  (seq-uniq
+   (mapcar (lambda (root)
+             (or (ignore-errors (my/session--main-root root))
+                 (expand-file-name root)))
+           (seq-filter #'file-directory-p
+                       (seq-remove #'file-remote-p (project-known-project-roots))))
+   #'file-equal-p))
+
+(defun my/session--read-repo ()
+  "Read a main checkout, completing over the known ones.
+Not `project-prompter': its candidates are every known root, worktrees
+included.  A path outside the list is still accepted."
+  (expand-file-name
+   (completing-read "Repo: " (mapcar #'abbreviate-file-name (my/session--repos)))))
+
+(defun my/session--repo-root (&optional prompt)
+  "Main checkout of the repo at point, read when there is none or with PROMPT."
+  (or (and (not prompt)
+           (not (file-remote-p default-directory))
            (ignore-errors (my/session--main-root default-directory)))
-      (funcall project-prompter)))
+      (my/session--read-repo)))
 
 ;;; Derivation
 
@@ -280,9 +307,10 @@ its own is replicated rather than chained through."
       (make-symbolic-link (file-truename source) target))))
 
 (defun my/session-spawn (repo-root feature)
-  "Create worktree, branch, and ticket scaffold for FEATURE off REPO-ROOT."
+  "Create worktree, branch, and ticket scaffold for FEATURE off REPO-ROOT.
+Interactively the repo is the one at point; a prefix argument reads it."
   (interactive
-   (let ((root (funcall project-prompter)))
+   (let ((root (my/session--repo-root current-prefix-arg)))
      (list root (completing-read "Feature: " (my/session--features root)))))
   (let ((worktree (funcall my/session-worktree-directory-function repo-root feature)))
     (unless (file-directory-p worktree)
@@ -327,7 +355,11 @@ its own is replicated rather than chained through."
             (project-kill-buffers t))
           (apply #'my/session--git main "worktree" "remove"
                  (append (and dirty '("--force")) (list root)))
-          (project-forget-project root)))
+          ;; `project-forget-project' matches with `assoc', against a list
+          ;; project.el stores abbreviated and as directory names; `git
+          ;; worktree list' answers neither.
+          (project-forget-project
+           (abbreviate-file-name (file-name-as-directory root)))))
       (when-let* ((buffer (my/session-agent-buffer session)))
         (kill-buffer buffer))
       (dolist (tab (list name (my/session-browse-tab-name session)))
@@ -373,6 +405,14 @@ Held so reverting does not re-prompt from the dashboard's own buffer.")
   (when-let* ((session (tabulated-list-get-id)))
     (my/session-browse session)))
 
+(defun my/session-dashboard-spawn ()
+  "Spawn a session off the repo this dashboard lists.
+The dashboard buffer outlives the directory it was opened from, so its
+own `default-directory' is no answer; `my/session-dashboard--repo' is."
+  (interactive)
+  (let ((repo my/session-dashboard--repo))
+    (my/session-spawn repo (completing-read "Feature: " (my/session--features repo)))))
+
 (defun my/session-dashboard-teardown ()
   "Tear down the session at point."
   (interactive)
@@ -384,7 +424,7 @@ Held so reverting does not re-prompt from the dashboard's own buffer.")
   :parent tabulated-list-mode-map
   "RET" #'my/session-dashboard-open
   "b" #'my/session-dashboard-browse
-  "n" #'my/session-spawn
+  "n" #'my/session-dashboard-spawn
   "k" #'my/session-dashboard-teardown)
 
 (define-derived-mode my/session-dashboard-mode tabulated-list-mode "Sessions"

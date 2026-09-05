@@ -17,6 +17,7 @@
 (require 'seq)
 
 (declare-function org-edna-finder/olp "org-edna")
+(declare-function my/session--read-repo "sessions")
 
 (defvar my/session-tickets-subdir)
 
@@ -115,7 +116,7 @@ is written, created or linked; the report says what would have happened."
   "Install the tracker contract and skills into ROOT.
 Generated files are left alone when they differ locally unless FORCE (the
 prefix argument) is set; tracker.local.md is never overwritten."
-  (interactive (list (funcall project-prompter) current-prefix-arg))
+  (interactive (list (my/session--read-repo) current-prefix-arg))
   (let ((report (my/tracker--install root force nil)))
     (message "tracker: %s"
              (mapconcat (lambda (r) (format "%s %s" (cdr r) (car r)))
