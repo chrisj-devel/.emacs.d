@@ -41,6 +41,17 @@
   "Suffix distinguishing a session's browse tab from its work tab."
   :type 'string)
 
+(defcustom my/session-linked-paths nil
+  "Repo-relative paths to symlink from the main checkout into a new worktree.
+For what a worktree needs in order to run but git does not carry:
+gitignored configuration, credentials, and installed dependencies.  An
+entry the main checkout lacks is skipped.
+
+Set this per repo in its .dir-locals.el.  It is read from the root the
+session is spawned off, not from the buffer in hand."
+  :type '(repeat string)
+  :safe (lambda (v) (and (listp v) (seq-every-p #'stringp v))))
+
 (defcustom my/session-worktree-directory-function
   #'my/session-default-worktree-directory
   "Function from (REPO-ROOT FEATURE) to the worktree path to create."
@@ -246,6 +257,28 @@ Bare sessions belong to no repo, so they are listed either way."
 
 ;;; Lifecycle
 
+(defun my/session--linked-paths (root)
+  "Value of `my/session-linked-paths' for the repo at ROOT.
+Read from ROOT's directory-local variables rather than from the current
+buffer: the session being spawned need not belong to the project in hand."
+  (with-temp-buffer
+    (setq default-directory (file-name-as-directory (expand-file-name root)))
+    (hack-dir-local-variables)
+    (alist-get 'my/session-linked-paths file-local-variables-alist
+               my/session-linked-paths)))
+
+(defun my/session--link (main worktree path)
+  "Symlink PATH under WORKTREE to its counterpart under MAIN.
+Skips PATH when MAIN does not have it or WORKTREE already does.  The link
+points at the truename, so a MAIN that reaches PATH through a symlink of
+its own is replicated rather than chained through."
+  (let ((source (expand-file-name path main))
+        (target (expand-file-name path worktree)))
+    (when (and (file-exists-p source)
+               (not (or (file-exists-p target) (file-symlink-p target))))
+      (make-directory (file-name-directory (directory-file-name target)) t)
+      (make-symbolic-link (file-truename source) target))))
+
 (defun my/session-spawn (repo-root feature)
   "Create worktree, branch, and ticket scaffold for FEATURE off REPO-ROOT."
   (interactive
@@ -258,6 +291,8 @@ Bare sessions belong to no repo, so they are listed either way."
         ;; Branch already exists: check it out instead.
         (error (my/session--git repo-root "worktree" "add" worktree feature))))
     (project-remember-project (project-current nil worktree))
+    (dolist (path (my/session--linked-paths repo-root))
+      (my/session--link repo-root worktree path))
     (let* ((source (expand-file-name my/session-tickets-subdir repo-root))
            (external (and (file-symlink-p source) (file-truename source)))
            (base (expand-file-name my/session-tickets-subdir worktree))
