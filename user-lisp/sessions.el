@@ -260,9 +260,21 @@ Bare sessions belong to no repo, so they are listed either way."
     ;; stays in the code window.
     (dirvish-side root)))
 
+(defun my/session-tab-name (session)
+  "Name of SESSION's work tab, qualified by repo.
+Tabs share one namespace across the frame while session names are unique
+only within a repo: every main checkout is a session named for its
+default branch.  A session outside any repo keeps its own name, already
+a path."
+  (if-let* ((main (ignore-errors (my/session--main-root (my/session-root session)))))
+      (format "%s/%s"
+              (file-name-nondirectory (directory-file-name main))
+              (my/session-name session))
+    (my/session-name session)))
+
 (defun my/session-browse-tab-name (session)
   "Name of SESSION's browse tab."
-  (concat (my/session-name session) my/session-browse-tab-suffix))
+  (concat (my/session-tab-name session) my/session-browse-tab-suffix))
 
 (defun my/session--tab-p (name)
   (seq-some (lambda (tab) (equal name (alist-get 'name tab)))
@@ -277,7 +289,7 @@ Bare sessions belong to no repo, so they are listed either way."
 (defun my/session-open (session)
   "Jump to SESSION's work tab, creating tab and layout when missing."
   (interactive (list (my/session--read "Session: ")))
-  (my/session--open-tab (my/session-name session)
+  (my/session--open-tab (my/session-tab-name session)
                         (lambda () (my/session-layout session))))
 
 (defun my/session-browse (session)
@@ -372,7 +384,8 @@ closes its tabs and kills its agent, and it is derived again next time."
            (abbreviate-file-name (file-name-as-directory root)))))
       (when-let* ((buffer (my/session-agent-buffer session)))
         (kill-buffer buffer))
-      (dolist (tab (list name (my/session-browse-tab-name session)))
+      (dolist (tab (list (my/session-tab-name session)
+                         (my/session-browse-tab-name session)))
         (when (my/session--tab-p tab)
           (tab-bar-close-tab-by-name tab)))
       (message "Session %s torn down (branch kept)" name))))
