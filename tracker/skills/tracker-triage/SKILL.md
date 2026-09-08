@@ -40,6 +40,9 @@ On the heading: the state from the gate, `TYPE` on every `NEXT`, and `FEATURE`
 and `KIND` if missing. Add `TRACKER_CATEGORY` only if this repo declares a
 category vocabulary.
 
+A heading leaving `TODO` takes an outcome title — rewrite one that names the
+symptom it was captured as.
+
 Under `** Comments`, append the triage brief: what you concluded, what evidence
 you read, and for `WAIT` exactly what is being waited on. Never restate the
 state in prose — the keyword is canonical.

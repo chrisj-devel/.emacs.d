@@ -16,6 +16,11 @@ slots are unused and the defaults stand.
 - Comments and conversation history append under a `** Comments` heading
   beneath the heading they belong to
 
+The title after a work heading's number names an outcome rather than an area:
+"Return the record from the existing endpoint", never "Endpoint changes". A
+`TODO` heading is the exception — it records what was observed, so its title may
+name the symptom; rewriting it as an outcome is triage's work.
+
 Every heading's TODO keyword is its canonical state. Never duplicate it in a
 `Status:` line or a property.
 

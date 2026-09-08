@@ -15,7 +15,7 @@ Read `docs/agents/issue-tracker.md` first; it owns tracker semantics. Read
 ## Shape
 
 ```org
-* TODO 11 --- Short imperative title
+* TODO 11 --- Short title naming the symptom
 :PROPERTIES:
 :FEATURE: feature-slug
 :KIND: ticket
