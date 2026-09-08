@@ -20,7 +20,7 @@ under a `map` into `research`, `prototype`, or `grilling` headings instead.
 ## Shape
 
 ```org
-* NEXT 01 --- A narrow tracer bullet
+* NEXT 01 --- Return the record from the existing endpoint
 :PROPERTIES:
 :FEATURE: feature-slug
 :KIND: ticket
@@ -31,8 +31,21 @@ under a `map` into `research`, `prototype`, or `grilling` headings instead.
 - [ ] ...
 ```
 
+The heading names an outcome, not an area: "Return the record from the
+existing endpoint", never "Endpoint changes".
+
 Number from `01` in the heading text, in dependency order. Numbering is a
 reading aid; the dependency graph is the truth.
+
+`** What to build` is one paragraph, three to five sentences. Name the code
+locations by file or module and say what changes in each. End with a boundary
+sentence naming what this ticket leaves to a neighbour ("The response is
+unchanged here; 05 changes it"). A ticket that needs more than a paragraph is
+two tickets.
+
+`** Acceptance criteria` is two to four items. Each is observable on an
+artifact — a response, a file, a devtest resource — and none restates the
+build. One covers tests.
 
 ## Slicing
 
@@ -60,6 +73,11 @@ Do not express ordering by state. Every ticket that is fully specified is
 `NEXT`, whether or not it is currently blocked.
 
 Sweep the graph with `M-x my/tracker-validate` when done.
+
+## Reporting
+
+When done, report a table of number, title, `TYPE` and blocked-on, then the
+slicing choices a reader would not expect. Nothing else.
 
 ## Scope
 
