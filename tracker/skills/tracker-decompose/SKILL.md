@@ -64,6 +64,16 @@ missing under `** Comments`.
 Set `TYPE` per ticket with the triage gate. A decomposition that is entirely
 `AFK` when parts plainly need approvals or credentials is wrong.
 
+## The PRD moves
+
+Promote the PRD from `TODO` to `DOING` once its first ticket is written: a
+feature with tickets is underway, and it stays `DOING` until every ticket is
+terminal and it closes at `DONE`. It takes no `TYPE`.
+
+Never `NEXT`. The frontier is every unblocked `NEXT` heading and `session-run`
+drains it taking `AFK` ones, so a `NEXT` PRD reads as a ticket an unattended
+agent can claim.
+
 ## Dependencies
 
 Write the edges as you slice, with `tracker-edges`. Sequential slices each

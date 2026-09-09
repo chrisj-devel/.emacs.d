@@ -78,6 +78,11 @@ The triage gate is one question: **could I write the agent brief right now?**
 - Yes, but a machine cannot execute it → `NEXT` with `TYPE: HITL`
 - Yes, and a machine can → `NEXT` with `TYPE: AFK`
 
+The gate is for headings someone executes, so a `prd` or `map` never reaches
+`NEXT` and never takes a `TYPE`. It is `TODO` while it is unsliced — `WAIT` when
+one identified thing stops it being finishable — `DOING` once it has work
+headings, and `DONE` when the feature closes.
+
 An unspecified heading is `TODO`, not `WAIT`. `WAIT` means one identified thing
 is outstanding; `TODO` means nobody has looked yet.
 
@@ -153,7 +158,9 @@ additional verification commands — **slot: verification**.
 ## Decomposition
 
 A `prd` or `map` heading with no sibling work headings in its file has not been
-decomposed. That is a structural fact; do not record it as a state.
+decomposed. That is a structural fact; do not record it as a state. Writing the
+first ticket does move the parent to `DOING`, which says the feature is
+underway — read whether it was decomposed from the file, not from that.
 
 ## Markup and links
 

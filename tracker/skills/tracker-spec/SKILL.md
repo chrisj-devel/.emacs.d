@@ -29,8 +29,10 @@ Read `docs/agents/issue-tracker.md` first; it owns tracker semantics. Read
 declares an alignment vocabulary, decided once here and not revisited. Add any
 properties the repo's extra-properties slot requires.
 
-The PRD carries a state like any other heading. A freshly written spec that has
-not been evaluated is `TODO`; run `tracker-triage` to move it.
+The PRD carries a state like any other heading, and spec leaves it `TODO`: a
+specification nobody has sliced is not yet underway. `tracker-decompose`
+promotes it when the first ticket lands. Triage does not evaluate a PRD — its
+gate decides who executes a heading, and nobody executes a specification.
 
 ## Writing it
 
