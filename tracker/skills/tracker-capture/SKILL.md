@@ -9,8 +9,8 @@ Put one thing into the tracker and stop. Capture is lossless recording, not
 evaluation: it writes down what it was told, at `TODO`, and leaves every
 decision to `tracker-triage`.
 
-Read `docs/agents/issue-tracker.md` first; it owns tracker semantics. Read
-`docs/agents/tracker.local.md` if it exists; it supplies this repo's vocabulary.
+Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
+`tickets/tracker.local.md` if it exists; it supplies this repo's vocabulary.
 
 ## Shape
 

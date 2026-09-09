@@ -8,7 +8,7 @@ description: Report what is actionable right now across the tracker — NEXT hea
 The frontier is every `NEXT` heading whose dependencies are all terminal. It is
 what can start now, as opposed to what is merely specified.
 
-Read `docs/agents/issue-tracker.md` first; it owns tracker semantics.
+Read `tickets/issue-tracker.md` first; it owns tracker semantics.
 
 ## Definition
 

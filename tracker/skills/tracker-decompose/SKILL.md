@@ -8,8 +8,8 @@ description: Split a feature PRD into numbered implementation tickets as sibling
 Turn a PRD into implementation tickets. Tickets are sibling top-level headings
 in the same file as the PRD — one file per feature, never one file per ticket.
 
-Read `docs/agents/issue-tracker.md` first; it owns tracker semantics. Read
-`docs/agents/tracker.local.md` if it exists; it supplies this repo's vocabulary.
+Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
+`tickets/tracker.local.md` if it exists; it supplies this repo's vocabulary.
 
 A `prd` or `map` heading with no sibling work headings has not been decomposed.
 That is the structural fact this skill changes; there is no state for it.

@@ -1,8 +1,9 @@
 ;;; tracker.el --- Install and check the org ticket tracker -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;; The tracker contract and its agent skills are config, not repo content:
-;; `my/tracker-install' copies them into a repo, `my/tracker-update-all' pushes
-;; a contract edit out to every repo already holding one, and
+;; `my/tracker-install' copies the contract into a repo's tracker directory and
+;; the skills into the repo, `my/tracker-update-all' pushes a contract edit out
+;; to every repo already holding one, and
 ;; `my/tracker-validate' sweeps the dependency graph.  org-edna only resolves a
 ;; finder when a state changes, so nothing else checks the whole graph.
 ;;
@@ -24,9 +25,6 @@
 (defconst my/tracker-source-directory
   (expand-file-name "tracker" user-emacs-directory)
   "Directory holding the portable contract and skill sources.")
-
-(defconst my/tracker-agents-subdir "docs/agents"
-  "Directory under a repo root holding agent-facing documentation.")
 
 (defconst my/tracker-skills-subdir ".agents/skills"
   "Canonical skill directory under a repo root; .claude/skills links to it.")
@@ -75,22 +73,21 @@ skill individually when it already exists with other content."
   "Install the contract and skills into ROOT, returning a report alist.
 FORCE overwrites generated files that differ locally.  With CHECK nothing
 is written, created or linked; the report says what would have happened."
-  (let* ((agents (expand-file-name my/tracker-agents-subdir root))
+  (let* ((tickets (expand-file-name my/session-tickets-subdir root))
          (skills (expand-file-name my/tracker-skills-subdir root))
          (report nil))
-    (unless check
-      (make-directory (expand-file-name my/session-tickets-subdir root) t))
+    (unless check (make-directory tickets t))
     (push (cons "issue-tracker.md"
                 (my/tracker--copy
                  (expand-file-name "issue-tracker.md" my/tracker-source-directory)
-                 (expand-file-name "issue-tracker.md" agents)
+                 (expand-file-name "issue-tracker.md" tickets)
                  force check))
           report)
     ;; Never force: this file belongs to the repo.
     (push (cons "tracker.local.md"
                 (my/tracker--copy
                  (expand-file-name "tracker.local.md" my/tracker-source-directory)
-                 (expand-file-name "tracker.local.md" agents)
+                 (expand-file-name "tracker.local.md" tickets)
                  nil check))
           report)
     (dolist (skill (directory-files
@@ -134,7 +131,7 @@ prefix argument) is set; tracker.local.md is never overwritten."
                 (and (not (file-remote-p root))
                      (file-exists-p
                       (expand-file-name
-                       (concat my/tracker-agents-subdir "/issue-tracker.md")
+                       (concat my/session-tickets-subdir "/issue-tracker.md")
                        root))))
               (project-known-project-roots)))
 

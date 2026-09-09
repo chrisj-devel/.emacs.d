@@ -8,8 +8,8 @@ description: Evaluate untriaged tracker headings and move them to an actionable 
 Take a heading out of the inbox. Triage decides two things: whether the work is
 specified enough to act on, and who acts.
 
-Read `docs/agents/issue-tracker.md` first; it owns tracker semantics. Read
-`docs/agents/tracker.local.md` if it exists; it supplies this repo's vocabulary.
+Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
+`tickets/tracker.local.md` if it exists; it supplies this repo's vocabulary.
 
 ## The gate
 

@@ -7,8 +7,8 @@ description: Implement a feature's unblocked AFK tickets inside its Emacs sessio
 
 Work one feature's frontier to completion inside its session.
 
-Read `docs/agents/issue-tracker.md` first; it owns tracker semantics. Read
-`docs/agents/tracker.local.md` if it exists; it supplies this repo's
+Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
+`tickets/tracker.local.md` if it exists; it supplies this repo's
 verification commands.
 
 ## You are already in the worktree

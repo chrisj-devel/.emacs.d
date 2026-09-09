@@ -9,8 +9,8 @@ Write the PRD for one feature. The PRD is the top-level `KIND: prd` heading in
 `tickets/<feature-slug>.org`, and it is the only heading in that file until the
 feature is decomposed.
 
-Read `docs/agents/issue-tracker.md` first; it owns tracker semantics. Read
-`docs/agents/tracker.local.md` if it exists; it supplies this repo's vocabulary.
+Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
+`tickets/tracker.local.md` if it exists; it supplies this repo's vocabulary.
 
 ## Shape
 

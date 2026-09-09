@@ -8,7 +8,7 @@ description: Read and write the tracker dependency graph as Edna BLOCKER propert
 The dependency graph lives in `:BLOCKER:` properties. It is the only place
 blocking is recorded.
 
-Read `docs/agents/issue-tracker.md` first; it owns tracker semantics.
+Read `tickets/issue-tracker.md` first; it owns tracker semantics.
 
 ## Syntax
 
