@@ -161,7 +161,8 @@ git names like the rest, and a repo's own state is a thing to sit in.
 Without REPO every known project root is stat'd — including remote ones,
 where that alone opens a Tramp connection — and only linked worktrees
 count, since a project root is not a session merely by being known.
-Bare sessions belong to no repo, so they are listed either way."
+An agent sitting outside those roots is listed either way: as the
+worktree it runs in, or bare when it runs in no repo at all."
   (let (sessions roots)
     (dolist (root (if repo
                       (mapcar #'cdr (my/session--worktrees repo))
@@ -175,18 +176,28 @@ Bare sessions belong to no repo, so they are listed either way."
                  :branch branch
                  :agent-buffer (my/session--agent-buffer root))
                 sessions))))
-    ;; Bare sessions: agents running outside any known worktree.
+    ;; Agents running outside those roots.  Each is rooted at the worktree it
+    ;; sits in, so its name, tab and worktree removal match the session the
+    ;; worktree's own repo derives; only an agent in no repo at all is bare.
     (dolist (buffer (buffer-list))
       (with-current-buffer buffer
         (when (and (derived-mode-p 'agent-shell-mode)
                    (not (seq-some (lambda (root)
                                     (file-in-directory-p default-directory root))
                                   roots)))
-          (push (make-my/session
-                 :name (format "adhoc: %s" (abbreviate-file-name default-directory))
-                 :root default-directory
-                 :agent-buffer buffer)
-                sessions))))
+          (let* ((top (ignore-errors
+                        (my/session--git default-directory "rev-parse" "--show-toplevel")))
+                 (root (expand-file-name (or top default-directory)))
+                 (branch (and top (my/session--branch root))))
+            (push root roots)
+            (push (make-my/session
+                   :name (cond (branch branch)
+                               (top (file-name-nondirectory (directory-file-name root)))
+                               (t (format "adhoc: %s" (abbreviate-file-name root))))
+                   :root root
+                   :branch branch
+                   :agent-buffer buffer)
+                  sessions)))))
     (nreverse sessions)))
 
 (defun my/session-status (session)
@@ -365,23 +376,26 @@ closes its tabs and kills its agent, and it is derived again next time."
            (if linked
                (format "Tear down %s (removes worktree %s)? " name root)
              (format "Tear down %s (keeps the checkout %s)? " name root)))
-      (when linked
-        (let ((main (my/session--main-root root))
-              (dirty (not (string-empty-p
-                           (my/session--git root "status" "--porcelain")))))
-          (when (and dirty
-                     (not (yes-or-no-p
-                           (format "%s has uncommitted changes; remove anyway? " name))))
-            (user-error "Teardown of %s aborted" name))
-          (let ((default-directory root))
-            (project-kill-buffers t))
-          (apply #'my/session--git main "worktree" "remove"
-                 (append (and dirty '("--force")) (list root)))
-          ;; `project-forget-project' matches with `assoc', against a list
-          ;; project.el stores abbreviated and as directory names; `git
-          ;; worktree list' answers neither.
-          (project-forget-project
-           (abbreviate-file-name (file-name-as-directory root)))))
+      (let ((dirty (and linked
+                        (not (string-empty-p
+                              (my/session--git root "status" "--porcelain"))))))
+        (when (and dirty
+                   (not (yes-or-no-p
+                         (format "%s has uncommitted changes; remove anyway? " name))))
+          (user-error "Teardown of %s aborted" name))
+        ;; Named rather than taken from `default-directory', which for a root
+        ;; outside every known project would otherwise prompt.
+        (when-let* ((project (project-current nil root)))
+          (project-kill-buffers t project))
+        (when linked
+          (let ((main (my/session--main-root root)))
+            (apply #'my/session--git main "worktree" "remove"
+                   (append (and dirty '("--force")) (list root)))
+            ;; `project-forget-project' matches with `assoc', against a list
+            ;; project.el stores abbreviated and as directory names; `git
+            ;; worktree list' answers neither.
+            (project-forget-project
+             (abbreviate-file-name (file-name-as-directory root))))))
       (when-let* ((buffer (my/session-agent-buffer session)))
         (kill-buffer buffer))
       (dolist (tab (list (my/session-tab-name session)
