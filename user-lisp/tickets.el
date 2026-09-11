@@ -7,6 +7,7 @@
 ;;; Code:
 
 (require 'subr-x)
+(require 'project)
 
 (declare-function my/session--repo-root "sessions")
 (declare-function my/session--worktrees "sessions")
@@ -49,6 +50,18 @@ symlink whose path says nothing reliable about what it holds."
           (re-search-forward "^:FEATURE:" nil t))
     (setq-local org-columns-default-format my/tracker-columns-format)))
 
+(defun my/tracker-anchor-directory ()
+  "Anchor `default-directory' at the project the visited path names.
+A tracker file is visited through <repo>/tickets, a symlink into the
+tracker repo: Emacs walks the visited path and answers <repo>, while a
+subprocess resolves the link and answers the tracker repo.  Anchoring the
+buffer at its project root leaves both answering <repo>.  A tickets
+directory belonging to its own repo is left alone."
+  (when-let* ((file buffer-file-name)
+              ((not (equal (file-truename file) (expand-file-name file))))
+              (project (project-current nil (file-name-directory file))))
+    (setq-local default-directory (expand-file-name (project-root project)))))
+
 (use-package org
   :ensure nil
   ;; `consult-outline' (M-g o) reads headings as text; in Org they are real
@@ -60,6 +73,7 @@ symlink whose path says nothing reliable about what it holds."
   ;; Ticket files carry one logical line per paragraph and list item, so the
   ;; wrapping is visual-line-mode's job.
   :hook ((org-mode . my/tracker-columns-setup)
+         (org-mode . my/tracker-anchor-directory)
          (org-mode . visual-line-mode))
   :custom
   (org-todo-keywords
