@@ -21,15 +21,6 @@ Do not create a worktree. In particular do not use `EnterWorktree`, which would
 nest one inside the session. If you are not in a session worktree, say so and
 stop — the human spawns it with `C-c s n`.
 
-The session's tracker copy is the one being worked. Ticket state travels with
-the feature branch and merges alongside the code, so there is nothing to
-reconcile against the default branch mid-feature — unless
-`tickets/tracker.local.md` says this repo's tracker is versioned elsewhere, in
-which case follow it.
-
-The session's branch is the feature name. Do not record it on the PRD; add
-`BRANCH` to a work heading only when its branch differs.
-
 ## Before writing code
 
 Read the PRD and every frontier ticket in full, including `** Comments`. Get the
@@ -58,16 +49,13 @@ ticket onto it with `tracker-edges`, and move to the next `AFK` ticket. The
 human comes back to a queue of decisions rather than an idle agent, and
 `session-grill` drains it.
 
-This is for choices that change the work. Where a defensible default exists,
-take it, and say which default you took.
+Where a defensible default exists, take it, and say which you took.
 
 ## One ticket at a time
 
 Claim before working: `NEXT` → `DOING`. The ticket is the unit of work and the
 commit boundary. Split it only when its acceptance criteria cannot form one
 coherent green commit; never split it merely to make progress look finer.
-
-Take `AFK` tickets only. Leave `HITL` for the human and say what is waiting.
 
 Run the repo's verification before claiming completion. If this repo declares
 verification commands, those are the bar; otherwise use the ticket's acceptance
@@ -79,8 +67,8 @@ A ticket whose premise fails is not a ticket to force through. Where the code
 turns out not to work the way the brief assumed, or the slice cannot be one
 green commit after all, stop and put it back:
 
-- the brief still holds and only a choice is open → leave it `NEXT`, file the
-  choice as a `grilling` heading, edge, next ticket
+- the brief still holds and only a choice is open → leave it `NEXT` and file
+  the grilling heading
 - the brief itself is now wrong → `WAIT`, saying under `** Comments` what you
   found and what it invalidates
 

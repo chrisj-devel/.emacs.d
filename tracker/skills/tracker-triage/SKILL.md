@@ -35,11 +35,7 @@ default, what the thing should do — do not file a HITL ticket. File the decisi
 as its own `KIND: grilling`, `TYPE: HITL` heading, and leave the implementation
 a `TYPE: AFK` ticket with a `:BLOCKER:` edge onto it.
 
-The implementation was always machine-executable; what stopped it was an unmade
-decision, and that is a separate piece of work with its own answer. Splitting
-them means the answer survives in `** Answer` rather than dissolving into a
-closed ticket, and the ticket unblocks with no state change once the grilling is
-terminal. `session-grill` runs the grilling; `session-run` then takes the ticket.
+`session-grill` runs the grilling; `session-run` then takes the ticket.
 
 A heading carrying both — "decide the rotation policy and provision the key" —
 splits: the decision becomes the grilling, and what remains under `TYPE: HITL`
@@ -58,10 +54,9 @@ start. If triage reveals a dependency, record it as a `:BLOCKER:` edge with
 
 ## Answering the gate means writing the brief
 
-A heading reaching `NEXT` carries its brief on itself. The gate asks whether you
-could write it; `NEXT` asserts that you did. `session-run` takes an `AFK` ticket
-from the heading alone, so a brief left in the triager's head is a ticket that
-looks actionable and is not.
+A heading reaching `NEXT` carries its brief on itself: the gate asks whether you
+could write it, and `NEXT` asserts that you did. `session-run` takes an `AFK`
+ticket from the heading alone.
 
 Capture does not write one — it records a report and stops — so a heading coming
 out of the inbox usually needs its body written here. Do the reading first: the
@@ -75,9 +70,6 @@ say what would count as an answer.
 
 Its rule carries over: if you cannot write acceptance criteria without asking,
 the heading is `WAIT`, not `NEXT` — say what is missing.
-
-This is forming the heading in front of you, not slicing a feature. A PRD that
-needs splitting into tickets is still `tracker-decompose`.
 
 ## What to write
 

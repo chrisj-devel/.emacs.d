@@ -28,9 +28,6 @@ in full, including `** Comments`, before starting.
 A `TYPE: HITL` heading of either kind needs a human — an account, a device, a
 system you cannot reach. Report it as waiting and leave it.
 
-Both kinds resolve the same way: an answer under `** Answer`, `DONE`, committed.
-What differs is how you get there.
-
 ## Research
 
 Answer the question the heading asks, from the highest-trust source available:
@@ -65,9 +62,6 @@ Per heading, as soon as it resolves:
 3. Where the feature has a `map`, summarise the outcome under its
    `** Decisions so far`.
 4. Commit the tracker update immediately.
-
-Never leave a `DONE` heading uncommitted. Dependants need no edit — anything
-blocked on the heading unblocks as soon as it is terminal.
 
 An answer that implies work writes it: tickets with `tracker-decompose`, edges
 with `tracker-edges`, `CANCELED` for what it rules out, all in that commit. An

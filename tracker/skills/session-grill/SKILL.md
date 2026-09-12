@@ -81,9 +81,6 @@ whole session ends:
    `** Decisions so far`.
 4. Commit the tracker update immediately.
 
-Never leave a `DONE` grilling uncommitted. Dependants need no edit — a ticket
-blocked on the grilling unblocks as soon as it is terminal.
-
 Where the answer closes the last open heading in the file, close the feature in
 the same commit — set the `prd` or `map` to `DONE`.
 
@@ -95,9 +92,6 @@ implies with `tracker-decompose`, the edges with `tracker-edges`, and
 
 The run ends when the grilling frontier is empty. Report what was decided, what
 it unblocked for `session-run`, and what still waits on a human action.
-
-Do not implement what you just decided, even when the answer is fresh and the
-ticket is obvious. Building it is `session-run`.
 
 ## Scope
 
