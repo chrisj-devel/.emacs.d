@@ -41,12 +41,25 @@ M-x my/tracker-validate
 
 Stop and ask only for:
 
-- a blocking `HITL` ticket — it will not move without a human
-- an unresolved choice that materially changes the implementation
 - a command the ticket forbids
 - missing authority for a destructive or external action
 
 Otherwise announce the frontier and the next expected human gate, then work.
+
+A `HITL` ticket is not a reason to stop the run. It will not move without a
+human; say it is waiting and take the rest of the frontier.
+
+## An unresolved choice is a heading, not a halt
+
+Where a ticket turns on a choice that materially changes the implementation and
+nobody has made it, do not stall the run waiting to ask. File the choice as its
+own `KIND: grilling`, `TYPE: HITL` heading, add a `:BLOCKER:` edge from the
+ticket onto it with `tracker-edges`, and move to the next `AFK` ticket. The
+human comes back to a queue of decisions rather than an idle agent, and
+`session-grill` drains it.
+
+This is for choices that change the work. Where a defensible default exists,
+take it, and say which default you took.
 
 ## One ticket at a time
 

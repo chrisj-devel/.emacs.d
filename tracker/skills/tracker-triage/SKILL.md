@@ -17,15 +17,37 @@ One question decides the state: **could I write the agent brief right now?**
 
 - No, a fact or decision is missing → `WAIT`. Org prompts for a note on entry;
   say what is outstanding and who can supply it.
-- Yes, but a machine cannot execute it → `NEXT`, `TYPE: HITL`
+- Yes, but a human must perform it → `NEXT`, `TYPE: HITL`
 - Yes, and a machine can → `NEXT`, `TYPE: AFK`
 - The work will not be done → `CANCELED`
 
-`HITL` is for approvals, credentials, product calls, physical access, and
-judgment that is not written down. It is not for work that is merely hard.
+`HITL` is for work whose execution is human: an approval, a credential, physical
+access. It is not for work that is merely hard, and it is not for work a machine
+could do once someone decides something.
 
 Leave a heading `TODO` if nobody has evaluated it yet. `WAIT` is narrower: the
 heading is understood and one identified thing is outstanding.
+
+## A decision is not a HITL ticket
+
+Where the only human part is a call nobody has made — which approach, which
+default, what the thing should do — do not file a HITL ticket. File the decision
+as its own `KIND: grilling`, `TYPE: HITL` heading, and leave the implementation
+a `TYPE: AFK` ticket with a `:BLOCKER:` edge onto it.
+
+The implementation was always machine-executable; what stopped it was an unmade
+decision, and that is a separate piece of work with its own answer. Splitting
+them means the answer survives in `** Answer` rather than dissolving into a
+closed ticket, and the ticket unblocks with no state change once the grilling is
+terminal. `session-grill` runs the grilling; `session-run` then takes the ticket.
+
+A heading carrying both — "decide the rotation policy and provision the key" —
+splits: the decision becomes the grilling, and what remains under `TYPE: HITL`
+is the action.
+
+Do not split out every small call. A choice an agent can defend a default for
+belongs in the ticket as that default. A grilling heading is for a decision that
+materially changes the implementation.
 
 ## Never encode blocking
 

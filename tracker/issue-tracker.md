@@ -91,9 +91,13 @@ Blocking is never a state. See "Dependencies".
 ## `TYPE`
 
 `TYPE` routes a `NEXT` heading to its executor. `AFK` means an unattended agent
-can complete it from the heading alone. `HITL` means it needs a human: an
-approval, a credential, a product call, physical access, or judgment that is
-not written down. It is not for work that is merely hard.
+can complete it from the heading alone. `HITL` means the execution itself is
+human: an approval, a credential, physical access. It is not for work that is
+merely hard.
+
+Work a machine could do once someone decides something is not `HITL`. The
+decision is its own `KIND: grilling` heading and the work stays `TYPE: AFK`,
+blocked on it — see `tracker-triage`.
 
 `TYPE` survives completion. A `DONE` heading keeps the `TYPE` it was executed
 under, which is why routing is a property and not a state.
