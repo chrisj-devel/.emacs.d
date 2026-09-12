@@ -42,6 +42,8 @@ auto-side-windows (native side windows), evil (meow won), activities.el
 - `user-lisp/sessions.el` — the only real custom code: session derivation,
   spawn/teardown, dashboard. Keep it small; prefer deleting to extending.
 - `user-lisp/tickets.el` — org + cross-session agenda
+- `user-lisp/dashboard.el` — the startup layout: session dashboard + agenda +
+  a key pane derived from the keymaps. Composition only; it owns no state
 - `user-lisp/dev.el` — treesit, eglot, magit, envrc, ghostel, agent stack
 - `tracker/` — the portable tracker contract and skills `my/tracker-install`
   copies into repos. `migration.org` is the runbook for moving an existing

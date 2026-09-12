@@ -12,6 +12,9 @@ persisted. Sessions are an overlay, not a mode: no session ⇒ stock Emacs.
 Every worktree of a repo is a session, the main checkout included — that one
 has no ticket file, so it opens on dired, and is where git work belongs.
 
+- `f7` / `C-c d` — the dashboard Emacs opens on: every worktree in flight
+  across all known repos, the tracker frontier over all of them, and a key
+  pane read out of the live keymaps. Re-run it to refresh.
 - `f6` / `C-c s d` — mission control dashboard for the repo at point (`RET`
   jump, `b` browse, `n` spawn, `k` teardown)
 - `C-c s n` — spawn: worktree + branch + ticket scaffold + tab + agent
@@ -21,7 +24,7 @@ has no ticket file, so it opens on dired, and is where git work belongs.
   kept; the main checkout is never removed)
 - `C-c a` then `w` / `f` — tracker workboard / unblocked frontier over the
   whole tracker of the repo at point; a feature in a worktree shows that
-  worktree's copy
+  worktree's copy. `F` is the frontier over every known repo
 - `f5` agent shell, `f11` ghostel, `f12` toggle side windows
 
 Scoping comes from project.el (`C-x p …`) since each worktree is a project

@@ -106,11 +106,17 @@
 ;;; Terminal
 
 (use-package ghostel
+  :preface
+  ;; Named rather than a lambda on the key: `describe-key' and the dashboard's
+  ;; key pane both have only the command to go on.
+  (defun my/ghostel-here ()
+    "Open a ghostel terminal for the project at point, or a bare one."
+    (interactive)
+    (if (project-current) (ghostel-project) (ghostel)))
   :custom
   (ghostel-tramp-shell-integration t)
   :bind
-  ([f11] . (lambda () (interactive)
-             (if (project-current) (ghostel-project) (ghostel))))
+  ([f11] . my/ghostel-here)
   :config
   (add-to-list 'ghostel-tramp-shells '("podman" "/bin/sh")))
 

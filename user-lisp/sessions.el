@@ -474,12 +474,10 @@ own `default-directory' is no answer; `my/session-dashboard--repo' is."
             nil t)
   (tabulated-list-init-header))
 
-(defun my/session-dashboard (repo)
-  "Show mission control: REPO's sessions with agent status.
-REPO is the repo at point, prompted for when there is none.  It is read
-before the dashboard buffer is current, whose own `default-directory'
-would otherwise decide it."
-  (interactive (list (my/session--repo-root)))
+(defun my/session-dashboard--buffer (repo)
+  "The dashboard buffer, printed with REPO's sessions.
+A nil REPO lists what `my/sessions' derives without one: every linked
+worktree of every known project, plus any agent outside them."
   (with-current-buffer (get-buffer-create my/session-dashboard-buffer)
     (unless (derived-mode-p 'my/session-dashboard-mode)
       (my/session-dashboard-mode))
@@ -487,16 +485,33 @@ would otherwise decide it."
     (setq my/session-dashboard--repo repo)
     (setq tabulated-list-entries (my/session-dashboard--entries))
     (tabulated-list-print t)
-    (pop-to-buffer (current-buffer))))
+    (current-buffer)))
+
+(defun my/session-dashboard (repo)
+  "Show mission control: REPO's sessions with agent status.
+REPO is the repo at point, prompted for when there is none.  It is read
+before the dashboard buffer is current, whose own `default-directory'
+would otherwise decide it."
+  (interactive (list (my/session--repo-root)))
+  (pop-to-buffer (my/session-dashboard--buffer repo)))
 
 ;;; Keys
 
+;; A real prefix map rather than six global bindings: which-key then has a
+;; name for the prefix, and dashboard.el reads the pane it renders out of the
+;; map itself, so the two cannot drift apart.
+(defvar-keymap my/session-map
+  :doc "Session lifecycle and navigation."
+  "d" #'my/session-dashboard
+  "n" #'my/session-spawn
+  "j" #'my/session-open
+  "b" #'my/session-browse
+  "k" #'my/session-teardown)
+
+(fset 'my/session-map my/session-map)
+
+(keymap-global-set "C-c s" 'my/session-map)
 (keymap-global-set "<f6>" #'my/session-dashboard)
-(keymap-global-set "C-c s d" #'my/session-dashboard)
-(keymap-global-set "C-c s n" #'my/session-spawn)
-(keymap-global-set "C-c s j" #'my/session-open)
-(keymap-global-set "C-c s b" #'my/session-browse)
-(keymap-global-set "C-c s k" #'my/session-teardown)
 
 (provide 'sessions)
 ;;; sessions.el ends here

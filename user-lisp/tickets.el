@@ -4,13 +4,16 @@
 ;; issue are top-level headings.
 ;; The "w" and "f" agenda views cover one repo's whole tracker: every feature
 ;; in the main checkout, each shown in its worktree's copy when one exists.
+;; "F" is the frontier again, over every known repo — what dashboard.el opens on.
 ;;; Code:
 
+(require 'seq)
 (require 'subr-x)
 (require 'project)
 
 (declare-function my/session--repo-root "sessions")
 (declare-function my/session--worktrees "sessions")
+(declare-function my/session--repos "sessions")
 (defvar my/session-tickets-subdir)
 
 ;; Scope is one repo, derived from `git worktree list', not from
@@ -35,6 +38,13 @@ in-flight state wins; every other feature resolves to the main checkout."
         (when (file-exists-p file)
           (puthash feature file files))))
     (sort (hash-table-values files) #'string<)))
+
+(defun my/tracker-all-org-files ()
+  "Ticket file of every feature in every known repo.
+What one repo's agenda is to `my/tracker-org-files', this is to the
+machine: the frontier the dashboard opens on spans repos, since which
+one is at point says nothing about what is waiting."
+  (seq-uniq (seq-mapcat #'my/tracker-org-files (my/session--repos))))
 
 (defconst my/tracker-columns-format
   "%30ITEM(Title) %10TODO(State) %10KIND(Kind) %6TYPE(Type) %20FEATURE(Feature) %20TRACKER_CATEGORY(Category) %10PRIORITY(Priority) %24BRANCH(Branch)"
@@ -61,6 +71,13 @@ directory belonging to its own repo is left alone."
               ((not (equal (file-truename file) (expand-file-name file))))
               (project (project-current nil (file-name-directory file))))
     (setq-local default-directory (expand-file-name (project-root project)))))
+
+(defconst my/tracker-frontier-blocks
+  '((tags-todo "KIND={.}+TYPE=\"HITL\"/NEXT"
+               ((org-agenda-overriding-header "Mine")))
+    (tags-todo "KIND={.}+TYPE=\"AFK\"/NEXT"
+               ((org-agenda-overriding-header "Agent"))))
+  "Blocks of the frontier view, over one repo (\"f\") or every repo (\"F\").")
 
 (use-package org
   :ensure nil
@@ -90,16 +107,15 @@ directory belonging to its own repo is left alone."
   ;; KIND is what distinguishes a tracker heading from any other Org heading,
   ;; so both views work across sessions without naming a repo.
   (org-agenda-custom-commands
-   '(("w" "Tracker workboard"
+   `(("w" "Tracker workboard"
       ((todo "DOING") (todo "NEXT") (todo "WAIT") (todo "TODO"))
       ((org-agenda-files (my/tracker-org-files))))
-     ("f" "Tracker frontier"
-      ((tags-todo "KIND={.}+TYPE=\"HITL\"/NEXT"
-                  ((org-agenda-overriding-header "Mine")))
-       (tags-todo "KIND={.}+TYPE=\"AFK\"/NEXT"
-                  ((org-agenda-overriding-header "Agent"))))
+     ("f" "Tracker frontier" ,my/tracker-frontier-blocks
       ;; Frontier means startable, so blocked entries drop out rather than dim.
       ((org-agenda-files (my/tracker-org-files))
+       (org-agenda-dim-blocked-tasks 'invisible)))
+     ("F" "Tracker frontier, every repo" ,my/tracker-frontier-blocks
+      ((org-agenda-files (my/tracker-all-org-files))
        (org-agenda-dim-blocked-tasks 'invisible)))))
   :config
   (require 'org-tempo)                  ; <s TAB
