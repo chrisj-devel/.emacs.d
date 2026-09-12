@@ -218,9 +218,8 @@ argument) report what would change without writing."
 (defun my/tracker-validate (&optional root)
   "Report unresolvable BLOCKER edges and dependency cycles under ROOT."
   (interactive (list (funcall project-prompter)))
-  ;; Truename, because `tickets' is a symlink into the tracker repo and a
-  ;; cross-repo edge names `../<repo>/<feature>.org'.  `expand-file-name'
-  ;; collapses that ".." lexically, against the symlink's own parent.
+  ;; Truename, because `tickets' is a symlink into the tracker repo: without it
+  ;; `find-file-noselect' opens every tracker file under two names.
   (let* ((dir (file-truename
                (expand-file-name my/session-tickets-subdir root)))
          (graph (my/tracker--graph dir))

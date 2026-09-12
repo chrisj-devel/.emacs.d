@@ -138,8 +138,10 @@ Edna `:BLOCKER:` is the canonical dependency graph. Use one
 `olp("<file>.org" "Exact heading")` finder per dependency in the heading's
 property drawer.
 
-A dependency across repos names the other repo's tracker directory, which is a
-sibling: `olp("../<repo>/<feature>.org" "Exact heading")`.
+Every edge stays inside one tracker. Edna resolves a finder within the tracker
+being swept, so a path reaching into another repo does not block anything — it
+reads as a dependency and never behaves as one. Record cross-repo sequencing
+under `** Comments` and order the work by hand.
 
 **The OLP path carries the heading text only, never its TODO keyword.** A bare
 path matches whatever state the target currently holds, so an edge survives its
