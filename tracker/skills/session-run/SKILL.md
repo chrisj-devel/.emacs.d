@@ -73,6 +73,21 @@ Run the repo's verification before claiming completion. If this repo declares
 verification commands, those are the bar; otherwise use the ticket's acceptance
 criteria and the project's own test command.
 
+## When the ticket is wrong
+
+A ticket whose premise fails is not a ticket to force through. Where the code
+turns out not to work the way the brief assumed, or the slice cannot be one
+green commit after all, stop and put it back:
+
+- the brief still holds and only a choice is open → leave it `NEXT`, file the
+  choice as a `grilling` heading, edge, next ticket
+- the brief itself is now wrong → `WAIT`, saying under `** Comments` what you
+  found and what it invalidates
+
+Either way the run continues with the rest of the frontier. Never leave a ticket
+`DOING` behind you, and never rewrite a ticket's brief mid-run to match what you
+happened to build.
+
 ## Finishing a ticket
 
 `DONE` is the commit boundary, not a bookkeeping step:
