@@ -85,6 +85,10 @@ criteria and the project's own test command.
 Never leave a `DONE` ticket uncommitted. If the work should stay uncommitted,
 leave it `DOING`.
 
+Where that ticket was the file's last open heading, close the feature in the
+same commit: set the `prd` or `map` to `DONE`. A PRD-less bundle has nothing to
+close.
+
 Then re-derive the frontier — finishing a ticket usually unblocks the next —
 and continue until the `AFK` frontier is empty.
 

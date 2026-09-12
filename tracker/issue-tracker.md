@@ -275,6 +275,13 @@ ticket is `DONE` or `CANCELED`. Nothing moves: the file stays in `tickets/`.
 Every heading being terminal is what closed means, and no todo view surfaces a
 file with no open headings.
 
+Closing belongs to whoever makes the last heading terminal — the run that
+finishes the last ticket, answers the last question, or cancels it. Check the
+file after any heading reaches a terminal state, and where none is left open,
+set the `prd` or `map` to `DONE` in the same commit. No skill owns this, because
+no skill is reliably last: a feature can end on a ticket, a grilling, or a
+cancellation.
+
 ## Emacs
 
 `C-c a` opens the agenda. Two views cover the tracker of the repo you are in:

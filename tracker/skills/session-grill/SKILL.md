@@ -84,6 +84,9 @@ whole session ends:
 Never leave a `DONE` grilling uncommitted. Dependants need no edit — a ticket
 blocked on the grilling unblocks as soon as it is terminal.
 
+Where the answer closes the last open heading in the file, close the feature in
+the same commit — set the `prd` or `map` to `DONE`.
+
 An answer that changes the work changes the graph too. Add the tickets it
 implies with `tracker-decompose`, the edges with `tracker-edges`, and
 `CANCELED` what it rules out — all in the same commit as the answer.
