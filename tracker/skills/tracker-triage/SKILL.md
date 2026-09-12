@@ -56,6 +56,29 @@ dependencies are unresolved — `org-entry-blocked-p` derives whether it can
 start. If triage reveals a dependency, record it as a `:BLOCKER:` edge with
 `tracker-edges` and leave the state alone.
 
+## Answering the gate means writing the brief
+
+A heading reaching `NEXT` carries its brief on itself. The gate asks whether you
+could write it; `NEXT` asserts that you did. `session-run` takes an `AFK` ticket
+from the heading alone, so a brief left in the triager's head is a ticket that
+looks actionable and is not.
+
+Capture does not write one — it records a report and stops — so a heading coming
+out of the inbox usually needs its body written here. Do the reading first: the
+code, the failing path, the neighbouring tickets.
+
+A `KIND: ticket` takes the shape `tracker-decompose` defines, and that skill
+owns it: `** What to build` as one paragraph naming the code locations, and
+`** Acceptance criteria` as two to four items observable on an artifact, one of
+them covering tests. Exploratory kinds instead state the question precisely and
+say what would count as an answer.
+
+Its rule carries over: if you cannot write acceptance criteria without asking,
+the heading is `WAIT`, not `NEXT` — say what is missing.
+
+This is forming the heading in front of you, not slicing a feature. A PRD that
+needs splitting into tickets is still `tracker-decompose`.
+
 ## What to write
 
 On the heading: the state from the gate, `TYPE` on every `NEXT`, and `FEATURE`
@@ -73,8 +96,8 @@ Do not add `EFFORT`, `COMPLEXITY`, or any size field.
 
 ## Scope
 
-Triage evaluates. It does not decompose or implement. A PRD ready to split into
-tickets is `tracker-decompose`; a `NEXT` `AFK` ticket ready to build is
-`session-run`.
+Triage evaluates, and forms the heading it evaluates. It does not slice a
+feature or implement one. A PRD ready to split into tickets is
+`tracker-decompose`; a `NEXT` `AFK` ticket ready to build is `session-run`.
 
 Report what changed, one line per heading.
