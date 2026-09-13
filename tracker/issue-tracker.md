@@ -209,28 +209,6 @@ prompt without one. Stored responses *are* session-global, so
 
 Never put a token, password or secret in a tracker file.
 
-## Skills that do not speak this tracker
-
-Most skills are unaffected by where tickets live — they read code, write docs,
-or run a conversation. Some publish into the tracker while describing their
-output with Markdown-shaped templates. The template supplies content, not
-storage syntax: render it into the shape above rather than publishing Markdown.
-
-- "Publish to the issue tracker" means add a heading to
-  `tickets/<feature-slug>.org`, creating the file if it does not exist. Never
-  publish a Markdown tracker file, and never keep a Markdown mirror.
-- "Fetch the relevant ticket" means read that heading in full, including its
-  `** Comments`.
-- A template `##` section becomes `**` beneath the heading
-- Fenced code becomes `#+begin_src <language>` / `#+end_src`
-- Links become Org links, inline code becomes `=code=`, checkboxes stay `- [ ]`
-- A template's status or label field becomes the TODO keyword and the property
-  drawer, never prose
-
-A skill publishing a specification writes the file's `prd` heading; one
-publishing implementation work writes sibling `ticket` headings; an
-exploratory skill writes its own kind beside a `map`.
-
 ## Completion and commit boundary
 
 `DONE` is the commit boundary, not an earlier bookkeeping step. Once the
