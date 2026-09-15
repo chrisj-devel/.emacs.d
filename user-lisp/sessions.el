@@ -214,12 +214,18 @@ worktree it runs in, or bare when it runs in no repo at all."
       (mapcar #'file-name-base
               (directory-files base nil "\\`[^.].*\\.org\\'")))))
 
+(defun my/session-feature (session)
+  "Feature SESSION is in flight on: the last component of its branch.
+A branch is often namespaced — feature/foo, chris/foo — while the ticket
+it works through is tickets/foo.org.  A session on no branch has none."
+  (when-let* ((branch (my/session-branch session)))
+    (file-name-nondirectory branch)))
+
 (defun my/session-ticket-file (session)
   "Ticket file tickets/<feature>.org for SESSION, when it exists."
-  (when-let* ((feature (my/session-branch session))
+  (when-let* ((feature (my/session-feature session))
               (file (expand-file-name
-                     (concat my/session-tickets-subdir "/"
-                             (file-name-nondirectory feature) ".org")
+                     (concat my/session-tickets-subdir "/" feature ".org")
                      (my/session-root session)))
               ((file-exists-p file)))
     file))
@@ -351,6 +357,7 @@ Interactively the repo is the one at point; a prefix argument reads it."
     (let* ((source (expand-file-name my/session-tickets-subdir repo-root))
            (external (and (file-symlink-p source) (file-truename source)))
            (base (expand-file-name my/session-tickets-subdir worktree))
+           (feature (file-name-nondirectory feature))
            (file (expand-file-name (concat feature ".org") base)))
       ;; A tracker the repo does not version is one directory shared by every
       ;; worktree, reached by a symlink the main checkout already carries.
@@ -369,8 +376,12 @@ Interactively the repo is the one at point; a prefix argument reads it."
 The main checkout is a session too and is never removed; tearing it down
 closes its tabs and kills its agent, and it is derived again next time."
   (interactive (list (my/session--read "Tear down session: ")))
-  (let* ((name (my/session-name session))
+  (let* ((name (or (my/session-feature session) (my/session-name session)))
          (root (my/session-root session))
+         ;; Read before the worktree goes: a tab name is qualified by the repo
+         ;; behind the root, which removal takes away.
+         (tabs (list (my/session-tab-name session)
+                     (my/session-browse-tab-name session)))
          (linked (my/session--linked-worktree-p root)))
     (when (yes-or-no-p
            (if linked
@@ -398,8 +409,7 @@ closes its tabs and kills its agent, and it is derived again next time."
              (abbreviate-file-name (file-name-as-directory root))))))
       (when-let* ((buffer (my/session-agent-buffer session)))
         (kill-buffer buffer))
-      (dolist (tab (list (my/session-tab-name session)
-                         (my/session-browse-tab-name session)))
+      (dolist (tab tabs)
         (when (my/session--tab-p tab)
           (tab-bar-close-tab-by-name tab)))
       (message "Session %s torn down (branch kept)" name))))
