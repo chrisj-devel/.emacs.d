@@ -132,6 +132,32 @@
   (tab-bar-mode 1)
   (tab-bar-history-mode 1))
 
+;;; Restoring the last Emacs: buffers, windows, tabs
+
+;; A carve-out from "sessions are derived, never persisted" (AGENTS.md rule 2).
+;; What desktop.el writes is Emacs state — buffers, window layouts, the tab bar
+;; — and nothing reads it back into the session layer, which still derives
+;; every session from git on each access.  Tabs come back with their windows
+;; because the frameset carries each tab's printable window state; agent shells
+;; do not, being processes, so a restored session shows no agent until one is
+;; started.
+(use-package desktop
+  :ensure nil
+  :custom
+  (desktop-restore-frames t)
+  (desktop-save t)
+  ;; The default, `ask', holds startup behind a prompt whenever a crash left
+  ;; the lock behind; `check-pid' takes the desktop when its owner is gone.
+  (desktop-load-locked-desktop 'check-pid)
+  ;; Magit buffers are derived from the repo they are pointed at, and restore
+  ;; as transcripts of whatever it looked like last time.
+  (desktop-modes-not-to-save
+   '(tags-table-mode magit-status-mode magit-diff-mode
+                     magit-revision-mode magit-process-mode))
+  :config
+  ;; Nothing to restore or save in a batch run, and the boot check is one.
+  (unless noninteractive (desktop-save-mode 1)))
+
 ;;; Theme
 
 (use-package gruvbox-theme

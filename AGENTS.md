@@ -11,7 +11,11 @@ keybindings first. This file is the working contract for agents.
    custom function, show no package covers it acceptably.
 2. **Sessions are derived, never persisted.** `my/sessions` reconstructs
    everything from `git worktree list` + tickets dirs + live buffers. Never
-   serialize session state; never cache it across commands.
+   serialize session state; never cache it across commands. `desktop-save-mode`
+   (core.el) is not an exception: what it persists is Emacs state — buffers,
+   window layouts, the tab bar — and nothing reads it back into the session
+   layer. activities.el stayed rejected because it persists the sessions
+   themselves.
 3. **Sessions are an overlay, not a mode.** Zero cost when absent: no global
    advice, no hooks assuming a session exists, no hijacked stock bindings.
    Without a session this must behave like clean Emacs 31 + listed packages.
@@ -41,7 +45,7 @@ auto-side-windows (native side windows), evil (meow won), activities.el
 A `use-package` form goes here and nowhere else; see the byte-compile gotcha.
 
 - `config/core.el` — shell environment, defaults, native completion, side
-  windows, tab-bar
+  windows, tab-bar, desktop
 - `config/completing.el` — the minibuffer stack (rule 5)
 - `config/keys.el` — meow (vim-transitional)
 - `config/dev.el` — treesit, eglot, magit, envrc, ghostel, agent stack
@@ -121,6 +125,11 @@ Never commit batch-test droppings: `projects.eld`, `recentf.eld`, `history`,
   use-package form back, and don't add a step that compiles `config/`.
 - `native-comp-async-report-warnings-errors` is left at its default. It was
   `'silent`, which is why the above went unseen.
+- A restored desktop stands the startup dashboard down
+  (`my/dashboard--restore`, on `desktop-after-read-hook`, which runs before
+  `emacs-startup-hook`) and redraws the dashboard tab if one was saved — its
+  panes are generated buffers that desktop cannot restore. Agent shells cannot
+  be restored either; a restored session simply reads as having no agent.
 - GNU ELPA's dirvish keeps its extensions in a subdirectory its autoloads
   never add to `load-path`. config/core.el adds it; without that, `dirvish-side` and
   the attribute libraries are unreachable.

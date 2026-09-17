@@ -148,6 +148,25 @@ on screen by now and is what was actually asked for, so it wins."
     (tab-bar-rename-tab my/dashboard-tab-name)
     (my/dashboard--layout)))
 
+(defun my/dashboard--restore ()
+  "Redraw the dashboard tab a restored desktop brought back empty.
+A desktop that restored is the layout that was asked for, so the startup
+dashboard stands down — `desktop-after-read-hook' runs before
+`emacs-startup-hook', which is what makes standing it down possible.  Its
+own tab is the exception: the three panes are generated buffers, which
+desktop does not restore, so the tab returns holding whatever the frameset
+fell through to.  The tab the desktop was saved in is the tab to be left
+in, so the redraw goes back to it."
+  (remove-hook 'emacs-startup-hook #'my/dashboard--startup)
+  (remove-hook 'server-after-make-frame-hook #'my/dashboard--startup)
+  (when (my/session--tab-p my/dashboard-tab-name)
+    (let ((current (alist-get 'name (assq 'current-tab (funcall tab-bar-tabs-function)))))
+      (my/dashboard)
+      (unless (equal current my/dashboard-tab-name)
+        (tab-bar-switch-to-tab current)))))
+
+(add-hook 'desktop-after-read-hook #'my/dashboard--restore)
+
 (when (and my/dashboard-at-startup (not noninteractive))
   (if (daemonp)
       ;; A daemon's startup hook runs with no real frame to lay out.

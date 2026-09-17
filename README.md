@@ -12,6 +12,10 @@ persisted. Sessions are an overlay, not a mode: no session ⇒ stock Emacs.
 Every worktree of a repo is a session, the main checkout included — that one
 has no ticket file, so it opens on dired, and is where git work belongs.
 
+Buffers, window layouts and tabs are restored from the last Emacs
+(`desktop-save-mode`). Sessions are still derived, not restored — the desktop
+holds no session state, and agent shells, being processes, start again.
+
 - `f7` / `C-c d` — the dashboard Emacs opens on: every worktree in flight
   across all known repos, the tracker frontier over all of them, and a key
   pane read out of the live keymaps. Re-run it to refresh.
