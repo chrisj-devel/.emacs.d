@@ -237,11 +237,27 @@ An agent started inside a session is already in its worktree. Do not create
 another worktree; in particular do not use `EnterWorktree`, which would nest one
 inside the session.
 
+It is also inside a running Emacs, whose server is always up. `emacsclient
+--eval` is available to any skill at any time, and is how to ask the session
+layer something rather than reconstructing its answer.
+
 The session's copy of the tracker is the one being worked. Ticket state travels
 with the feature branch and merges alongside the code that justifies it, so
 there is nothing to reconcile against the default branch mid-feature. A repo
 whose tracker is not versioned with the code overrides this —
 **slot: tracker versioning**.
+
+That holds for the tracker, not for the code under it. A branch picked up long
+after it was spawned is read against a codebase that has since changed, so
+before working a session's frontier, report how far it trails its base.
+
+```sh
+emacsclient --eval "(my/session-drift-report \"$PWD\")"
+```
+
+Never act on the answer: closing the gap is the human's call. Do give it weight
+when scoping — a stale worktree is self-consistent, so work built on one goes
+green and fails later, at the merge, rather than failing the ticket in hand.
 
 The session layer names the branch after the feature, so a PRD records no
 branch: the file name already is it.
