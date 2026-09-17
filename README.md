@@ -33,13 +33,13 @@ has no ticket file, so it opens on dired, and is where git work belongs.
 
 Scoping comes from project.el (`C-x p …`) since each worktree is a project
 root. Attention (which shells are waiting on you, as a tab-bar tally plus a
-macOS notification) is ~60 lines in `dev.el` over `agent-shell`'s public
-event API.
+macOS notification) is ~60 lines in `user-lisp/agent-attention.el` over
+`agent-shell`'s public event API.
 
 ## Minibuffer (the one carve-out from native-first)
 
 vertico + consult + marginalia + embark, scoped to the minibuffer;
-in-buffer completion stays native. See `user-lisp/completing.el`.
+in-buffer completion stays native. See `config/completing.el`.
 
 - `C-x p g` / `M-s r` — consult-ripgrep, scoped to the session's worktree
   (`#` splits input: `#regexp#filter` — rg sees the first, live narrowing the rest)

@@ -109,6 +109,7 @@ is written, created or linked; the report says what would have happened."
           report)
     (nreverse report)))
 
+;;;###autoload
 (defun my/tracker-install (root &optional force)
   "Install the tracker contract and skills into ROOT.
 Generated files are left alone when they differ locally unless FORCE (the
@@ -135,6 +136,7 @@ prefix argument) is set; tracker.local.md is never overwritten."
                        root))))
               (project-known-project-roots)))
 
+;;;###autoload
 (defun my/tracker-update-all (&optional check)
   "Reinstall the contract and skills into every repo that already has them.
 Generated files are overwritten: they carry a do-not-edit header, so local
@@ -215,6 +217,7 @@ argument) report what would change without writing."
         (funcall walk node nil)))
     (seq-uniq found)))
 
+;;;###autoload
 (defun my/tracker-validate (&optional root)
   "Report unresolvable BLOCKER edges and dependency cycles under ROOT."
   (interactive (list (funcall project-prompter)))

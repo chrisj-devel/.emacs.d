@@ -10,3 +10,4 @@ user-lisp/*.elc
 user-lisp/.user-lisp-autoloads.el*
 places.eld
 tramp
+config/*.elc
