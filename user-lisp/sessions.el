@@ -42,6 +42,14 @@
   "Suffix distinguishing a session's browse tab from its work tab."
   :type 'string)
 
+(defcustom my/session-stale-threshold 25
+  "Commits behind base at which the dashboard calls a session stale.
+Being a little behind is the normal state of an active repo; the number
+worth reacting to is repo-specific, so set this per repo in its
+.dir-locals.el where the default does not fit."
+  :type 'natnum
+  :safe #'natnump)
+
 (defcustom my/session-linked-paths nil
   "Repo-relative paths to symlink from the main checkout into a new worktree.
 For what a worktree needs in order to run but git does not carry:
@@ -78,6 +86,13 @@ session is spawned off, not from the buffer in hand."
                (string-trim (buffer-string))))
       (string-trim (buffer-string)))))
 
+(defun my/session--git-succeeds-p (dir &rest args)
+  "Non-nil when git ARGS exits zero in DIR.
+For the plumbing that answers by exit status — `merge-base --is-ancestor',
+`rev-parse --verify' — where `my/session--git' would signal instead."
+  (zerop (apply #'call-process "git" nil nil nil
+                "-C" (expand-file-name dir) args)))
+
 (defun my/session--linked-worktree-p (root)
   "Non-nil when ROOT is a linked git worktree (not the main checkout)."
   (and (file-directory-p root)
@@ -104,6 +119,86 @@ lives under its superproject and so names no checkout at all."
   (condition-case nil
       (my/session--git root "rev-parse" "--abbrev-ref" "HEAD")
     (error nil)))
+
+(defun my/session--remote (root)
+  "Remote of the repo at ROOT: origin when it has one, else the first named."
+  (let ((remotes (split-string (my/session--git root "remote") "\n" t)))
+    (cond ((member "origin" remotes) "origin")
+          (remotes (car remotes)))))
+
+(defun my/session--default-branch (root)
+  "Name of ROOT's default branch, unqualified by any remote.
+`<remote>/HEAD' names it.  A repo whose remote HEAD was never probed, or
+which has no remote at all, falls back to the branch its main checkout is
+on — the base spawning has always used."
+  (or (when-let* ((remote (my/session--remote root)))
+        (ignore-errors
+          (string-remove-prefix
+           (concat remote "/")
+           (my/session--git root "symbolic-ref" "--short"
+                            (format "refs/remotes/%s/HEAD" remote)))))
+      (my/session--branch (my/session--main-root root))))
+
+(defun my/session--base-ref (root &optional fetch)
+  "Ref new work off ROOT forks from, or nil when it cannot be settled.
+The default branch exists twice — locally and on the remote — and which
+one leads depends on how the repo is worked: a repo whose main lands
+through PRs has <remote>/main running ahead of the checkout, while one
+merged locally and pushed later has it the other way round.  Whichever
+contains the other is the base.  Neither containing the other means the
+two have diverged, which is a thing to look at rather than guess past,
+and answers nil.
+
+With FETCH, refresh the remote branch first.  Without it the remote ref
+is read as last fetched, so a caller that runs often — the dashboard —
+costs no network."
+  (when-let* ((branch (my/session--default-branch root)))
+    (let* ((remote (my/session--remote root))
+           (tracking (and remote (concat remote "/" branch))))
+      (when (and fetch tracking)
+        ;; Offline, or a branch the remote dropped: the ref simply stays as
+        ;; last seen, which is still a better base than HEAD in hand.
+        (my/session--git-succeeds-p root "fetch" remote branch))
+      (cl-flet ((exists-p (ref)
+                  (and ref (my/session--git-succeeds-p
+                            root "rev-parse" "--verify" "--quiet" ref)))
+                (contains-p (a b)
+                  (my/session--git-succeeds-p root "merge-base" "--is-ancestor" a b)))
+        (cond ((not (exists-p tracking)) branch)
+              ((not (exists-p branch)) tracking)
+              ((contains-p branch tracking) tracking)
+              ((contains-p tracking branch) branch))))))
+
+(defun my/session--behind (root base)
+  "Commits on BASE that the checkout at ROOT lacks, nil when uncountable."
+  (ignore-errors
+    (string-to-number
+     (my/session--git root "rev-list" "--count" (concat "HEAD.." base)))))
+
+(defun my/session-behind (session &optional base)
+  "Commits on BASE that SESSION lacks, nil when there is no base to count from.
+BASE defaults to the one `my/session--base-ref' derives for SESSION's own
+root, read without fetching."
+  (when-let* ((root (my/session-root session))
+              (base (or base (ignore-errors (my/session--base-ref root)))))
+    (my/session--behind root base)))
+
+(defun my/session-drift-report (root)
+  "One line on how far the checkout at ROOT trails its base.
+For a caller outside Emacs: the agent working a session reads staleness
+through `emacsclient --eval\=' rather than running the comparison itself,
+so which side of the default branch leads is decided here only and a
+second copy of the rule cannot drift from this one.  Fetches, being run
+once at the start of a run."
+  (let ((root (expand-file-name root)))
+    (if-let* ((base (my/session--base-ref root t)))
+        (if-let* ((behind (my/session--behind root base)))
+            (if (zerop behind)
+                (format "current with %s" base)
+              (format "%d commit%s behind %s" behind (if (= behind 1) "" "s") base))
+          (format "cannot count against %s" base))
+      (format "%s has diverged from its remote"
+              (or (ignore-errors (my/session--default-branch root)) root)))))
 
 (defun my/session--worktrees (root)
   "Alist of (BRANCH . WORKTREE) for every worktree of the repo at ROOT.
@@ -339,17 +434,33 @@ its own is replicated rather than chained through."
       (make-directory (file-name-directory (directory-file-name target)) t)
       (make-symbolic-link (file-truename source) target))))
 
+(defun my/session--spawn-base (root)
+  "Ref to branch a new session off ROOT from, nil to leave the choice to git.
+Nil when ROOT has no default branch to speak of — a detached main
+checkout — where git's own answer, HEAD in hand, is the base spawning has
+always used.  A default branch that has diverged from its remote is read
+from the user: the two are equally defensible bases and only one of them
+is the one meant."
+  (when-let* ((branch (my/session--default-branch root)))
+    (or (my/session--base-ref root t)
+        (completing-read
+         (format "%s has diverged from its remote; branch off: " branch)
+         (list branch (concat (my/session--remote root) "/" branch))
+         nil t))))
+
 (defun my/session-spawn (repo-root feature)
   "Create worktree, branch, and ticket scaffold for FEATURE off REPO-ROOT.
 Interactively the repo is the one at point; a prefix argument reads it."
   (interactive
    (let ((root (my/session--repo-root current-prefix-arg)))
      (list root (completing-read "Feature: " (my/session--features root)))))
-  (let ((worktree (funcall my/session-worktree-directory-function repo-root feature)))
+  (let ((worktree (funcall my/session-worktree-directory-function repo-root feature))
+        (base (my/session--spawn-base repo-root)))
     (unless (file-directory-p worktree)
       (condition-case nil
-          (my/session--git repo-root "worktree" "add" "-b" feature worktree)
-        ;; Branch already exists: check it out instead.
+          (apply #'my/session--git repo-root "worktree" "add" "-b" feature worktree
+                 (and base (list base)))
+        ;; Branch already exists: check it out instead, at wherever it left off.
         (error (my/session--git repo-root "worktree" "add" worktree feature))))
     (project-remember-project (project-current nil worktree))
     (dolist (path (my/session--linked-paths repo-root))
@@ -429,16 +540,33 @@ closes its tabs and kills its agent, and it is derived again next time."
   "Repo whose sessions this dashboard lists, resolved when it was opened.
 Held so reverting does not re-prompt from the dashboard's own buffer.")
 
+(defun my/session--behind-label (behind)
+  (cond ((null behind) (propertize "–" 'face 'shadow))
+        ((zerop behind) (propertize "current" 'face 'shadow))
+        ((>= behind my/session-stale-threshold)
+         (propertize (format "↓%d" behind) 'face 'error))
+        (t (propertize (format "↓%d" behind) 'face 'shadow))))
+
 (defun my/session-dashboard--entries ()
-  (mapcar (lambda (session)
-            (list session
-                  (vector (my/session-name session)
-                          (my/session--status-label (my/session-status session))
-                          (if-let* ((buffer (my/session-agent-buffer session)))
-                              (buffer-name buffer)
-                            "")
-                          (abbreviate-file-name (my/session-root session)))))
-          (my/sessions my/session-dashboard--repo)))
+  ;; One base per repo rather than one per session: deriving it shells out,
+  ;; and every session of a repo forks from the same answer.
+  (let ((bases (make-hash-table :test #'equal)))
+    (cl-flet ((base (root)
+                (let ((main (or (ignore-errors (my/session--main-root root)) root)))
+                  (with-memoization (gethash main bases)
+                    (ignore-errors (my/session--base-ref main))))))
+      (mapcar (lambda (session)
+                (let ((root (my/session-root session)))
+                  (list session
+                        (vector (my/session-name session)
+                                (my/session--status-label (my/session-status session))
+                                (my/session--behind-label
+                                 (my/session-behind session (base root)))
+                                (if-let* ((buffer (my/session-agent-buffer session)))
+                                    (buffer-name buffer)
+                                  "")
+                                (abbreviate-file-name root)))))
+              (my/sessions my/session-dashboard--repo)))))
 
 (defun my/session-dashboard-open ()
   "Open the session at point."
@@ -477,7 +605,7 @@ own `default-directory' is no answer; `my/session-dashboard--repo' is."
 (define-derived-mode my/session-dashboard-mode tabulated-list-mode "Sessions"
   "Mission control for feature-in-flight sessions."
   (setq tabulated-list-format
-        [("Feature" 28 t) ("Status" 12 t) ("Agent" 30 t) ("Root" 40 t)])
+        [("Feature" 28 t) ("Status" 12 t) ("Base" 9 t) ("Agent" 30 t) ("Root" 40 t)])
   (setq tabulated-list-padding 1)
   (add-hook 'tabulated-list-revert-hook
             (lambda () (setq tabulated-list-entries (my/session-dashboard--entries)))

@@ -16,8 +16,12 @@ has no ticket file, so it opens on dired, and is where git work belongs.
   across all known repos, the tracker frontier over all of them, and a key
   pane read out of the live keymaps. Re-run it to refresh.
 - `f6` / `C-c s d` — mission control dashboard for the repo at point (`RET`
-  jump, `b` browse, `n` spawn, `k` teardown)
-- `C-c s n` — spawn: worktree + branch + ticket scaffold + tab + agent
+  jump, `b` browse, `n` spawn, `k` teardown). Its Base column is how far the
+  session trails base as last fetched, reddening past
+  `my/session-stale-threshold`
+- `C-c s n` — spawn: worktree + branch + ticket scaffold + tab + agent. The
+  branch forks from whichever of `main` / `origin/main` contains the other;
+  diverged, it asks
 - `C-c s j` — jump to a session's work tab, main checkout included
 - `C-c s b` — browse tab: dirvish sidebar + code, same session, second tab
 - `C-c s k` — teardown: kill buffers, remove worktree, close both tabs (branch
