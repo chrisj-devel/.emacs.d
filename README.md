@@ -20,9 +20,9 @@ holds no session state, and agent shells, being processes, start again.
   across all known repos, the tracker frontier over all of them, and a key
   pane read out of the live keymaps. Re-run it to refresh.
 - `f6` / `C-c s d` — mission control dashboard for the repo at point (`RET`
-  jump, `b` browse, `n` spawn, `k` teardown). Its Base column is how far the
-  session trails base as last fetched, reddening past
-  `my/session-stale-threshold`
+  jump, `b` browse, `n` spawn, `k` teardown). Its Drift column is the
+  session's commits ahead of base and behind it as last fetched, the behind
+  count reddening past `my/session-stale-threshold`
 - `C-c s n` — spawn: worktree + branch + ticket scaffold + tab + agent. The
   branch forks from whichever of `main` / `origin/main` contains the other;
   diverged, it asks

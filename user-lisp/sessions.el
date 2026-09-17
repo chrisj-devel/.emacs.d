@@ -169,19 +169,26 @@ costs no network."
               ((contains-p branch tracking) tracking)
               ((contains-p tracking branch) branch))))))
 
-(defun my/session--behind (root base)
-  "Commits on BASE that the checkout at ROOT lacks, nil when uncountable."
-  (ignore-errors
-    (string-to-number
-     (my/session--git root "rev-list" "--count" (concat "HEAD.." base)))))
+(defun my/session--divergence (root base)
+  "Cons of (BEHIND . AHEAD) between BASE and the checkout at ROOT.
+BEHIND counts commits on BASE that ROOT lacks, AHEAD the ones ROOT has
+that BASE lacks.  Answers nil when the two cannot be compared.  One
+rev-list rather than two: the dashboard asks per session."
+  (when-let* ((out (ignore-errors
+                     (my/session--git root "rev-list" "--left-right" "--count"
+                                      (concat base "...HEAD"))))
+              (counts (split-string out))
+              ((= (length counts) 2)))
+    (cons (string-to-number (nth 0 counts))
+          (string-to-number (nth 1 counts)))))
 
-(defun my/session-behind (session &optional base)
-  "Commits on BASE that SESSION lacks, nil when there is no base to count from.
+(defun my/session-divergence (session &optional base)
+  "Cons of (BEHIND . AHEAD) between BASE and SESSION, nil when uncountable.
 BASE defaults to the one `my/session--base-ref' derives for SESSION's own
 root, read without fetching."
   (when-let* ((root (my/session-root session))
               (base (or base (ignore-errors (my/session--base-ref root)))))
-    (my/session--behind root base)))
+    (my/session--divergence root base)))
 
 (defun my/session-drift-report (root)
   "One line on how far the checkout at ROOT trails its base.
@@ -192,7 +199,7 @@ second copy of the rule cannot drift from this one.  Fetches, being run
 once at the start of a run."
   (let ((root (expand-file-name root)))
     (if-let* ((base (my/session--base-ref root t)))
-        (if-let* ((behind (my/session--behind root base)))
+        (if-let* ((behind (car (my/session--divergence root base))))
             (if (zerop behind)
                 (format "current with %s" base)
               (format "%d commit%s behind %s" behind (if (= behind 1) "" "s") base))
@@ -540,12 +547,22 @@ closes its tabs and kills its agent, and it is derived again next time."
   "Repo whose sessions this dashboard lists, resolved when it was opened.
 Held so reverting does not re-prompt from the dashboard's own buffer.")
 
-(defun my/session--behind-label (behind)
-  (cond ((null behind) (propertize "–" 'face 'shadow))
-        ((zerop behind) (propertize "current" 'face 'shadow))
-        ((>= behind my/session-stale-threshold)
-         (propertize (format "↓%d" behind) 'face 'error))
-        (t (propertize (format "↓%d" behind) 'face 'shadow))))
+(defun my/session--drift-label (divergence)
+  "DIVERGENCE, a (BEHIND . AHEAD) cons, as one column of arrows."
+  (pcase divergence
+    ('nil (propertize "–" 'face 'shadow))
+    ('(0 . 0) (propertize "current" 'face 'shadow))
+    (`(,behind . ,ahead)
+     (string-join
+      (delq nil
+            (list (unless (zerop ahead)
+                    (propertize (format "↑%d" ahead) 'face 'success))
+                  (unless (zerop behind)
+                    (propertize (format "↓%d" behind) 'face
+                                (if (>= behind my/session-stale-threshold)
+                                    'error
+                                  'shadow)))))
+      " "))))
 
 (defun my/session-dashboard--entries ()
   ;; One base per repo rather than one per session: deriving it shells out,
@@ -560,8 +577,8 @@ Held so reverting does not re-prompt from the dashboard's own buffer.")
                   (list session
                         (vector (my/session-name session)
                                 (my/session--status-label (my/session-status session))
-                                (my/session--behind-label
-                                 (my/session-behind session (base root)))
+                                (my/session--drift-label
+                                 (my/session-divergence session (base root)))
                                 (if-let* ((buffer (my/session-agent-buffer session)))
                                     (buffer-name buffer)
                                   "")
@@ -605,7 +622,7 @@ own `default-directory' is no answer; `my/session-dashboard--repo' is."
 (define-derived-mode my/session-dashboard-mode tabulated-list-mode "Sessions"
   "Mission control for feature-in-flight sessions."
   (setq tabulated-list-format
-        [("Feature" 28 t) ("Status" 12 t) ("Base" 9 t) ("Agent" 30 t) ("Root" 40 t)])
+        [("Feature" 28 t) ("Status" 12 t) ("Drift" 12 t) ("Agent" 30 t) ("Root" 40 t)])
   (setq tabulated-list-padding 1)
   (add-hook 'tabulated-list-revert-hook
             (lambda () (setq tabulated-list-entries (my/session-dashboard--entries)))
