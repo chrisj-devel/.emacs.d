@@ -5,63 +5,33 @@ description: Refine an existing prototype by eye, one small request at a time, w
 
 # Prototype refine
 
-A mode, not a procedure. The user is looking at a running prototype and
-adjusting it by eye. Every round is: he names a change, you make it, he looks.
-The only thing that matters is how long that round takes.
+Make the user's requested change to an existing running prototype; the user
+reviews it by eye.
 
-Optimise for round-trip latency. Everything below follows from that.
+## Edit only the request
 
-## Do only what was asked
+Leave surrounding structure, styling, and copy unchanged. Reuse the existing
+component or treatment the request names. Do not redesign adjacent surfaces.
+Ask briefly, with options, when the request is underspecified. Do not infer
+unstated constraints.
 
-Change what the request names and nothing adjacent. Leave surrounding
-structure, styling and copy alone, including things you think are wrong.
+## No checks or delegation
 
-Where the request names an existing thing, use that thing. Do not write a new
-one because the existing one nearly fits — nearly fitting is what it is for.
+Run no tests, linters, type checks, builds, or `my/tracker-validate`. Do not
+load the page, spawn subagents, parallelize, or re-read the file after editing.
+The user's visual review is the check.
 
-Never redesign on the way. A redesign smuggled into a small request costs a
-round trip to unpick, and its justification is almost always your own earlier
-reasoning read back as a requirement.
+## Records and report
 
-## Ask instead of guessing
+Write no comments, rationale, tracker headings, or iteration log. Record only
+measurements that required substantial work, such as contrast or font-fallback
+findings, under the tracker's `** Comments`.
 
-The user is present. A question costs one short exchange; a wrong guess costs
-a round trip plus the unpicking. When a request is under-specified, ask it —
-briefly, with the options you see.
-
-Do not fill a gap with an inferred rule. If you cannot point at where a
-constraint was stated, it is not one.
-
-## Nothing runs
-
-No tests, no linter, no type or `svelte-check` pass, no build, no
-`my/tracker-validate`. Do not load the page to check your work. The user is
-looking at it; that is the check, and it is faster than yours.
-
-No subagents, no parallel fan-out, no re-reading a file you just edited. They
-buy confidence the user is already supplying.
-
-## Nothing is recorded
-
-These decisions are point-in-time and die with the turn. Write no code
-comments, no rationale, no tracker headings, no round-by-round log. Recording
-a one-off judgment is what turns it into a fake standing rule for the next
-turn to obey.
-
-The exception is a measurement that cost real work — a contrast ratio, a
-figure taken at six widths, a font-fallback finding. Those go in the tracker
-under `** Comments`. Arguments do not.
-
-## Reporting
-
-One line: what changed, where. No summary of the approach, no list of what you
-considered, no invitation to review. The next message is the user's reaction to
-what he sees.
+Report one line stating what changed and where. Omit approach summaries,
+alternatives, and invitations to review.
 
 ## Scope
 
-This mode refines a prototype that exists. Building one to answer a question is
-`prototype`; working a feature's `KIND: prototype` headings unattended is
-`session-explore`. Folding a settled result into real code is a ticket, and
-`session-run` takes it — leaving the mode is what makes the normal bars apply
-again.
+Use `prototype` to build an experiment, `session-explore` for unattended
+prototype headings, and `session-run` for production implementation. Leaving
+refinement mode restores the normal workflow requirements.

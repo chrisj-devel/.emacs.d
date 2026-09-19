@@ -5,17 +5,10 @@ description: Split a feature PRD into numbered implementation tickets as sibling
 
 # Tracker decompose
 
-Turn a PRD into implementation tickets. Tickets are sibling top-level headings
-in the same file as the PRD — one file per feature, never one file per ticket.
-
-Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
-`tickets/tracker.local.md` if it exists; it supplies this repo's vocabulary.
-
-A `prd` or `map` heading with no sibling work headings has not been decomposed.
-That is the structural fact this skill changes; there is no state for it.
-
-Implementation slices are `KIND: ticket`. An exploratory effort decomposes
-under a `map` into `research`, `prototype`, or `grilling` headings instead.
+Create numbered sibling work headings in the feature's existing tracker file.
+Read `tickets/issue-tracker.md` and, if present, `tickets/tracker.local.md` first.
+Use `KIND: ticket` under a PRD; use `research`, `prototype`, or `grilling` under
+a map.
 
 ## Shape
 
@@ -31,64 +24,36 @@ under a `map` into `research`, `prototype`, or `grilling` headings instead.
 - [ ] ...
 ```
 
-The heading names an outcome, not an area: "Return the record from the
-existing endpoint", never "Endpoint changes".
+Name an outcome. Number from `01` in dependency order; record actual ordering
+with dependency edges.
 
-Number from `01` in the heading text, in dependency order. Numbering is a
-reading aid; the dependency graph is the truth.
+`** What to build` is one paragraph of three to five sentences naming the files
+or modules and their changes. End with a boundary naming work left to a
+neighbour. Split work that needs more than one paragraph.
 
-`** What to build` is one paragraph, three to five sentences. Name the code
-locations by file or module and say what changes in each. End with a boundary
-sentence naming what this ticket leaves to a neighbour ("The response is
-unchanged here; 05 changes it"). A ticket that needs more than a paragraph is
-two tickets.
+`** Acceptance criteria` has two to four observable items covering artifacts
+such as responses, files, or devtest resources. Do not restate the build;
+include test coverage.
 
-`** Acceptance criteria` is two to four items. Each is observable on an
-artifact — a response, a file, a devtest resource — and none restates the
-build. One covers tests.
+## Slicing and state
 
-## Slicing
+Start with the narrowest end-to-end slice proving the approach. Each ticket
+must form one coherent commit with passing checks; split only when needed to
+meet that boundary.
 
-The first ticket is a tracer bullet: the narrowest slice that proves the
-approach end to end. Prefer a slice that lands a real path over one that lands
-a layer.
+Use `WAIT` when machine-checkable acceptance cannot yet be written, naming the
+missing fact under `** Comments`. Otherwise use `NEXT`, with `TYPE` assigned by
+the triage gate. Identify any required human approvals or credentials.
 
-Each ticket must be one coherent commit that leaves the tree green. If its
-acceptance criteria cannot form one green commit, split it. Do not create
-micro-tickets to make the list look thorough.
+Move the parent from `TODO` to `DOING` when its first work heading is written.
+It remains `DOING` until every work heading is terminal, then closes at `DONE`.
+It never takes `TYPE` or `NEXT`.
 
-Every ticket needs acceptance criteria a machine can check without asking. If
-you cannot write them, the ticket is `WAIT`, not `NEXT` — and say what is
-missing under `** Comments`.
+## Dependencies and report
 
-Set `TYPE` per ticket with the triage gate. A decomposition that is entirely
-`AFK` when parts plainly need approvals or credentials is wrong.
+Use `tracker-edges`: sequential slices block their successors; independent
+slices have no edge and can run in parallel. Specified blocked tickets remain
+`NEXT`. Run `M-x my/tracker-validate` after writing the edges.
 
-## The PRD moves
-
-Promote the PRD from `TODO` to `DOING` once its first ticket is written: a
-feature with tickets is underway, and it stays `DOING` until every ticket is
-terminal and it closes at `DONE`. It takes no `TYPE`.
-
-Never `NEXT`. The frontier is every unblocked `NEXT` heading and `session-run`
-drains it taking `AFK` ones, so a `NEXT` PRD reads as a ticket an unattended
-agent can claim.
-
-## Dependencies
-
-Write the edges as you slice, with `tracker-edges`. Sequential slices each
-block the next; independent slices carry no edge and can run in parallel.
-
-Do not express ordering by state. Every ticket that is fully specified is
-`NEXT`, whether or not it is currently blocked.
-
-Sweep the graph with `M-x my/tracker-validate` when done.
-
-## Reporting
-
-When done, report a table of number, title, `TYPE` and blocked-on, then the
-slicing choices a reader would not expect. Nothing else.
-
-## Scope
-
-Decompose writes tickets. It does not implement them; that is `session-run`.
+Report a table of number, title, `TYPE`, and dependencies, followed by any
+necessary slicing constraints. Do not implement; `session-run` does that.

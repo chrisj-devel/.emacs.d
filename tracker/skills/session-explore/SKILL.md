@@ -5,79 +5,43 @@ description: Work a feature's unblocked research and prototype headings to a rec
 
 # Session explore
 
-Work one feature's open questions to an answer. It is the third runner over the
-frontier: `session-run` drains `AFK` tickets, `session-grill` drains `grilling`
-headings, this one drains `research` and `prototype`.
+Answer unblocked `NEXT` research and prototype headings with `TYPE: AFK`.
+Read `tickets/issue-tracker.md` and, if present, `tickets/tracker.local.md` first.
 
-Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
-`tickets/tracker.local.md` if it exists.
+## Start
 
-## Where this runs
+Use the existing feature session worktree. Do not create one or use
+`EnterWorktree`. Get the work with `tracker-frontier`; read the map and each
+heading in full, including `** Comments`. Report `HITL` headings as waiting
+for human access or action and leave them unchanged.
 
-Inside the feature's session worktree, which an agent started there already has
-as its working directory. Do not create one; in particular do not use
-`EnterWorktree`. The answers land on the feature's branch with the work they
-justify.
+## Research and prototypes
 
-## What this takes
+Use the highest-trust source: code and tests before repo documentation,
+primary documentation before summaries. Cite paths and lines or URLs.
+Answer the stated question. If its premise fails, identify that before
+answering the corrected question.
 
-`KIND: research` and `KIND: prototype` headings that are `NEXT`, unblocked, and
-`TYPE: AFK`. Get them with `tracker-frontier`, and read the map and each heading
-in full, including `** Comments`, before starting.
+Build only enough prototype to settle its question. Tests, error handling,
+and production polish are not required. Keep prototype code out of the feature
+commit or delete it after reading the result. State the verdict, relevant
+limits or costs, and any next experiment when inconclusive. Production
+implementation belongs in a ticket for `session-run`.
 
-A `TYPE: HITL` heading of either kind needs a human — an account, a device, a
-system you cannot reach. Report it as waiting and leave it.
+## Record and finish
 
-## Research
+As each heading resolves:
 
-Answer the question the heading asks, from the highest-trust source available:
-the code and its tests before its documentation, primary documentation before a
-summary of it. Say where each finding came from, with a path and line or a URL,
-so the next reader can check it rather than trust it.
-
-Answer the question that was asked. Where the question turns out to be the wrong
-one, say so and answer the right one — but say both, because a question silently
-replaced reads as an answer to the original.
-
-## Prototype
-
-Write the smallest thing that settles the question and no more. The code is an
-instrument, not a deliverable: it does not need tests, error handling, or a
-tidy shape, and it must not be committed to the feature branch. Keep it out of
-the commit, or delete it once you have read the result.
-
-State the verdict plainly — the approach works, does not, or works with a cost
-worth naming. A prototype that ran and taught you nothing is a finding too; say
-what you would try next.
-
-Never let the prototype become the implementation. Building it properly is a
-ticket, and `session-run` takes it.
-
-## Recording an answer
-
-Per heading, as soon as it resolves:
-
-1. Write the finding or verdict under `** Answer`, with its evidence.
-2. Set the state to `DONE`.
-3. Where the feature has a `map`, summarise the outcome under its
-   `** Decisions so far`.
+1. Record the finding or verdict and evidence under `** Answer`.
+2. Set it to `DONE`.
+3. Summarise the outcome under the map's `** Decisions so far`, if present.
 4. Commit the tracker update immediately.
 
-An answer that implies work writes it: tickets with `tracker-decompose`, edges
-with `tracker-edges`, `CANCELED` for what it rules out, all in that commit. An
-answer that instead exposes a decision for the human writes a
-`KIND: grilling`, `TYPE: HITL` heading for `session-grill`.
+Add implied tickets with `tracker-decompose`, dependencies with `tracker-edges`,
+and cancel ruled-out work in that commit. A new human decision gets a
+`KIND: grilling`, `TYPE: HITL` heading for `session-grill`. If no open heading
+remains, close the `prd` or `map` in the same commit.
 
-Where the answer closes the last open heading in the file, close the feature in
-the same commit — set the `prd` or `map` to `DONE`.
-
-## Finishing the run
-
-The run ends when the exploratory frontier is empty. Report what was answered,
-what it unblocked, what it ruled out, and what still waits on a human.
-
-## Scope
-
-Explore answers. It does not implement what the answer implies — that is
-`session-run` — and it does not settle questions that are the human's to decide,
-which are `grilling` headings and `session-grill`'s work.
+Continue until the exploratory frontier is empty. Report answers, work
+unblocked or ruled out, and remaining human gates. Do not implement or make
+the user's design decisions.

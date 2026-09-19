@@ -1,44 +1,36 @@
 # Tracker: repo-specific vocabulary
 
-This file is yours. `my/tracker-install` creates it once and never overwrites
-it. It fills the slots declared in `issue-tracker.md`, which owns the rules.
-
-Delete any section you do not use — an undeclared slot is simply unused.
+`my/tracker-install` creates this file once and never overwrites it. Fill the
+slots declared in `issue-tracker.md`; delete unused sections.
 
 ## Slot: alignment
 
-Declare how a feature relates to this repo's current priorities, and where that
-bar is written down: the property, its values, and the document they are read
-against. Decided once, at spec time, and not revisited.
-
-Most repos have no such bar written down anywhere. Delete this section unless
-yours does — a vocabulary nobody measures against is one every agent reads and
-none can apply.
+Declare the alignment property, its values, and the document defining the
+repo's priorities. Decide alignment once at spec time. Omit this section if
+the repo has no documented priorities.
 
 ## Slot: categories
 
-Declare the `TRACKER_CATEGORY` vocabulary for this repo — typically `bug` for
-defects plus a set of area tags. Say whether compound `area / area` values are
-allowed.
+Declare the `TRACKER_CATEGORY` vocabulary and whether compound `area / area`
+values are allowed.
 
 ## Slot: extra properties
 
-Declare any properties this repo requires beyond `FEATURE`, `KIND`, and `TYPE`,
-and say which headings require them.
+Declare required properties beyond `FEATURE`, `KIND`, and `TYPE`, and which
+headings require them.
 
 ## Slot: tracker versioning
 
-Declare this only if `tickets/` is not versioned with the code — a local
-breakdown of an upstream tracker, symlinked in from its own repository. Name
-the upstream source of truth, say what the commit boundary stages, and say
-where the tracker itself is committed.
+Use only when `tickets/` is versioned separately from code. Name the upstream
+source of truth, what the commit boundary stages, and where tracker updates
+are committed.
 
 ## Slot: verification
 
-Declare the commands a ticket must pass before it can be marked `DONE`, and any
-repo-specific tracker checks that run alongside `M-x my/tracker-validate`.
+Declare commands required before `DONE`, including any repo-specific checks
+in addition to `M-x my/tracker-validate`.
 
-## Evidence
+## Current constraints
 
-Record anything this repo has tested and settled, so it is not relitigated —
-conventions that were tried and dropped, and why.
+Record necessary repo-specific decisions and evidence needed for open work.
+Omit rejected alternatives, rationale, and implementation history.

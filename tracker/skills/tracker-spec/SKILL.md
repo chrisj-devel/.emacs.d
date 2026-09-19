@@ -5,25 +5,15 @@ description: Write or revise the heading at the top of a feature's tracker file 
 
 # Tracker spec
 
-Write the top-level heading for one feature. It is the only heading in
-`tickets/<feature-slug>.org` until the feature is decomposed.
+Write the first top-level heading in `tickets/<feature-slug>.org`. Read
+`tickets/issue-tracker.md` and, if present, `tickets/tracker.local.md` first.
 
-Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
-`tickets/tracker.local.md` if it exists; it supplies this repo's vocabulary.
+## Choose the kind
 
-## Which one
-
-One gate, answered before writing: **can you state the solution?**
-
-- Yes → `KIND: prd`. You know what to build and can say what done looks like.
-- No → `KIND: map`. The shape of the answer is itself unknown, and the first
-  work is finding out.
-
-A map is not a weaker PRD, so do not write one to defer the thinking. It says
-the feature decomposes into `research`, `prototype`, and `grilling` headings
-before it decomposes into tickets. A feature that starts as a map and resolves
-becomes a PRD by rewriting this heading — keep its `FEATURE` and its history,
-and say under `** Comments` what settled.
+Use `KIND: prd` when the solution and completion criteria are known. Use
+`KIND: map` when research, prototyping, or decisions must establish the solution.
+When a map resolves, rewrite that heading as a PRD, retain its `FEATURE` and
+necessary decisions, and record what settled under `** Comments`.
 
 ## Shape
 
@@ -38,7 +28,7 @@ and say under `** Comments` what settled.
 ** User Stories
 ```
 
-A map instead:
+For a map:
 
 ```org
 * TODO Feature name
@@ -50,44 +40,27 @@ A map instead:
 ** Decisions so far
 ```
 
-`** What we are trying to learn` states the open questions as questions, and
-says what would close the exploration. `** Decisions so far` starts empty;
-`session-grill` and `session-explore` append to it as answers land, and it is
-what a later PRD is written from.
+State a map's open questions and completion criteria under
+`** What we are trying to learn`. Leave `** Decisions so far` empty until
+`session-grill` or `session-explore` records answers.
 
-`FEATURE` and `KIND` are required. Add the alignment property if this repo
-declares an alignment vocabulary, decided once here and not revisited. Add any
-properties the repo's extra-properties slot requires.
+Require `FEATURE`, `KIND`, and any repo-declared extra properties. Add alignment
+only from declared repo vocabulary; decide it once here. New unsliced features
+remain `TODO`; `tracker-decompose` promotes them when work headings are added.
+PRDs and maps never take `TYPE` or `NEXT` and are not evaluated by triage's
+executor gate.
 
-A PRD and a map carry a state like any other heading, and spec leaves it `TODO`:
-a feature nobody has sliced is not yet underway. `tracker-decompose`
-promotes it when the first ticket lands. Triage does not evaluate a PRD — its
-gate decides who executes a heading, and nobody executes a specification.
+## Write or revise
 
-## Writing it
+For a PRD, state the current problem and its cost, the solution, scope boundaries,
+and displaced work. Name relevant modules, routes, tables, and files. Record
+work outside current priorities without refusing it on that basis.
 
-These rules are the PRD's; a map states its questions and stops.
+A PRD needing further discovery before decomposition remains `WAIT`; state the
+missing fact under `** Comments`. Add no size or complexity estimate.
 
-Establish the problem before the solution, and say what the problem costs
-today. A solution section that could apply to any product means the problem
-section is too vague.
+Revisions preserve state, properties, and settled alignment. Update the current
+requirements and record necessary decisions under `** Comments`; omit revision
+narratives and justification.
 
-State what the feature does **not** do and what it displaces. Work that is off
-the current bar is recorded, not refused — name the tradeoff and then build it.
-
-Prefer specifics that can be checked: named modules, routes, tables, files.
-A PRD that cannot be decomposed into tickets without further discovery is not
-finished; say so under `** Comments` and leave it `WAIT`.
-
-Do not add a size or complexity estimate. `issue-tracker.md` says why.
-
-## Revising
-
-Editing an existing PRD keeps its state and properties. Where the repo declares
-an alignment vocabulary, it is settled at spec time; do not revisit it during a
-revision. Record what changed and why under `** Comments`.
-
-## Scope
-
-Spec writes the top heading only. Splitting it into tickets or exploratory
-headings is `tracker-decompose`.
+Write only the feature heading. `tracker-decompose` creates its work headings.

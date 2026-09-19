@@ -1,28 +1,22 @@
 # Issue tracker: local Org
 
-Issues and PRDs live as Org files in `tickets/`.
-
-Repo-specific vocabulary lives in `tickets/tracker.local.md`. That file fills
-the slots named below and may override a default this file calls out as
-overridable. It supplies values; it never overrides a rule. If it is absent, the
-slots are unused and the defaults stand.
+Issues and PRDs live in `tickets/`. `tickets/tracker.local.md` supplies the
+repo-specific slots below and may override only defaults explicitly marked
+overridable. Absent slots use the defaults.
 
 ## Conventions
 
-- One file per feature: `tickets/<feature-slug>.org`
-- Its first top-level heading describes the whole feature: a `KIND: prd` for
-  work with a specification, or a `KIND: map` for an exploratory effort
-- Work headings are siblings of it, numbered from `01` in their heading text
-- Comments and conversation history append under a `** Comments` heading
-  beneath the heading they belong to
+- One file per feature: `tickets/<feature-slug>.org`.
+- The first top-level heading is a `KIND: prd` specification or `KIND: map`
+  exploration. Work headings are numbered siblings, starting at `01`.
+- Work titles name outcomes; captured `TODO` titles may name symptoms until triage.
+- The heading's TODO keyword is its only state; no `Status:` line or property.
+- Put necessary decisions, evidence, and outstanding facts under `** Comments`.
 
-The title after a work heading's number names an outcome rather than an area:
-"Return the record from the existing endpoint", never "Endpoint changes". A
-`TODO` heading is the exception — it records what was observed, so its title may
-name the symptom; rewriting it as an outcome is triage's work.
-
-Every heading's TODO keyword is its canonical state. Never duplicate it in a
-`Status:` line or a property.
+Keep current requirements, contracts, decisions, procedures, and evidence needed
+for open work. Remove stale accounts, rejected alternatives, justification,
+gotcha narratives, and duplicate explanations. Retain a necessary precondition
+or limitation as a direct statement.
 
 ```org
 * NEXT 01 --- A narrow tracer bullet
@@ -34,163 +28,108 @@ Every heading's TODO keyword is its canonical state. Never duplicate it in a
 :END:
 ```
 
-`FEATURE` and `KIND` are required. `TYPE` is required on every `NEXT` heading.
-`PRIORITY` is optional. `BRANCH` is optional on a work heading, where it names
-the branch that implements it — never on a `prd` or `map`, whose branch is the
-feature name. A repo may declare further required properties —
+`FEATURE` and `KIND` are required; `TYPE` is required on `NEXT` work headings.
+`PRIORITY` is optional. A work heading may use `BRANCH` for its implementation
+branch; a `prd` or `map` never does. Additional requirements belong to
 **slot: extra properties**.
 
 ## `KIND`
 
-`KIND` says what a heading *is*. `TYPE` says who executes it; the two are
-independent, so a grilling that needs a human is `KIND: grilling` with
-`TYPE: HITL`.
-
 | Kind | Meaning |
 | --- | --- |
-| `prd` | Specification of a feature. First heading in its file. |
-| `map` | Parent of an exploratory effort, in place of a PRD. |
+| `prd` | Feature specification. |
+| `map` | Feature exploration, in place of a PRD. |
 | `ticket` | Implementation work. |
-| `research` | Answering an open question. |
+| `research` | Answering a question. |
 | `prototype` | Throwaway work to test an approach. |
-| `grilling` | Stress-testing a plan or decision. |
+| `grilling` | Resolving a design decision. |
 
-Exploratory kinds resolve by recording their answer under `** Answer` and
-moving to `DONE`; summarise the outcome under the map's `** Decisions so far`.
+Exploratory headings record their result under `** Answer` before reaching
+`DONE`; summarise it under the map's `** Decisions so far`.
 
 ## States
 
 | State | Meaning |
 | --- | --- |
-| `TODO` | Filed but not yet evaluated. The inbox. |
-| `NEXT` | Fully specified and actionable. `TYPE` says who acts. |
+| `TODO` | Not yet evaluated, or an unsliced feature. |
+| `NEXT` | Specified and actionable; `TYPE` identifies the executor. |
 | `DOING` | Claimed and underway. |
-| `WAIT` | Cannot be specified yet; a fact or decision is outstanding. Org logs a note on entry — say what is being waited on. |
-| `DONE` | Terminal. Finished, not necessarily shipped. |
-| `CANCELED` | Terminal. Will not be actioned. |
+| `WAIT` | One identified fact or decision prevents specification; record it in the entry note. |
+| `DONE` | Finished, not necessarily shipped. |
+| `CANCELED` | Will not be actioned. |
 
-The vocabulary is defined in the Emacs configuration, so a repo needs no
-directory-local TODO keywords.
+The Emacs configuration defines these keywords; do not add directory-local ones.
+Triage asks whether an executable brief can be written:
 
-The triage gate is one question: **could I write the agent brief right now?**
+- Missing fact or decision → `WAIT`.
+- Specified human execution → `NEXT`, `TYPE: HITL`.
+- Specified machine execution → `NEXT`, `TYPE: AFK`.
 
-- No, a fact or decision is missing → `WAIT`
-- Yes, but a machine cannot execute it → `NEXT` with `TYPE: HITL`
-- Yes, and a machine can → `NEXT` with `TYPE: AFK`
-
-The gate is for headings someone executes, so a `prd` or `map` never reaches
-`NEXT` and never takes a `TYPE`. It is `TODO` while it is unsliced — `WAIT` when
-one identified thing stops it being finishable — `DOING` once it has work
-headings, and `DONE` when the feature closes.
-
-An unspecified heading is `TODO`, not `WAIT`. `WAIT` means one identified thing
-is outstanding; `TODO` means nobody has looked yet.
-
-Blocking is never a state. See "Dependencies".
+Unevaluated work stays `TODO`. A `prd` or `map` never takes `NEXT` or `TYPE`:
+it is `TODO` before decomposition, `WAIT` for an identified missing fact,
+`DOING` once work headings exist, and `DONE` when the feature closes.
 
 ## `TYPE`
 
-`TYPE` routes a `NEXT` heading to its executor. `AFK` means an unattended agent
-can complete it from the heading alone. `HITL` means the execution itself is
-human: an approval, a credential, physical access. It is not for work that is
-merely hard.
+`AFK` means an unattended agent can execute the brief. `HITL` means execution
+requires a human action, such as approval, credentials, or physical access.
+Difficulty alone does not make work `HITL`.
 
-Work a machine could do once someone decides something is not `HITL`. The
-decision is its own `KIND: grilling` heading and the work stays `TYPE: AFK`,
-blocked on it — see `tracker-triage`.
-
-`TYPE` survives completion. A `DONE` heading keeps the `TYPE` it was executed
-under, which is why routing is a property and not a state.
+A material unresolved decision gets a `KIND: grilling`, `TYPE: HITL` heading.
+Machine-executable work remains `AFK`, with a dependency on that decision.
+`TYPE` is retained on completion.
 
 ## Priority
 
-A repo may define a vocabulary describing how a feature relates to its current
-priorities, and where that bar is written down — **slot: alignment**. Decide it
-once, when the spec is written, and do not revisit it.
+**Slot: alignment** may define a property's values and the document specifying
+the repo's priorities. Decide alignment once at spec time. Record what work
+outside those priorities does not advance and what it displaces; do not refuse
+it on that basis.
 
-Work that scores low is recorded, not refused. Name what a feature does not
-move and what it displaces, once, at spec time, and then build it. Never
-decline work on scope grounds.
-
-## No size or complexity field
-
-Do not add `EFFORT`, `COMPLEXITY`, or any other size estimate.
-
-Effort is a sum over a decomposition that does not exist at PRD stage, so
-estimating it there guesses at slicing rather than at the work. Complexity
-either reads process state off the spec text or fails to discriminate once
-most work lands in one bucket. What both reach for is already free: the states
-say what is undecided (`WAIT`, `TYPE: HITL`, or no tickets at all), and counting
-a feature's open tickets says how much is left. A repo that declares an
-alignment slot reads what is on its bar there as well.
-
-Do not store what can be counted. A repo that has tested this may record its
-own evidence in `tracker.local.md`.
+Do not add `EFFORT`, `COMPLEXITY`, or other size estimates, or store counts that
+can be derived from the tracker.
 
 ## Categories
 
-`TRACKER_CATEGORY` is optional and its vocabulary is repo-defined —
-**slot: categories**. Absent a declared vocabulary, omit the property.
+`TRACKER_CATEGORY` is optional. Use **slot: categories** for its vocabulary;
+omit the property when the repo declares none.
 
 ## Dependencies
 
-Edna `:BLOCKER:` is the canonical dependency graph. Use one
-`olp("<file>.org" "Exact heading")` finder per dependency in the heading's
-property drawer.
+Edna `:BLOCKER:` is the canonical graph. Put one
+`olp("<file>.org" "Exact heading")` finder per dependency in the property drawer.
+Paths resolve from `tickets/` and contain bare heading text, without its TODO
+keyword. Edges must stay inside one repo's tracker; record cross-repo or soft
+sequencing under `** Comments`, not `** Blocked by`.
 
-Every edge stays inside one tracker. Edna resolves a finder within the tracker
-being swept, so a path reaching into another repo does not block anything — it
-reads as a dependency and never behaves as one. Record cross-repo sequencing
-under `** Comments` and order the work by hand.
+A heading is unblocked when every target is `DONE` or `CANCELED`.
+`org-entry-blocked-p` derives blocking; a specified ticket remains `NEXT` while
+blocked, and completing a dependency needs no edit to its dependants.
 
-**The OLP path carries the heading text only, never its TODO keyword.** A bare
-path matches whatever state the target currently holds, so an edge survives its
-target changing state. Paths resolve from the tracker directory, so a
-same-feature edge names the feature's own file.
-
-A heading is unblocked when every target is terminal (`DONE` or `CANCELED`).
-Blocking is derived from these edges, never duplicated as a state: a fully
-specified ticket stays `NEXT` while its dependencies are unresolved, and
-`org-entry-blocked-p` decides whether it can start. Resolving a dependency
-therefore needs no state change on its dependants.
-
-Do not add a `** Blocked by` section; historical or soft sequencing belongs
-under `** Comments`.
-
-Sweep the graph with `M-x my/tracker-validate` after changing dependency
-metadata. It reports unresolvable edges and cycles. A repo may declare
-additional verification commands — **slot: verification**.
+Run `M-x my/tracker-validate` after dependency changes to find unresolvable edges
+and cycles, plus any commands in **slot: verification**.
 
 ## Decomposition
 
-A `prd` or `map` heading with no sibling work headings in its file has not been
-decomposed. That is a structural fact; do not record it as a state. Writing the
-first ticket does move the parent to `DOING`, which says the feature is
-underway — read whether it was decomposed from the file, not from that.
+A `prd` or `map` without sibling work headings is undecomposed. Adding the first
+work heading moves the parent to `DOING`; do not store a separate decomposition
+state.
 
 ## Markup and links
 
-Org, not Markdown: `=verbatim=` for code and identifiers, `*bold*`, `/italic/`,
-`+strikethrough+`, `#+begin_src`/`#+end_src`. Checkboxes are the one carry-over —
-org reads `- [ ]` / `- [X]` and rolls a `[/]` cookie up to the heading.
+Use Org: `=verbatim=`, `*bold*`, `/italic/`, `+strikethrough+`, and
+`#+begin_src`/`#+end_src`. Checkboxes use `- [ ]` / `- [X]` with a `[/]` cookie.
+Keep each paragraph and list item on one line; do not hard-wrap.
 
-Never hard-wrap. A paragraph is one line, a list item is one line. Org wraps
-them for display through `visual-line-mode`; hand-inserted newlines survive into
-the file, so they break re-flow and turn a one-word edit into a whole-paragraph
-diff.
-
-Links: another feature `[[file:<feature>.org][<feature>]]`; a Jira issue
-`[[jira:ABC-123]]`; source with a line target
-`[[file:~/Source/<org>/<repo>/<path>::39][<file>:39]]`. The `jira:`
-abbreviation is a machine-local customize setting, not a `#+SETUPFILE:` line.
+Links: `[[file:<feature>.org][<feature>]]`, `[[jira:ABC-123]]`, or
+`[[file:~/Source/<org>/<repo>/<path>::39][<file>:39]]`. Define `jira:` through
+machine-local customization, not a `#+SETUPFILE:` line.
 
 ## Manual verification
 
-Put hand-run requests in a `** Verify` subtree **tagged `:verb:`**. Verb only
-collects request specs from tagged headings, and tag inheritance covers the
-requests nested under it. Do not use a file-wide `#+FILETAGS: :verb:` — that
-tags the feature heading too. `api-conf.el` binds `verb-command-map` into
-`org-mode-map`, so `C-c C-r C-r` works in any Org buffer.
+Put hand-run requests under `** Verify :verb:`. Its children inherit the tag;
+do not use file-wide `#+FILETAGS: :verb:`. `C-c C-r C-r` invokes Verb through
+`api-conf.el`'s Org binding.
 
 ```org
 ** Verify :verb:
@@ -202,94 +141,56 @@ get /v3/carts/00000000-0000-0000-0000-000000000000
 X-Customer-Id: {{(verb-var customer-id)}}
 ```
 
-**Always give `verb-var` a default inline.** Verb variables are buffer-local, so
-a feature file does not see values set in a `test-<service>-api` file and will
-prompt without one. Stored responses *are* session-global, so
-`verb-stored-response` still resolves things created there.
-
-Never put a token, password or secret in a tracker file.
+Give every `verb-var` an inline default. Variables are buffer-local; stored
+responses are session-global and available through `verb-stored-response`.
+Never put secrets in tracker files.
 
 ## Completion and commit boundary
 
-`DONE` is the commit boundary, not an earlier bookkeeping step. Once the
-ticket's acceptance criteria and required verification pass:
+Once acceptance criteria and required verification pass:
 
-1. Mark its acceptance criteria complete and change the state to `DONE`.
-2. Stage the implementation and the tracker update together.
-3. Commit immediately.
-4. Report completion only after the commit succeeds.
+1. Check the acceptance criteria and set the heading to `DONE`.
+2. Stage the implementation and tracker update together.
+3. Commit immediately; report completion only after success.
 
-Never leave a `DONE` ticket as uncommitted work. If the work should remain
-uncommitted, leave the ticket `DOING`.
-
-A repo that does not version its tracker with the code says so, and says what
-step 2 stages instead — **slot: tracker versioning**.
+Keep work `DOING` while it must remain uncommitted. **Slot: tracker versioning**
+defines what to stage and where to commit the tracker when it is versioned
+separately from code.
 
 ## Sessions
 
-A feature is worked in its own session: one git worktree, one tab, one agent,
-created by the Emacs session layer (`C-c s n`). The worktree lives outside the
-repository and beside it, at `worktrees/<repo>/<feature>` in the repo's own
-parent directory — a repo at `~/Source/<org>/<repo>` has its sessions under
-`~/Source/<org>/worktrees/`.
+A feature session is one worktree, tab, and agent, created by `C-c s n`.
+For `~/Source/<org>/<repo>`, worktrees live under
+`~/Source/<org>/worktrees/<repo>/<feature>`. An agent started in a session is
+already there; do not create another worktree or use `EnterWorktree`.
 
-An agent started inside a session is already in its worktree. Do not create
-another worktree; in particular do not use `EnterWorktree`, which would nest one
-inside the session.
+The session's running Emacs provides `emacsclient --eval` for querying the
+session layer. Work on the session's tracker copy; its state merges with the
+feature branch. Do not reconcile it against the main copy mid-feature, except
+as specified by **slot: tracker versioning**.
 
-It is also inside a running Emacs, whose server is always up. `emacsclient
---eval` is available to any skill at any time, and is how to ask the session
-layer something rather than reconstructing its answer.
-
-The session's copy of the tracker is the one being worked. Ticket state travels
-with the feature branch and merges alongside the code that justifies it, so
-there is nothing to reconcile against the default branch mid-feature. A repo
-whose tracker is not versioned with the code overrides this —
-**slot: tracker versioning**.
-
-That holds for the tracker, not for the code under it. A branch picked up long
-after it was spawned is read against a codebase that has since changed, so
-before working a session's frontier, report how far it trails its base.
+Before working the frontier, report drift from the base:
 
 ```sh
 emacsclient --eval "(my/session-drift-report \"$PWD\")"
 ```
 
-Never act on the answer: closing the gap is the human's call. Do give it weight
-when scoping — a stale worktree is self-consistent, so work built on one goes
-green and fails later, at the merge, rather than failing the ticket in hand.
-
-The session layer names the branch after the feature, so a PRD records no
-branch: the file name already is it.
+Account for drift when scoping. Do not merge or rebase to close it without the
+human's instruction. The feature file names its branch; no parent `BRANCH`
+property is needed.
 
 ## Closing a feature
 
-A feature closes when its PRD is `DONE` (PRD-less bundles skip this) and every
-ticket is `DONE` or `CANCELED`. Nothing moves: the file stays in `tickets/`.
-Every heading being terminal is what closed means, and no todo view surfaces a
-file with no open headings.
-
-Closing belongs to whoever makes the last heading terminal — the run that
-finishes the last ticket, answers the last question, or cancels it. Check the
-file after any heading reaches a terminal state, and where none is left open,
-set the `prd` or `map` to `DONE` in the same commit. No skill owns this, because
-no skill is reliably last: a feature can end on a ticket, a grilling, or a
-cancellation.
+When the last open heading becomes terminal, set the `prd` or `map` to `DONE`
+in the same commit. PRD-less bundles have no parent to close. A closed feature
+has only `DONE` or `CANCELED` headings and stays in its existing file.
 
 ## Emacs
 
-`C-c a` opens the agenda. Two views cover the tracker of the repo you are in:
+`C-c a w` shows all open headings by state; `C-c a f` shows unblocked `NEXT`
+headings by executor. Both cover the repo at point. A feature's worktree copy
+overrides main's copy; other features use main. Scope comes from
+`git worktree list`.
 
-- `w` — **workboard**: every open tracker heading, grouped by state
-- `f` — **frontier**: unblocked `NEXT` headings only, split by `TYPE`
-
-Both span every feature, not just the ones in flight — a feature checked out in
-a worktree resolves to that worktree's copy, so in-flight state wins, and every
-other feature resolves to the main checkout. Scope comes from `git worktree
-list` in the repo at point, so other repos are never touched.
-
-`C-c s n` spawns a session, `C-c s k` tears one down.
-
-Both are stock `org-agenda-custom-commands`; only dependency enforcement needs a
-package (`org-edna`). The views and the package are declared in the Emacs
-configuration, not in the repo.
+`C-c s n` spawns a session; `C-c s k` tears it down. The Emacs configuration
+owns these bindings, agenda views, and the `org-edna` dependency.

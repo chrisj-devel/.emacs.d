@@ -5,91 +5,48 @@ description: Evaluate untriaged tracker headings and move them to an actionable 
 
 # Tracker triage
 
-Take a heading out of the inbox. Triage decides two things: whether the work is
-specified enough to act on, and who acts.
+Evaluate whether a heading has an executable brief and who can act. Read
+`tickets/issue-tracker.md` and, if present, `tickets/tracker.local.md` first.
 
-Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
-`tickets/tracker.local.md` if it exists; it supplies this repo's vocabulary.
+## State and executor
 
-## The gate
+- Identified missing fact or decision → `WAIT`; record what is missing and
+  who can supply it in the entry note.
+- Specified human execution → `NEXT`, `TYPE: HITL`.
+- Specified machine execution → `NEXT`, `TYPE: AFK`.
+- Work that will not be done → `CANCELED`.
+- Unevaluated work remains `TODO`.
 
-One question decides the state: **could I write the agent brief right now?**
+`HITL` requires human execution: approval, credentials, or physical access.
+A material undecided choice gets a separate `KIND: grilling`, `TYPE: HITL`
+heading; machine-executable work stays `AFK`, blocked on it via `tracker-edges`.
+Split mixed decision/action headings accordingly. Choose and record defensible
+defaults for minor calls instead of creating grilling headings.
 
-- No, a fact or decision is missing → `WAIT`. Org prompts for a note on entry;
-  say what is outstanding and who can supply it.
-- Yes, but a human must perform it → `NEXT`, `TYPE: HITL`
-- Yes, and a machine can → `NEXT`, `TYPE: AFK`
-- The work will not be done → `CANCELED`
+Dependencies do not change state: a specified ticket stays `NEXT` while
+`org-entry-blocked-p` derives whether it can start.
 
-`HITL` is for work whose execution is human: an approval, a credential, physical
-access. It is not for work that is merely hard, and it is not for work a machine
-could do once someone decides something.
+## Brief
 
-Leave a heading `TODO` if nobody has evaluated it yet. `WAIT` is narrower: the
-heading is understood and one identified thing is outstanding.
+Read the relevant code, failing path, and neighbouring tickets before writing.
+Every `NEXT` heading must contain its brief:
 
-## A decision is not a HITL ticket
+- `KIND: ticket`: follow `tracker-decompose` — one `** What to build` paragraph
+  naming code locations, then two to four observable `** Acceptance criteria`,
+  including test coverage.
+- Exploratory kinds: state the question and what constitutes an answer.
 
-Where the only human part is a call nobody has made — which approach, which
-default, what the thing should do — do not file a HITL ticket. File the decision
-as its own `KIND: grilling`, `TYPE: HITL` heading, and leave the implementation
-a `TYPE: AFK` ticket with a `:BLOCKER:` edge onto it.
+If acceptance cannot be specified, use `WAIT` and name the missing fact.
 
-`session-grill` runs the grilling; `session-run` then takes the ticket.
+Set `FEATURE` and `KIND` if missing, and `TYPE` on every `NEXT`. Add
+`TRACKER_CATEGORY` only from declared repo vocabulary. Give a heading leaving
+`TODO` an outcome title. Add no size or complexity fields.
 
-A heading carrying both — "decide the rotation policy and provision the key" —
-splits: the decision becomes the grilling, and what remains under `TYPE: HITL`
-is the action.
-
-Do not split out every small call. A choice an agent can defend a default for
-belongs in the ticket as that default. A grilling heading is for a decision that
-materially changes the implementation.
-
-## Never encode blocking
-
-A dependency is not a state. A fully specified ticket stays `NEXT` while its
-dependencies are unresolved — `org-entry-blocked-p` derives whether it can
-start. If triage reveals a dependency, record it as a `:BLOCKER:` edge with
-`tracker-edges` and leave the state alone.
-
-## Answering the gate means writing the brief
-
-A heading reaching `NEXT` carries its brief on itself: the gate asks whether you
-could write it, and `NEXT` asserts that you did. `session-run` takes an `AFK`
-ticket from the heading alone.
-
-Capture does not write one — it records a report and stops — so a heading coming
-out of the inbox usually needs its body written here. Do the reading first: the
-code, the failing path, the neighbouring tickets.
-
-A `KIND: ticket` takes the shape `tracker-decompose` defines, and that skill
-owns it: `** What to build` as one paragraph naming the code locations, and
-`** Acceptance criteria` as two to four items observable on an artifact, one of
-them covering tests. Exploratory kinds instead state the question precisely and
-say what would count as an answer.
-
-Its rule carries over: if you cannot write acceptance criteria without asking,
-the heading is `WAIT`, not `NEXT` — say what is missing.
-
-## What to write
-
-On the heading: the state from the gate, `TYPE` on every `NEXT`, and `FEATURE`
-and `KIND` if missing. Add `TRACKER_CATEGORY` only if this repo declares a
-category vocabulary.
-
-A heading leaving `TODO` takes an outcome title — rewrite one that names the
-symptom it was captured as.
-
-Under `** Comments`, append the triage brief: what you concluded, what evidence
-you read, and for `WAIT` exactly what is being waited on. Never restate the
-state in prose — the keyword is canonical.
-
-Do not add `EFFORT`, `COMPLEXITY`, or any size field.
+Under `** Comments`, record the conclusion, necessary evidence, and any
+outstanding fact. Do not repeat the canonical state in prose.
 
 ## Scope
 
-Triage evaluates, and forms the heading it evaluates. It does not slice a
-feature or implement one. A PRD ready to split into tickets is
-`tracker-decompose`; a `NEXT` `AFK` ticket ready to build is `session-run`.
-
-Report what changed, one line per heading.
+Do not implement or decompose features. Use `tracker-decompose` for a PRD ready
+to split and `session-run` for implementation. Report one line per changed
+heading.

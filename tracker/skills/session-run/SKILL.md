@@ -5,98 +5,55 @@ description: Implement a feature's unblocked AFK tickets inside its Emacs sessio
 
 # Session run
 
-Work one feature's frontier to completion inside its session.
+Implement one feature's unblocked `AFK` tickets. Read `tickets/issue-tracker.md`
+and, if present, `tickets/tracker.local.md` for semantics and verification.
 
-Read `tickets/issue-tracker.md` first; it owns tracker semantics. Read
-`tickets/tracker.local.md` if it exists; it supplies this repo's
-verification commands.
+## Start
 
-## You are already in the worktree
+Use the existing session worktree; do not create one or use `EnterWorktree`.
+If none exists, report that and stop; the human creates it with `C-c s n`.
 
-A session is one worktree, one tab, one agent, created by the Emacs session
-layer. An agent started in a session already has the worktree as its working
-directory.
-
-Do not create a worktree. In particular do not use `EnterWorktree`, which would
-nest one inside the session. If you are not in a session worktree, say so and
-stop — the human spawns it with `C-c s n`.
-
-## Before writing code
-
-Read the PRD and every frontier ticket in full, including `** Comments`. Get the
-frontier with `tracker-frontier`, and sweep the graph:
+Read the PRD and every frontier ticket in full, including `** Comments`.
+Use `tracker-frontier`, then validate the graph:
 
 ```
 M-x my/tracker-validate
 ```
 
-Stop and ask only for:
+Announce the frontier and next human gate. Ask only for a forbidden command or
+missing authority for a destructive or external action. Report waiting `HITL`
+work and continue with unblocked `AFK` tickets.
 
-- a command the ticket forbids
-- missing authority for a destructive or external action
+## Work
 
-Otherwise announce the frontier and the next expected human gate, then work.
+Claim each ticket with `NEXT` → `DOING`. Split only when its acceptance cannot
+form one coherent commit with passing checks. Run declared repo verification;
+otherwise use its acceptance criteria and the project's test command.
 
-A `HITL` ticket is not a reason to stop the run. It will not move without a
-human; say it is waiting and take the rest of the frontier.
+For a material undecided choice, add a `KIND: grilling`, `TYPE: HITL` heading
+and a dependency through `tracker-edges`, then take another `AFK` ticket.
+Choose and report a defensible default where one exists.
 
-## An unresolved choice is a heading, not a halt
+If a ticket's premise fails, stop work on it:
 
-Where a ticket turns on a choice that materially changes the implementation and
-nobody has made it, do not stall the run waiting to ask. File the choice as its
-own `KIND: grilling`, `TYPE: HITL` heading, add a `:BLOCKER:` edge from the
-ticket onto it with `tracker-edges`, and move to the next `AFK` ticket. The
-human comes back to a queue of decisions rather than an idle agent, and
-`session-grill` drains it.
+- Brief still valid, choice unresolved: leave it `NEXT` and add the grilling.
+- Brief invalid: set `WAIT` and record the invalidating fact under `** Comments`.
 
-Where a defensible default exists, take it, and say which you took.
+Continue with the remaining frontier. Do not leave abandoned work `DOING` or
+rewrite a brief to fit the implementation.
 
-## One ticket at a time
+## Finish
 
-Claim before working: `NEXT` → `DOING`. The ticket is the unit of work and the
-commit boundary. Split it only when its acceptance criteria cannot form one
-coherent green commit; never split it merely to make progress look finer.
+After acceptance and verification pass:
 
-Run the repo's verification before claiming completion. If this repo declares
-verification commands, those are the bar; otherwise use the ticket's acceptance
-criteria and the project's own test command.
+1. Check the acceptance criteria and set the ticket to `DONE`.
+2. Stage implementation and tracker update together.
+3. Commit immediately; report completion only after success.
 
-## When the ticket is wrong
+Work that must remain uncommitted stays `DOING`. If no open heading remains,
+set the `prd` or `map` to `DONE` in the same commit; PRD-less bundles have no
+parent to close.
 
-A ticket whose premise fails is not a ticket to force through. Where the code
-turns out not to work the way the brief assumed, or the slice cannot be one
-green commit after all, stop and put it back:
-
-- the brief still holds and only a choice is open → leave it `NEXT` and file
-  the grilling heading
-- the brief itself is now wrong → `WAIT`, saying under `** Comments` what you
-  found and what it invalidates
-
-Either way the run continues with the rest of the frontier. Never leave a ticket
-`DOING` behind you, and never rewrite a ticket's brief mid-run to match what you
-happened to build.
-
-## Finishing a ticket
-
-`DONE` is the commit boundary, not a bookkeeping step:
-
-1. Mark the acceptance criteria complete and set the state to `DONE`.
-2. Stage the implementation and the tracker update together.
-3. Commit immediately.
-4. Report completion only after the commit succeeds.
-
-Never leave a `DONE` ticket uncommitted. If the work should stay uncommitted,
-leave it `DOING`.
-
-Where that ticket was the file's last open heading, close the feature in the
-same commit: set the `prd` or `map` to `DONE`. A PRD-less bundle has nothing to
-close.
-
-Then re-derive the frontier — finishing a ticket usually unblocks the next —
-and continue until the `AFK` frontier is empty.
-
-## Finishing the run
-
-Report what landed, what remains, and what is waiting on a human. Teardown is
-the human's call (`C-c s k`); it removes the worktree, so do not leave work
-uncommitted behind you.
+Re-derive the frontier and continue until no unblocked `AFK` work remains.
+Report what landed, what remains, and human gates. Teardown belongs to the
+human (`C-c s k`); leave no uncommitted work for removal.
