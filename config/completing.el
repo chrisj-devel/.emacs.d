@@ -1,15 +1,16 @@
-;;; completing.el --- Minibuffer stack: vertico, orderless, consult, marginalia, embark -*- lexical-binding: t; -*-
+;;; completing.el --- Completion stack: vertico, orderless, consult, marginalia, embark, corfu -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;; The carve-out from built-in > package.  The native eager *Completions*
-;; (core.el) is a fine selection UI, but three gaps have no built-in answer:
+;; (core.el) is a fine selection UI, but four gaps have no built-in answer:
 ;;
 ;;   - live-narrowing async search over a repo (consult-ripgrep vs. one-shot
 ;;     project-find-regexp, where refining means re-running the search)
 ;;   - previewing a candidate before committing to it
 ;;   - acting on a candidate without leaving the prompt (embark)
+;;   - in-buffer completion drawn at point, one line per candidate (corfu)
 ;;
-;; Scope of the carve-out: the minibuffer only.  In-buffer completion-at-point
-;; keeps the native styles and *Completions*, so completion-preview retains
+;; Scope of the carve-out: the minibuffer, plus corfu at point.  Completion
+;; styles stay native outside the minibuffer, so completion-preview retains
 ;; prefix semantics.
 ;;; Code:
 
@@ -93,8 +94,6 @@
    ("M-s l" . consult-line)
    :map minibuffer-local-map
    ("M-r" . consult-history))
-  ;; Only the native *Completions* path, which in-buffer completion still uses.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
   :init
   ;; project-prefix-map exists only once project.el loads.
   (with-eval-after-load 'project
@@ -127,6 +126,16 @@
 (use-package embark-consult
   :after (embark consult)
   :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+;;; Corfu — in-buffer completion drawn at point, replaces the *Completions* window
+
+;; corfu-auto stays nil: the popup appears on an explicit completion-at-point,
+;; which is also how agent-shell triggers its @ and / completion.
+(use-package corfu
+  :custom
+  (corfu-cycle t)
+  :config
+  (global-corfu-mode 1))
 
 (provide 'completing)
 ;;; completing.el ends here

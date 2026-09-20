@@ -21,14 +21,16 @@ keybindings first. This file is the working contract for agents.
    Without a session this must behave like clean Emacs 31 + listed packages.
 4. **Tab = session, 1:1 with worktree.** Scoping comes from project.el
    commands (`C-x p …`), not buffer-list filtering.
-5. **The minibuffer is a carve-out from rule 1** (taken after real use — the
+5. **Completion is a carve-out from rule 1** (taken after real use — the
    native eager *Completions* chafed). vertico + orderless + consult +
-   marginalia + embark live in `completing.el`; the gaps they fill are named
-   in that file's header. The carve-out ends at the minibuffer: in-buffer
-   completion keeps native styles and *Completions* so completion-preview
-   retains prefix semantics, and orderless stays minibuffer-scoped. Scoping
-   still comes from project.el — consult resolves roots via
-   `consult-project-function`, not its own notion of a workspace.
+   marginalia + embark + corfu live in `completing.el`; the gaps they fill
+   are named in that file's header. corfu draws in-buffer completion at
+   point, one line per candidate; *Completions* is a window and wraps a long
+   capf annotation rather than clipping it. Completion styles stay native
+   outside the minibuffer so completion-preview retains prefix semantics, and
+   orderless stays minibuffer-scoped. Scoping still comes from project.el —
+   consult resolves roots via `consult-project-function`, not its own notion
+   of a workspace.
 
 Already rejected (with reasons — don't re-add): elpaca (package.el + `:vc`
 suffices), bufferlo/otpp (project.el scoping replaced them), popper /
@@ -46,7 +48,7 @@ A `use-package` form goes here and nowhere else; see the byte-compile gotcha.
 
 - `config/core.el` — shell environment, defaults, native completion, side
   windows, tab-bar, desktop
-- `config/completing.el` — the minibuffer stack (rule 5)
+- `config/completing.el` — the completion stack (rule 5)
 - `config/keys.el` — meow (vim-transitional)
 - `config/dev.el` — treesit, eglot, magit, envrc, ghostel, agent stack
 - `config/org-tracker.el` — org and the tracker's agenda views. Not `org.el`,

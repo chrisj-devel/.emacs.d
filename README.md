@@ -50,10 +50,11 @@ place `my/session-mode-line` speaks only when the tab's name has come apart
 from the buffer: a buffer from another worktree, or the main checkout's branch
 moving under a tab named for the branch it opened on.
 
-## Minibuffer (the one carve-out from native-first)
+## Completion (the one carve-out from native-first)
 
-vertico + consult + marginalia + embark, scoped to the minibuffer;
-in-buffer completion stays native. See `config/completing.el`.
+vertico + consult + marginalia + embark in the minibuffer, corfu at point;
+completion styles stay native outside the minibuffer. See
+`config/completing.el`.
 
 - `C-x p g` / `M-s r` — consult-ripgrep, scoped to the session's worktree
   (`#` splits input: `#regexp#filter` — rg sees the first, live narrowing the rest)
