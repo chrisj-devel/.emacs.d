@@ -137,5 +137,12 @@
   :config
   (global-corfu-mode 1))
 
+;; Margin icons keyed on the capf's :company-kind. nerd-icons and its font
+;; family are set up in core.el.
+(use-package nerd-icons-corfu
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
 (provide 'completing)
 ;;; completing.el ends here
