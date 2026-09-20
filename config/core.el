@@ -29,7 +29,6 @@
   (recentf-max-saved-items 300)
   (auto-revert-interval 2)
   (global-auto-revert-non-file-buffers t)
-  (project-mode-line t)
   (standard-indent 2)
   (js-indent-level 2)
   :config
@@ -48,6 +47,42 @@
   (pixel-scroll-precision-mode 1)
   (context-menu-mode 1)
   (column-number-mode 1))
+
+;;; Mode line
+
+;; Arranged for half-width windows: a mode line truncates from the right, so
+;; everything volatile sits right of `mode-line-format-right-align'.
+
+(use-package emacs
+  :ensure nil
+  :custom
+  (mode-line-collapse-minor-modes t)
+  ;; Both are the third rendering of what the tab bar already says: a tab is a
+  ;; session is a worktree, and `my/session-tab-name' is <repo>/<branch>.
+  (project-mode-line nil)
+  (mode-line-percent-position nil)
+  :config
+  (setq-default
+   mode-line-format
+   '("%e"
+     mode-line-front-space
+     mode-line-modified
+     mode-line-remote
+     mode-line-window-dedicated
+     " "
+     mode-line-buffer-identification
+     ;; `fboundp' rather than a `require': sessions are an overlay (rule 3).
+     (:eval (and (fboundp 'my/session-mode-line) (my/session-mode-line)))
+     "  "
+     mode-line-modes
+     mode-line-format-right-align
+     (flymake-mode (" " flymake-mode-line-counters))
+     ;; eglot rides here, and so would `global-mode-string' but that
+     ;; suppresses itself while `tab-bar-format-global' is live.
+     mode-line-misc-info
+     " "
+     mode-line-position
+     mode-line-end-spaces)))
 
 ;;; Completion (native: eager live-updating *Completions*, Emacs 31)
 

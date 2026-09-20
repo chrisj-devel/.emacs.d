@@ -40,6 +40,16 @@ root. Attention (which shells are waiting on you, as a tab-bar tally plus a
 macOS notification) is ~60 lines in `user-lisp/agent-attention.el` over
 `agent-shell`'s public event API.
 
+The **mode line** is arranged for half-width windows: identity hard left,
+everything volatile right of `mode-line-format-right-align` (flymake counters,
+eglot, position), `mode-line-modes` in the middle as the first thing worth
+losing. Minor lighters collapse into one glyph
+(`mode-line-collapse-minor-modes`, built in to Emacs 31). `project-mode-line`
+and `vc-mode` are off — the tab bar already names `<repo>/<branch>`. In their
+place `my/session-mode-line` speaks only when the tab's name has come apart
+from the buffer: a buffer from another worktree, or the main checkout's branch
+moving under a tab named for the branch it opened on.
+
 ## Minibuffer (the one carve-out from native-first)
 
 vertico + consult + marginalia + embark, scoped to the minibuffer;

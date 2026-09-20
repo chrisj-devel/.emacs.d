@@ -193,7 +193,7 @@ root, read without fetching."
 (defun my/session-drift-report (root)
   "One line on how far the checkout at ROOT trails its base.
 For a caller outside Emacs: the agent working a session reads staleness
-through `emacsclient --eval\=' rather than running the comparison itself,
+through `emacsclient --eval' rather than running the comparison itself,
 so which side of the default branch leads is decided here only and a
 second copy of the rule cannot drift from this one.  Fetches, being run
 once at the start of a run."
@@ -399,23 +399,75 @@ a path."
   (seq-some (lambda (tab) (equal name (alist-get 'name tab)))
             (funcall tab-bar-tabs-function)))
 
-(defun my/session--open-tab (name layout)
-  "Switch to tab NAME, calling LAYOUT on it only when newly created."
+(defun my/session--open-tab (name root layout)
+  "Switch to the tab NAME standing for the worktree ROOT.
+LAYOUT is called on it only when the tab is newly created."
   (let ((existing (my/session--tab-p name)))
     (tab-bar-switch-to-tab name)
+    ;; `tab-bar--current-tab-make' copies parameters it does not recognise,
+    ;; which is what carries this across a tab switch.
+    (setf (alist-get 'my/session-worktree
+                     (cdr (assq 'current-tab (funcall tab-bar-tabs-function))))
+          (file-name-as-directory (expand-file-name root)))
     (unless existing (funcall layout))))
 
 (defun my/session-open (session)
   "Jump to SESSION's work tab, creating tab and layout when missing."
   (interactive (list (my/session--read "Session: ")))
   (my/session--open-tab (my/session-tab-name session)
+                        (my/session-root session)
                         (lambda () (my/session-layout session))))
 
 (defun my/session-browse (session)
   "Jump to SESSION's browse tab, creating tab and layout when missing."
   (interactive (list (my/session--read "Browse session: ")))
   (my/session--open-tab (my/session-browse-tab-name session)
+                        (my/session-root session)
                         (lambda () (my/session-browse-layout session))))
+
+;;; Mode line
+
+(defvar-local my/session--buffer-place nil
+  "Cached (DIRECTORY ROOT . MAIN-CHECKOUT-P) for this buffer.
+Keyed on `default-directory' because a dired, dirvish-side or shell
+buffer moves and a file buffer does not.")
+
+(defun my/session--buffer-place ()
+  "Project root of the current buffer and whether it is a main checkout."
+  (unless (equal (car my/session--buffer-place) default-directory)
+    (setq my/session--buffer-place
+          (cons default-directory
+                (and (not (file-remote-p default-directory))
+                     (when-let* ((project (project-current))
+                                 (root (file-name-as-directory
+                                        (expand-file-name (project-root project)))))
+                       ;; One stat, where `my/session--linked-worktree-p' is
+                       ;; two git subprocesses.
+                       (cons root
+                             (file-directory-p
+                              (expand-file-name ".git" root))))))))
+  (cdr my/session--buffer-place))
+
+(defun my/session-tab-worktree ()
+  "Worktree the current tab was opened for, or nil for a tab no session opened."
+  (alist-get 'my/session-worktree
+             (cdr (assq 'current-tab (funcall tab-bar-tabs-function)))))
+
+(defun my/session-mode-line ()
+  "Mode-line element for a buffer the current tab's name does not account for.
+The tab bar names the session a tab stands for, but buffers are not
+tab-scoped (rule 4) and the main checkout's branch moves under a tab
+named when it opened.  Nil in every other case."
+  (when-let* ((tab (my/session-tab-worktree))
+              (place (my/session--buffer-place)))
+    (cond
+     ((not (string-equal tab (car place)))
+      (propertize
+       (format " %s " (file-name-nondirectory (directory-file-name (car place))))
+       'face 'mode-line-emphasis
+       'help-echo (format "Buffer is in %s, not this tab's session"
+                          (abbreviate-file-name (car place)))))
+     ((and (cdr place) vc-mode) vc-mode))))
 
 ;;; Lifecycle
 

@@ -116,6 +116,18 @@ Never commit batch-test droppings: `projects.eld`, `recentf.eld`, `history`,
   state, and both packages ship daily MELPA snapshots. Don't re-add it.
 - `user-lisp/` is compiled and holds no use-package forms, so a byte-compile
   warning there is a real one.
+- The mode line spans two files: `config/core.el` owns the arrangement,
+  `my/session-mode-line` (sessions.el) is the one bespoke element in it, and
+  core.el reaches it through `fboundp` so that without sessions the mode line
+  is stock (rule 3). It reads a `my/session-worktree` tab parameter that
+  `my/session--open-tab` sets — a fact about a *tab*, not persisted session
+  state, so not a rule 2 exception; `tab-bar--current-tab-make` copies
+  parameters it does not recognise, which is what carries it across a switch.
+  Anything referenced by symbol in `mode-line-format` must have
+  `risky-local-variable`, or its `:eval` forms are silently not processed.
+- `format-mode-line` returns `""` under `--batch` — there is no live window —
+  so a mode-line change cannot be verified by the batch boot. The boot only
+  proves the construct loads.
 - use-package installs `:ensure` packages at **byte-compile** time
   (`use-package-ensure.el` calls the ensure function directly when
   `byte-compile-current-file` is set). Emacs 31 compiles `user-lisp/` at
