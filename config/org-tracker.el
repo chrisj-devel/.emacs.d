@@ -17,10 +17,12 @@
          :map org-mode-map
          ("M-g o" . consult-org-heading))
   ;; Ticket files carry one logical line per paragraph and list item, so the
-  ;; wrapping is visual-line-mode's job.
+  ;; wrapping is visual-line-mode's job; visual-wrap-prefix-mode then indents
+  ;; the continuation under the bullet it belongs to.
   :hook ((org-mode . my/tracker-columns-setup)
          (org-mode . my/tracker-anchor-directory)
-         (org-mode . visual-line-mode))
+         (org-mode . visual-line-mode)
+         (org-mode . visual-wrap-prefix-mode))
   :custom
   (org-todo-keywords
    '((sequence "TODO(t)" "NEXT(n)" "DOING(p)" "WAIT(w@/!)"

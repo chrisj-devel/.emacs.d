@@ -46,7 +46,12 @@
   (global-auto-revert-mode 1)
   (pixel-scroll-precision-mode 1)
   (context-menu-mode 1)
-  (column-number-mode 1))
+  (column-number-mode 1)
+  ;; `visual-line-mode' suppresses the continuation arrows on its own
+  ;; (`visual-line-fringe-indicators'), so their presence says which kind of
+  ;; wrapping a buffer is doing. Worth keeping, not worth full contrast.
+  (set-fringe-bitmap-face 'left-curly-arrow 'shadow)
+  (set-fringe-bitmap-face 'right-curly-arrow 'shadow))
 
 ;;; Mode line
 
