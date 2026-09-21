@@ -246,9 +246,74 @@ prefix argument) report what would change without writing."
         (funcall walk node nil)))
     (seq-uniq found)))
 
+;;; ADR sweep
+
+(defconst my/tracker-adr-subdir "docs/adr"
+  "Directory of ADRs under a repo root, as the domain contract specifies.")
+
+(defun my/tracker--adrs (dir)
+  "ADRs in DIR as (NUMBER . FILENAME), in filename order."
+  (mapcar (lambda (f)
+            (cons (substring (file-name-nondirectory f) 0 4)
+                  (file-name-nondirectory f)))
+          (directory-files dir t "\\`[0-9]\\{4\\}-.*\\.org\\'")))
+
+(defun my/tracker--adr-citations (root)
+  "Every ADR-NNNN cited in a tracked file under ROOT, as (NUMBER . FILE).
+Uses git grep so untracked build output and dependencies stay out of it."
+  (let ((default-directory root))
+    (delq nil
+          (mapcar (lambda (line)
+                    (when (string-match "\\`\\(.*\\):ADR-\\([0-9]\\{4\\}\\)\\'" line)
+                      (cons (match-string 2 line) (match-string 1 line))))
+                  (ignore-errors
+                    (process-lines "git" "grep" "-oE" "--" "ADR-[0-9]{4}"))))))
+
+(defun my/tracker--adr-problems (root)
+  "Report the ADR corpus under ROOT against the domain contract.
+Checks duplicate numbers, headings, spent :SUPERSEDES: targets still on
+disk, and citations resolving to no ADR.  Nothing here measures size."
+  (let ((dir (expand-file-name my/tracker-adr-subdir root)))
+    (when (file-directory-p dir)
+      (let* ((adrs (my/tracker--adrs dir))
+             (numbers (mapcar #'car adrs))
+             (problems nil))
+        (dolist (number (seq-uniq numbers))
+          (let ((sharing (seq-filter (lambda (a) (equal (car a) number)) adrs)))
+            (when (> (length sharing) 1)
+              (push (format "ADR-%s is held by %d files: %s" number
+                            (length sharing)
+                            (string-join (mapcar #'cdr sharing) ", "))
+                    problems))))
+        (dolist (adr adrs)
+          (with-current-buffer (find-file-noselect (expand-file-name (cdr adr) dir))
+            ;; The permitted parts are a title and prose, so the set of
+            ;; permitted headings is empty.
+            (dolist (heading (org-map-entries
+                              (lambda ()
+                                (substring-no-properties
+                                 (org-get-heading t t t t)))))
+              (push (format "%s has a heading: %s" (cdr adr) heading) problems))
+            (dolist (spent (split-string (or (org-entry-get (point-min) "SUPERSEDES") "")
+                                         nil t))
+              (when (seq-find (lambda (a) (equal (car a) spent)) adrs)
+                (push (format "%s supersedes ADR-%s, which is still present"
+                              (cdr adr) spent)
+                      problems)))))
+        (dolist (citation (seq-uniq (my/tracker--adr-citations root)))
+          (unless (member (car citation) numbers)
+            (push (format "%s cites ADR-%s, which resolves to no file"
+                          (cdr citation) (car citation))
+                  problems)))
+        (nreverse problems)))))
+
+;;; Validate
+
 ;;;###autoload
 (defun my/tracker-validate (&optional root)
-  "Report unresolvable BLOCKER edges and dependency cycles under ROOT."
+  "Report tracker and ADR contract violations under ROOT.
+Covers unresolvable BLOCKER edges, dependency cycles, and the ADR sweep
+in `my/tracker--adr-problems'."
   (interactive (list (funcall project-prompter)))
   ;; Truename, because `tickets' is a symlink into the tracker repo: without it
   ;; `find-file-noselect' opens every tracker file under two names.
@@ -275,14 +340,15 @@ prefix argument) report what would change without writing."
                        problems))))))
     (dolist (node (my/tracker--cycles graph))
       (push (format "%s (in a cycle)" node) problems))
-    (setq problems (nreverse problems))
+    (setq problems (append (nreverse problems) (my/tracker--adr-problems root)))
     (if problems
         (with-current-buffer (get-buffer-create "*tracker-validate*")
           (erase-buffer)
-          (insert (format "%d problem(s) in %s\n\n" (length problems) dir))
+          (insert (format "%d problem(s) in %s\n\n" (length problems)
+                          (abbreviate-file-name root)))
           (dolist (p problems) (insert p "\n"))
           (display-buffer (current-buffer)))
-      (message "tracker: %d edge(s) across %d heading(s), all resolvable"
+      (message "tracker: %d edge(s) across %d heading(s), all resolvable; ADRs conform"
                (apply #'+ (mapcar (lambda (n) (length (cdr n))) graph))
                (length graph)))
     problems))
