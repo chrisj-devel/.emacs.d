@@ -1,11 +1,11 @@
-;;; tracker.el --- Install and check the org ticket tracker -*- lexical-binding: t; -*-
+;;; tracker.el --- Install and check the org contract families -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; The tracker contract and its agent skills are config, not repo content:
-;; `my/tracker-install' copies the contract into a repo's tracker directory and
-;; the skills into the repo, `my/tracker-update-all' pushes a contract edit out
-;; to every repo already holding one, and
-;; `my/tracker-validate' sweeps the dependency graph.  org-edna only resolves a
-;; finder when a state changes, so nothing else checks the whole graph.
+;; Working contracts and their agent skills are config, not repo content:
+;; `my/tracker-install' copies every family in `my/tracker-families' into a
+;; repo, `my/tracker-update-all' pushes a contract edit out to every repo
+;; already holding one, and `my/tracker-validate' sweeps the dependency graph.
+;; org-edna only resolves a finder when a state changes, so nothing else checks
+;; the whole graph.
 ;;
 ;; They are copied rather than symlinked into the repo: a link into this
 ;; directory dangles in a clone, in CI, and for any agent whose sandbox stops
@@ -22,12 +22,31 @@
 
 (defvar my/session-tickets-subdir)
 
-(defconst my/tracker-source-directory
-  (expand-file-name "tracker" user-emacs-directory)
-  "Directory holding the portable contract and skill sources.")
+(defconst my/tracker-source-root user-emacs-directory
+  "Directory holding one subdirectory per contract family.")
+
+(defconst my/tracker-families
+  '(("tracker" :portable "issue-tracker.md" :local "tracker.local.md")
+    ("domain" :portable "domain.md" :local "domain.local.md"
+     :subdir "docs/agents"))
+  "Contract families, each a directory under `my/tracker-source-root'.
+:portable owns the rules and is overwritten on update; :local supplies a
+repo's values and is only ever seeded.  Both install under :subdir of a
+repo root, defaulting to `my/session-tickets-subdir'.  A family's skills/
+directory holds one subdirectory per skill, each with a SKILL.md.")
 
 (defconst my/tracker-skills-subdir ".agents/skills"
   "Canonical skill directory under a repo root; .claude/skills links to it.")
+
+(defun my/tracker--family-source (family)
+  "Directory under `my/tracker-source-root' holding FAMILY's sources."
+  (expand-file-name (car family) my/tracker-source-root))
+
+(defun my/tracker--family-target (family root)
+  "Directory under ROOT where FAMILY's two contract files install."
+  (expand-file-name (or (plist-get (cdr family) :subdir)
+                        my/session-tickets-subdir)
+                    root))
 
 ;;; Install
 
@@ -69,51 +88,59 @@ skill individually when it already exists with other content."
                  (make-symbolic-link (concat "../../.agents/skills/" skill) link))))
            'linked-each))))
 
-(defun my/tracker--install (root force check)
-  "Install the contract and skills into ROOT, returning a report alist.
+(defun my/tracker--install-family (family root force check)
+  "Install FAMILY's contract and skills into ROOT, returning a report alist.
 FORCE overwrites generated files that differ locally.  With CHECK nothing
-is written, created or linked; the report says what would have happened."
-  (let* ((tickets (expand-file-name my/session-tickets-subdir root))
+is written or created; the report says what would have happened."
+  (let* ((source (my/tracker--family-source family))
+         (target (my/tracker--family-target family root))
          (skills (expand-file-name my/tracker-skills-subdir root))
+         (portable (plist-get (cdr family) :portable))
+         (local (plist-get (cdr family) :local))
+         (skills-source (expand-file-name "skills" source))
          (report nil))
-    (unless check (make-directory tickets t))
-    (push (cons "issue-tracker.md"
-                (my/tracker--copy
-                 (expand-file-name "issue-tracker.md" my/tracker-source-directory)
-                 (expand-file-name "issue-tracker.md" tickets)
-                 force check))
+    (unless check (make-directory target t))
+    (push (cons portable
+                (my/tracker--copy (expand-file-name portable source)
+                                  (expand-file-name portable target)
+                                  force check))
           report)
     ;; Never force: this file belongs to the repo.
-    (push (cons "tracker.local.md"
-                (my/tracker--copy
-                 (expand-file-name "tracker.local.md" my/tracker-source-directory)
-                 (expand-file-name "tracker.local.md" tickets)
-                 nil check))
+    (push (cons local
+                (my/tracker--copy (expand-file-name local source)
+                                  (expand-file-name local target)
+                                  nil check))
           report)
-    (dolist (skill (directory-files
-                    (expand-file-name "skills" my/tracker-source-directory)
-                    nil "\\`[^.]"))
-      (push (cons skill
-                  (my/tracker--copy
-                   (expand-file-name (concat "skills/" skill "/SKILL.md")
-                                     my/tracker-source-directory)
-                   (expand-file-name (concat skill "/SKILL.md") skills)
-                   force check))
-            report))
-    (push (cons ".claude/skills"
-                (if check
-                    (if (file-symlink-p (expand-file-name ".claude/skills" root))
-                        'unchanged
-                      'linked)
-                  (my/tracker--link-claude-skills root)))
-          report)
+    (when (file-directory-p skills-source)
+      (dolist (skill (directory-files skills-source nil "\\`[^.]"))
+        (push (cons skill
+                    (my/tracker--copy
+                     (expand-file-name (concat skill "/SKILL.md") skills-source)
+                     (expand-file-name (concat skill "/SKILL.md") skills)
+                     force check))
+              report)))
     (nreverse report)))
+
+(defun my/tracker--install (root force check)
+  "Install every family in `my/tracker-families' into ROOT.
+Returns one report alist across all of them, with the .claude/skills link
+last because it reads the skills a family has just written.  FORCE and
+CHECK are passed through to `my/tracker--install-family'."
+  (append
+   (mapcan (lambda (family) (my/tracker--install-family family root force check))
+           my/tracker-families)
+   (list (cons ".claude/skills"
+               (if check
+                   (if (file-symlink-p (expand-file-name ".claude/skills" root))
+                       'unchanged
+                     'linked)
+                 (my/tracker--link-claude-skills root))))))
 
 ;;;###autoload
 (defun my/tracker-install (root &optional force)
-  "Install the tracker contract and skills into ROOT.
+  "Install every contract family and its skills into ROOT.
 Generated files are left alone when they differ locally unless FORCE (the
-prefix argument) is set; tracker.local.md is never overwritten."
+prefix argument) is set; each family's repo file is never overwritten."
   (interactive (list (my/session--read-repo) current-prefix-arg))
   (let ((report (my/tracker--install root force nil)))
     (message "tracker: %s"
@@ -127,22 +154,24 @@ prefix argument) is set; tracker.local.md is never overwritten."
 ;;; Update sweep
 
 (defun my/tracker--repos ()
-  "Local known project roots that already have the contract installed."
-  (seq-filter (lambda (root)
-                (and (not (file-remote-p root))
-                     (file-exists-p
-                      (expand-file-name
-                       (concat my/session-tickets-subdir "/issue-tracker.md")
-                       root))))
-              (project-known-project-roots)))
+  "Local known project roots that already have the contract installed.
+The first family's portable file is the marker: a repo that has it is one
+this configuration manages, and update writes every other family into it."
+  (let ((family (car my/tracker-families)))
+    (seq-filter (lambda (root)
+                  (and (not (file-remote-p root))
+                       (file-exists-p
+                        (expand-file-name (plist-get (cdr family) :portable)
+                                          (my/tracker--family-target family root)))))
+                (project-known-project-roots))))
 
 ;;;###autoload
 (defun my/tracker-update-all (&optional check)
-  "Reinstall the contract and skills into every repo that already has them.
-Generated files are overwritten: they carry a do-not-edit header, so local
-divergence is drift rather than customisation.  tracker.local.md belongs to
-its repo and is still only ever seeded when missing.  With CHECK (the prefix
-argument) report what would change without writing."
+  "Reinstall every contract family into every repo that already has one.
+Portable files are overwritten: they belong to this configuration, so local
+divergence is drift rather than customisation.  A family's repo file belongs
+to its repo and is still only ever seeded when missing.  With CHECK (the
+prefix argument) report what would change without writing."
   (interactive "P")
   (let* ((repos (my/tracker--repos))
          (rows (delq nil

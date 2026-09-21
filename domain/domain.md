@@ -20,6 +20,9 @@ or hold anything a reader could reach by reading `CONTEXT.md`.
 
 Neither document holds procedure. A repeatable operation is a runbook.
 
+Use the glossary's terms as it defines them, in code, tickets and test names
+alike. A term used against its definition is a defect in one of the two.
+
 ## What an ADR is
 
 An ADR records a constraint that outlives the feature that produced it.
