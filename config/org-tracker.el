@@ -35,6 +35,8 @@
   (org-src-preserve-indentation t)
   (org-src-tab-acts-natively t)
   (org-edit-src-content-indentation 0)
+  ;; Org's default set omits md, which is what tickets leave the tracker as.
+  (org-export-backends '(ascii html icalendar latex odt md))
   ;; KIND is what distinguishes a tracker heading from any other Org heading,
   ;; so both views work across sessions without naming a repo.
   (org-agenda-custom-commands
