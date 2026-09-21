@@ -272,11 +272,18 @@ Uses git grep so untracked build output and dependencies stay out of it."
 (defun my/tracker--adr-problems (root)
   "Report the ADR corpus under ROOT against the domain contract.
 Checks duplicate numbers, headings, spent :SUPERSEDES: targets still on
-disk, and citations resolving to no ADR.  Nothing here measures size."
+disk, and citations naming a number nobody ever held.  Nothing here
+measures size.
+
+A number recorded in a live ADR's :SUPERSEDES: still resolves.  It was
+deliberately spent, and a document that narrates the decision it replaced
+is a record rather than a stale pointer; only a number no ADR has ever
+held is a defect."
   (let ((dir (expand-file-name my/tracker-adr-subdir root)))
     (when (file-directory-p dir)
       (let* ((adrs (my/tracker--adrs dir))
              (numbers (mapcar #'car adrs))
+             (spent nil)
              (problems nil))
         (dolist (number (seq-uniq numbers))
           (let ((sharing (seq-filter (lambda (a) (equal (car a) number)) adrs)))
@@ -294,15 +301,17 @@ disk, and citations resolving to no ADR.  Nothing here measures size."
                                 (substring-no-properties
                                  (org-get-heading t t t t)))))
               (push (format "%s has a heading: %s" (cdr adr) heading) problems))
-            (dolist (spent (split-string (or (org-entry-get (point-min) "SUPERSEDES") "")
-                                         nil t))
-              (when (seq-find (lambda (a) (equal (car a) spent)) adrs)
+            (dolist (number (split-string
+                             (or (org-entry-get (point-min) "SUPERSEDES") "") nil t))
+              (push number spent)
+              (when (seq-find (lambda (a) (equal (car a) number)) adrs)
                 (push (format "%s supersedes ADR-%s, which is still present"
-                              (cdr adr) spent)
+                              (cdr adr) number)
                       problems)))))
         (dolist (citation (seq-uniq (my/tracker--adr-citations root)))
-          (unless (member (car citation) numbers)
-            (push (format "%s cites ADR-%s, which resolves to no file"
+          (unless (or (member (car citation) numbers)
+                      (member (car citation) spent))
+            (push (format "%s cites ADR-%s, which no ADR has ever held"
                           (cdr citation) (car citation))
                   problems)))
         (nreverse problems)))))
