@@ -19,26 +19,10 @@ human actions; do not treat them as interview questions.
 
 ## Interview
 
-Map the decisions and their dependencies as a design tree. Ask every question
-whose prerequisites are settled in the current round. Group questions by
-tracker heading, number them, and recommend an answer to each. Wait for the
-user before asking dependent questions in the next round.
-
-```
-❓ **Q1** - **<question title>**: <question body, may be several paragraphs, including multiple choices>
-
-➡️ <your recommended answer>
-
----
-
-❓ **Q2** - **<question title>**: <question body>
-
-➡️ <your recommended answer>
-```
-
-Dispatch repo or environment fact-finding to a subagent. While it runs, ask
-questions independent of those findings. Put decisions to the user and wait
-for their answers; continue until the decision tree is resolved.
+Run the interview with `grilling`, which owns the rounds, the question format,
+and the split between facts you find and decisions the user makes. Group each
+round's questions by tracker heading. A heading blocked by another belongs to
+a later round.
 
 ## Record and finish
 
