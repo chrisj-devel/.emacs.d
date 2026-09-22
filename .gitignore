@@ -13,3 +13,11 @@ tramp
 config/*.elc
 .emacs.desktop
 .emacs.desktop.lock
+agent/
+auto-save-list/
+recentf
+saveplace
+transient/
+tree-sitter/
+var/
+.DS_Store
