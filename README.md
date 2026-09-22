@@ -39,6 +39,9 @@ and agent shells are processes so they start fresh.
   browse, `n` spawn, `k` teardown). The Drift column is how many commits the
   session is ahead of its base and behind it as of the last fetch. The behind
   count goes red past `my/session-stale-threshold`.
+- Every `C-c s` command works on the repo at point, or, in a dashboard, on the
+  repo that dashboard is showing — the cross-repo one shows them all, so it
+  asks which. `C-u` asks anyway.
 - `C-c s n` spawns one: worktree, branch, ticket scaffold, tab, agent. The
   branch forks from whichever of `main` or `origin/main` contains the other. If
   they've diverged it asks.

@@ -253,11 +253,23 @@ included.  A path outside the list is still accepted."
   (expand-file-name
    (completing-read "Repo: " (mapcar #'abbreviate-file-name (my/session--repos)))))
 
+(defvar-local my/session-dashboard--repo nil
+  "Repo whose sessions this dashboard lists, resolved when it was opened.
+Held so reverting does not re-prompt from the dashboard's own buffer, and
+so a session command run inside it is scoped by what it shows rather than
+by the directory the buffer happens to carry.  Declared here, far above
+the dashboard, because the scoping is what reads it first.")
+
 (defun my/session--repo-root (&optional prompt)
-  "Main checkout of the repo at point, read when there is none or with PROMPT."
+  "Main checkout of the repo at point, read when there is none or with PROMPT.
+A dashboard's own `default-directory' is no answer — the buffer outlives
+the directory it was opened from — so the repo it lists stands in, and
+the dashboard listing every repo names none, which reads one."
   (or (and (not prompt)
-           (not (file-remote-p default-directory))
-           (ignore-errors (my/session--main-root default-directory)))
+           (if (derived-mode-p 'my/session-dashboard-mode)
+               my/session-dashboard--repo
+             (and (not (file-remote-p default-directory))
+                  (ignore-errors (my/session--main-root default-directory)))))
       (my/session--read-repo)))
 
 ;;; Derivation
@@ -355,9 +367,15 @@ answers with."
   (seq-find (lambda (session) (file-equal-p (my/session-root session) root))
             (my/sessions (my/session--main-root root))))
 
-(defun my/session--read (prompt)
-  "Read a session of the repo at point by name with PROMPT."
-  (let* ((sessions (my/sessions (my/session--repo-root)))
+(defun my/session--read (prompt &optional pick-repo)
+  "Read a session of the repo at point by name with PROMPT.
+In a dashboard the candidates are the sessions it lists, which for the
+dashboard scoped to no repo is every one it derived.  PICK-REPO, the
+prefix argument, reads the repo to offer instead."
+  (let* ((sessions (my/sessions (if (and (not pick-repo)
+                                         (derived-mode-p 'my/session-dashboard-mode))
+                                    my/session-dashboard--repo
+                                  (my/session--repo-root pick-repo))))
          (name (completing-read prompt (mapcar #'my/session-name sessions) nil t)))
     (seq-find (lambda (s) (equal (my/session-name s) name)) sessions)))
 
@@ -443,15 +461,19 @@ LAYOUT is called on it only when the tab is newly created."
     (unless existing (funcall layout))))
 
 (defun my/session-open (session)
-  "Jump to SESSION's work tab, creating tab and layout when missing."
-  (interactive (list (my/session--read "Session: ")))
+  "Jump to SESSION's work tab, creating tab and layout when missing.
+Interactively the session is read from the repo in scope; a prefix
+argument reads the repo too."
+  (interactive (list (my/session--read "Session: " current-prefix-arg)))
   (my/session--open-tab (my/session-tab-name session)
                         (my/session-root session)
                         (lambda () (my/session-layout session))))
 
 (defun my/session-browse (session)
-  "Jump to SESSION's browse tab, creating tab and layout when missing."
-  (interactive (list (my/session--read "Browse session: ")))
+  "Jump to SESSION's browse tab, creating tab and layout when missing.
+Interactively the session is read from the repo in scope; a prefix
+argument reads the repo too."
+  (interactive (list (my/session--read "Browse session: " current-prefix-arg)))
   (my/session--open-tab (my/session-browse-tab-name session)
                         (my/session-root session)
                         (lambda () (my/session-browse-layout session))))
@@ -719,7 +741,7 @@ Interactively the repo is the one at point; a prefix argument reads it."
   "Kill SESSION's buffers, close its tab, and remove its worktree.
 The main checkout is a session too and is never removed; tearing it down
 closes its tabs and kills its agent, and it is derived again next time."
-  (interactive (list (my/session--read "Tear down session: ")))
+  (interactive (list (my/session--read "Tear down session: " current-prefix-arg)))
   (let* ((name (or (my/session-feature session) (my/session-name session)))
          (root (my/session-root session))
          ;; Read before the worktree goes: a tab name is qualified by the repo
@@ -769,10 +791,6 @@ closes its tabs and kills its agent, and it is derived again next time."
     ('blocked (propertize "✋ blocked" 'face 'error))
     ('ready (propertize "● ready" 'face 'success))
     (_ (propertize "– none" 'face 'shadow))))
-
-(defvar-local my/session-dashboard--repo nil
-  "Repo whose sessions this dashboard lists, resolved when it was opened.
-Held so reverting does not re-prompt from the dashboard's own buffer.")
 
 (defun my/session--drift-label (divergence)
   "DIVERGENCE, a (BEHIND . AHEAD) cons, as one column of arrows."
@@ -833,9 +851,11 @@ Held so reverting does not re-prompt from the dashboard's own buffer.")
 (defun my/session-dashboard-spawn ()
   "Spawn a session off the repo this dashboard lists.
 The dashboard buffer outlives the directory it was opened from, so its
-own `default-directory' is no answer; `my/session-dashboard--repo' is."
+own `default-directory' is no answer; `my/session--repo-root' reads the
+repo out of the dashboard, and asks when it lists every repo and so
+names none to spawn off."
   (interactive)
-  (let ((repo my/session-dashboard--repo))
+  (let ((repo (my/session--repo-root)))
     (my/session-spawn repo (completing-read "Feature: " (my/session--features repo)))))
 
 (defun my/session-dashboard-teardown ()
@@ -878,10 +898,10 @@ worktree of every known project, plus any agent outside them."
 
 (defun my/session-dashboard (repo)
   "Show mission control: REPO's sessions with agent status.
-REPO is the repo at point, prompted for when there is none.  It is read
-before the dashboard buffer is current, whose own `default-directory'
-would otherwise decide it."
-  (interactive (list (my/session--repo-root)))
+REPO is the repo at point, prompted for when there is none and by a
+prefix argument.  It is read before the dashboard buffer is current,
+whose own `default-directory' would otherwise decide it."
+  (interactive (list (my/session--repo-root current-prefix-arg)))
   (pop-to-buffer (my/session-dashboard--buffer repo)))
 
 ;;; Keys
