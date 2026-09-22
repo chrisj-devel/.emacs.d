@@ -60,7 +60,8 @@ third-party dependency at all, since a top-level `require` runs inside that
 compile. Prefer a `;;;###autoload` cookie to a `require` in init.el.
 
 - `user-lisp/sessions.el` — the only real custom code: session derivation,
-  spawn/teardown, dashboard. Keep it small; prefer deleting to extending.
+  spawn/teardown, dashboard, and the three tab layouts. Keep it small; prefer
+  deleting to extending.
 - `user-lisp/tickets.el` — which org files make up a repo's tracker
 - `user-lisp/dashboard.el` — the startup layout: session dashboard + agenda +
   a key pane derived from the keymaps. Composition only; it owns no state
@@ -144,6 +145,16 @@ Never commit batch-test droppings: `projects.eld`, `recentf.eld`, `history`,
   `emacs-startup-hook`) and redraws the dashboard tab if one was saved — its
   panes are generated buffers that desktop cannot restore. Agent shells cannot
   be restored either; a restored session simply reads as having no agent.
+- The review layout diffs through `vc-diff-internal` rather than magit: a
+  `diff-mode` buffer is static text, so the overlays `my/review-note` hangs on
+  it stay where they were put. Two things about that call — it gives each
+  session its own buffer, and vc's `revert-buffer-function` drops the buffer
+  argument and rebuilds into `*vc-diff*`, so `my/session--review-diff` sets its
+  own. Notes are addressed by (root, file, line-as-the-branch-leaves-it) and
+  placed by reading the unified-diff hunk headers, which is why a line only
+  the base has cannot carry one. `my/session--materialise` is the worktree
+  half of spawn, shared with review; review calls it and stops there, which
+  is what keeps a colleague's branch from scaffolding a ticket.
 - GNU ELPA's dirvish keeps its extensions in a subdirectory its autoloads
   never add to `load-path`. config/core.el adds it; without that, `dirvish-side` and
   the attribute libraries are unreachable.

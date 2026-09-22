@@ -44,6 +44,7 @@
      (my/session-spawn . "worktree + branch + ticket + agent")
      (my/session-open . "jump to a work tab")
      (my/session-browse . "browse tab: sidebar + code")
+     (my/session-review . "review tab: branch diff + agent")
      (my/session-teardown . "kill buffers, remove worktree"))
     ("Tracker"
      (org-agenda . "then w workboard, f frontier, F every repo"))

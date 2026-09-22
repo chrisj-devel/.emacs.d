@@ -28,6 +28,13 @@ holds no session state, and agent shells, being processes, start again.
   diverged, it asks
 - `C-c s j` — jump to a session's work tab, main checkout included
 - `C-c s b` — browse tab: dirvish sidebar + code, same session, second tab
+- `C-c s r` — review tab: any branch the repo knows, diffed against its merge
+  base left, agent right. A branch with no worktree gets one, made from the
+  remote ref when no local head stands for it yet — so someone else's branch
+  reviews like your own, and nothing is scaffolded in the tracker for it.
+  `g` rebuilds the diff. An agent reports a finding with
+  `emacsclient --eval '(my/review-note ROOT FILE LINE TEXT)'`, which marks
+  the line in the diff; findings clear on rebuild
 - `C-c s k` — teardown: kill buffers, remove worktree, close both tabs (branch
   kept; the main checkout is never removed)
 - `C-c a` then `w` / `f` — tracker workboard / unblocked frontier over the

@@ -6,8 +6,12 @@
 ;; it is where the branch work lands, so it is worth a tab like any other.
 ;; An agent-shell buffer outside any worktree is a bare session.
 ;;
-;; A session has two layouts, each in its own tab: the work tab (ticket +
-;; agent) and the browse tab (dirvish sidebar + code).
+;; A session has three layouts, each in its own tab: the work tab (ticket +
+;; agent), the browse tab (dirvish sidebar + code), and the review tab (the
+;; branch diffed against its merge base + agent).
+;;
+;; Spawning is not the only way in: `my/session-review' takes any branch the
+;; repo knows, someone else's included, and makes the worktree it needs.
 ;;
 ;; Lifecycle: `my/session-spawn' -> work -> `my/session-teardown'.
 ;; Mission control: `my/session-dashboard'.
@@ -24,6 +28,13 @@
 (declare-function agent-shell-status "agent-shell")
 (declare-function agent-shell "agent-shell")
 (declare-function dirvish-side "dirvish-side")
+(declare-function vc-responsible-backend "vc")
+(declare-function vc-call-backend "vc-hooks")
+(declare-function vc-diff-internal "vc")
+
+;; Let-bound in `my/session--review-diff' before vc has necessarily loaded;
+;; the declaration is what keeps that binding dynamic rather than lexical.
+(defvar vc-allow-async-diff)
 
 (defgroup my/sessions nil
   "Feature-in-flight sessions over git worktrees."
@@ -40,6 +51,10 @@
 
 (defcustom my/session-browse-tab-suffix " code"
   "Suffix distinguishing a session's browse tab from its work tab."
+  :type 'string)
+
+(defcustom my/session-review-tab-suffix " review"
+  "Suffix distinguishing a session's review tab from its work tab."
   :type 'string)
 
 (defcustom my/session-stale-threshold 25
@@ -332,6 +347,14 @@ it works through is tickets/foo.org.  A session on no branch has none."
               ((file-exists-p file)))
     file))
 
+(defun my/session--at (root)
+  "The session whose worktree is ROOT, or nil when ROOT is not one.
+Matched with `file-equal-p\=': a caller from outside Emacs names the
+worktree by whatever path reaches it, which need not be the one git
+answers with."
+  (seq-find (lambda (session) (file-equal-p (my/session-root session) root))
+            (my/sessions (my/session--main-root root))))
+
 (defun my/session--read (prompt)
   "Read a session of the repo at point by name with PROMPT."
   (let* ((sessions (my/sessions (my/session--repo-root)))
@@ -347,18 +370,22 @@ it works through is tickets/foo.org.  A session on no branch has none."
     (save-window-excursion (call-interactively #'agent-shell))
     (my/session--agent-buffer (my/session-root session))))
 
-(defun my/session-layout (session)
-  "Apply the standard layout: tickets left, agent right."
-  (delete-other-windows)
-  (if-let* ((ticket (my/session-ticket-file session)))
-      (find-file ticket)
-    (dired (my/session-root session)))
+(defun my/session--show-agent (session)
+  "Show SESSION's agent shell to the right, starting one when there is none."
   (when-let* ((agent (or (and (buffer-live-p (my/session-agent-buffer session))
                               (my/session-agent-buffer session))
                          (my/session--start-agent session))))
     (display-buffer agent '((display-buffer-in-direction)
                             (direction . right)
                             (window-width . 0.5)))))
+
+(defun my/session-layout (session)
+  "Apply the standard layout: tickets left, agent right."
+  (delete-other-windows)
+  (if-let* ((ticket (my/session-ticket-file session)))
+      (find-file ticket)
+    (dired (my/session-root session)))
+  (my/session--show-agent session))
 
 (defun my/session--recent-file (root)
   "Most recently visited file under ROOT, if any."
@@ -395,6 +422,10 @@ a path."
   "Name of SESSION's browse tab."
   (concat (my/session-tab-name session) my/session-browse-tab-suffix))
 
+(defun my/session-review-tab-name (session)
+  "Name of SESSION's review tab."
+  (concat (my/session-tab-name session) my/session-review-tab-suffix))
+
 (defun my/session--tab-p (name)
   (seq-some (lambda (tab) (equal name (alist-get 'name tab)))
             (funcall tab-bar-tabs-function)))
@@ -424,6 +455,139 @@ LAYOUT is called on it only when the tab is newly created."
   (my/session--open-tab (my/session-browse-tab-name session)
                         (my/session-root session)
                         (lambda () (my/session-browse-layout session))))
+
+;;; Review
+
+(defun my/session--review-buffer-name (session)
+  "Name of the buffer holding SESSION's diff against its merge base."
+  (format "*review: %s*" (my/session-tab-name session)))
+
+(defun my/session--review-diff (session)
+  "Fill and answer SESSION's review buffer: merge base against the worktree.
+Uncommitted changes are in it, so a branch is reviewed as it stands
+rather than as it was last committed.  Its own buffer per session, since
+two reviews run side by side as readily as two sessions do."
+  (require 'vc)
+  (let* ((root (my/session-root session))
+         (default-directory root)
+         (base (or (my/session--base-ref root t)
+                   (user-error "No base to review %s against" (my/session-name session))))
+         (backend (vc-responsible-backend root))
+         (buffer (get-buffer-create (my/session--review-buffer-name session)))
+         ;; `vc-diff-internal' displays the buffer itself, at the end; the
+         ;; layout has already settled which window it belongs in.
+         (display-buffer-overriding-action '((display-buffer-same-window)))
+         ;; Synchronous: the notes below are placed against the finished text.
+         (vc-allow-async-diff nil))
+    (vc-diff-internal nil (list backend (list root))
+                      (vc-call-backend backend 'mergebase base "HEAD")
+                      nil nil buffer)
+    (with-current-buffer buffer
+      ;; `erase-buffer' leaves overlays behind, collapsed onto one position.
+      (remove-overlays (point-min) (point-max) 'my/review-note t)
+      ;; vc's own revert function drops the buffer it was given and rebuilds
+      ;; into *vc-diff*.
+      (setq-local revert-buffer-function
+                  (lambda (&rest _) (my/session--review-diff session))))
+    buffer))
+
+(defun my/session-review-layout (session)
+  "Apply the review layout: the branch diff left, agent right."
+  (delete-other-windows)
+  (switch-to-buffer (my/session--review-diff session))
+  (my/session--show-agent session))
+
+(defun my/session--review-branches (root)
+  "Alist of (BRANCH . BASE) for the repo at ROOT, in the order worth offering.
+Every local head first, with a nil BASE since the branch is already
+there.  Then every remote branch no local head stands for, BASE being the
+remote ref to make it from.  Fetches, so a branch pushed since the last
+review is among them."
+  (when-let* ((remote (my/session--remote root)))
+    ;; Offline, or a remote that has gone: the refs simply stay as last seen.
+    (my/session--git-succeeds-p root "fetch" remote))
+  (let* ((locals (split-string
+                  (my/session--git root "for-each-ref" "--format=%(refname:short)"
+                                   "refs/heads")
+                  "\n" t))
+         (remotes (split-string
+                   (my/session--git root "for-each-ref"
+                                    ;; lstrip=3 drops refs/remotes/<remote>/, so a
+                                    ;; namespaced branch keeps the rest of its name.
+                                    "--format=%(refname:short)\t%(refname:lstrip=3)"
+                                    "refs/remotes")
+                   "\n" t)))
+    (append (mapcar #'list locals)
+            (delq nil
+                  (mapcar (lambda (line)
+                            (pcase-let ((`(,ref ,branch) (split-string line "\t")))
+                              (unless (or (equal branch "HEAD") (member branch locals))
+                                (cons branch ref))))
+                          remotes)))))
+
+(defun my/session--review-open (session)
+  "Jump to SESSION's review tab, creating tab and layout when missing."
+  (my/session--open-tab (my/session-review-tab-name session)
+                        (my/session-root session)
+                        (lambda () (my/session-review-layout session))))
+
+(defun my/session-review (repo-root branch &optional base)
+  "Review BRANCH of REPO-ROOT against its merge base, in a tab of its own.
+Any branch the repo knows is reviewable, whether or not it is one you
+opened: BRANCH gets a worktree when it has none, made from BASE — the
+remote ref behind it — when no local head stands for it yet.
+Interactively the repo is the one at point; a prefix argument reads it."
+  (interactive
+   (let* ((root (my/session--repo-root current-prefix-arg))
+          (branches (my/session--review-branches root))
+          (choice (assoc (completing-read "Review branch: " branches nil t) branches)))
+     (list root (car choice) (cdr choice))))
+  (let ((worktree (my/session--materialise repo-root branch base)))
+    (my/session--review-open
+     (make-my/session :name branch :root worktree :branch branch))))
+
+(defun my/review--position (file line)
+  "Position in the current diff buffer of LINE of FILE, nil when it has none.
+FILE is repo-relative and LINE numbers it as the branch leaves it, so a
+line only the base has is nowhere to put anything."
+  (save-excursion
+    (goto-char (point-min))
+    (let (current new pos)
+      (while (and (not pos) (not (eobp)))
+        (cond
+         ((looking-at "^\\+\\+\\+ \\(?:b/\\)?\\([^\t\n]+\\)")
+          (setq current (match-string-no-properties 1) new nil))
+         ((and (equal current file) (looking-at "^@@ -[0-9,]+ \\+\\([0-9]+\\)"))
+          (setq new (string-to-number (match-string 1))))
+         ((null new))
+         ((looking-at "^[+ ]")
+          (if (= new line) (setq pos (point)) (setq new (1+ new))))
+         ((looking-at "^-"))
+         (t (setq new nil)))
+        (forward-line 1))
+      pos)))
+
+;;;###autoload
+(defun my/review-note (root file line text)
+  "Write TEXT against LINE of FILE in the review diff of the worktree at ROOT.
+FILE is relative to ROOT and LINE numbers it as the branch leaves it.
+This is how the agent reviewing a session reports a finding:
+
+    emacsclient --eval \='(my/review-note \"ROOT\" \"FILE\" LINE \"TEXT\")\='
+
+Answers nil when the review tab is not open or the line is not in the
+diff, which tells the agent a note that landed from one that did not.
+Notes last until the diff is rebuilt, `g' being what clears them."
+  (when-let* ((session (my/session--at root))
+              (buffer (get-buffer (my/session--review-buffer-name session))))
+    (with-current-buffer buffer
+      (when-let* ((pos (my/review--position file line)))
+        (let ((overlay (make-overlay pos pos)))
+          (overlay-put overlay 'my/review-note t)
+          (overlay-put overlay 'before-string
+                       (propertize (concat "\u258f " text "\n")
+                                   'face 'font-lock-warning-face)))
+        t))))
 
 ;;; Mode line
 
@@ -507,23 +671,33 @@ is the one meant."
          (list branch (concat (my/session--remote root) "/" branch))
          nil t))))
 
+(defun my/session--materialise (repo-root branch &optional base)
+  "Worktree of REPO-ROOT holding BRANCH, created when it has none, and answered.
+BASE is the ref BRANCH forks from when it does not exist yet; a branch
+that does exist is checked out wherever it left off.  A branch already in
+a worktree is answered where git has it, which need not be where
+`my/session-worktree-directory-function' would put a new one."
+  (let ((worktree (or (cdr (assoc branch (my/session--worktrees repo-root)))
+                      (funcall my/session-worktree-directory-function repo-root branch))))
+    (unless (file-directory-p worktree)
+      (condition-case nil
+          (apply #'my/session--git repo-root "worktree" "add" "-b" branch worktree
+                 (and base (list base)))
+        ;; Branch already exists: check it out instead, at wherever it left off.
+        (error (my/session--git repo-root "worktree" "add" worktree branch))))
+    (project-remember-project (project-current nil worktree))
+    (dolist (path (my/session--linked-paths repo-root))
+      (my/session--link repo-root worktree path))
+    worktree))
+
 (defun my/session-spawn (repo-root feature)
   "Create worktree, branch, and ticket scaffold for FEATURE off REPO-ROOT.
 Interactively the repo is the one at point; a prefix argument reads it."
   (interactive
    (let ((root (my/session--repo-root current-prefix-arg)))
      (list root (completing-read "Feature: " (my/session--features root)))))
-  (let ((worktree (funcall my/session-worktree-directory-function repo-root feature))
-        (base (my/session--spawn-base repo-root)))
-    (unless (file-directory-p worktree)
-      (condition-case nil
-          (apply #'my/session--git repo-root "worktree" "add" "-b" feature worktree
-                 (and base (list base)))
-        ;; Branch already exists: check it out instead, at wherever it left off.
-        (error (my/session--git repo-root "worktree" "add" worktree feature))))
-    (project-remember-project (project-current nil worktree))
-    (dolist (path (my/session--linked-paths repo-root))
-      (my/session--link repo-root worktree path))
+  (let ((worktree (my/session--materialise
+                   repo-root feature (my/session--spawn-base repo-root))))
     (let* ((source (expand-file-name my/session-tickets-subdir repo-root))
            (external (and (file-symlink-p source) (file-truename source)))
            (base (expand-file-name my/session-tickets-subdir worktree))
@@ -551,7 +725,8 @@ closes its tabs and kills its agent, and it is derived again next time."
          ;; Read before the worktree goes: a tab name is qualified by the repo
          ;; behind the root, which removal takes away.
          (tabs (list (my/session-tab-name session)
-                     (my/session-browse-tab-name session)))
+                     (my/session-browse-tab-name session)
+                     (my/session-review-tab-name session)))
          (linked (my/session--linked-worktree-p root)))
     (when (yes-or-no-p
            (if linked
@@ -649,6 +824,12 @@ Held so reverting does not re-prompt from the dashboard's own buffer.")
   (when-let* ((session (tabulated-list-get-id)))
     (my/session-browse session)))
 
+(defun my/session-dashboard-review ()
+  "Open the review tab of the session at point."
+  (interactive)
+  (when-let* ((session (tabulated-list-get-id)))
+    (my/session--review-open session)))
+
 (defun my/session-dashboard-spawn ()
   "Spawn a session off the repo this dashboard lists.
 The dashboard buffer outlives the directory it was opened from, so its
@@ -668,6 +849,7 @@ own `default-directory' is no answer; `my/session-dashboard--repo' is."
   :parent tabulated-list-mode-map
   "RET" #'my/session-dashboard-open
   "b" #'my/session-dashboard-browse
+  "r" #'my/session-dashboard-review
   "n" #'my/session-dashboard-spawn
   "k" #'my/session-dashboard-teardown)
 
@@ -713,6 +895,7 @@ would otherwise decide it."
   "n" #'my/session-spawn
   "j" #'my/session-open
   "b" #'my/session-browse
+  "r" #'my/session-review
   "k" #'my/session-teardown)
 
 (fset 'my/session-map my/session-map)
