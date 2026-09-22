@@ -174,6 +174,23 @@ With prefix ARG, always start a new shell."
    '((display-buffer-reuse-window display-buffer-use-some-window)
      (inhibit-same-window . t))))
 
+;;; MCP
+
+;; The stdio bridge enables the tool set itself, over emacsclient, but
+;; `mcp-server-lib-process-jsonrpc' refuses every request until the server is
+;; started, so startup owes it that much. `mcp-server-lib-install-directory'
+;; defaults to `user-emacs-directory', which is this repo through a symlink;
+;; the script is the package's to version, not ours.
+(use-package mcp-server-lib
+  :custom
+  (mcp-server-lib-install-directory (expand-file-name "~/.local/bin/"))
+  :config
+  (unless noninteractive (mcp-server-lib-start)))
+
+;; `elisp-dev-mcp-enable' is autoloaded and the bridge is what calls it.
+(use-package elisp-dev-mcp
+  :defer t)
+
 ;;; Agent attention
 
 (my/agent-attention-setup)
