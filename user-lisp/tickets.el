@@ -40,8 +40,15 @@ in-flight state wins; every other feature resolves to the main checkout."
   "Ticket file of every feature in every known repo.
 What one repo's agenda is to `my/tracker-org-files', this is to the
 machine: the frontier the dashboard opens on spans repos, since which
-one is at point says nothing about what is waiting."
-  (seq-uniq (seq-mapcat #'my/tracker-org-files (my/session--repos))))
+one is at point says nothing about what is waiting.
+
+A root that git cannot read is skipped.  `my/session--repos' keeps a known
+project root that is no longer a checkout — a worktree directory left behind
+without its `.git' file — and one of those would otherwise abort the sweep
+and blank the dashboard's frontier for every repo."
+  (seq-uniq (seq-mapcat (lambda (repo)
+                          (ignore-errors (my/tracker-org-files repo)))
+                        (my/session--repos))))
 
 (defconst my/tracker-columns-format
   "%30ITEM(Title) %10TODO(State) %10KIND(Kind) %6TYPE(Type) %20FEATURE(Feature) %20TRACKER_CATEGORY(Category) %10PRIORITY(Priority) %24BRANCH(Branch)"
