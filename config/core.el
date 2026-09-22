@@ -145,9 +145,17 @@
       (display-buffer-reuse-mode-window display-buffer-in-side-window)
       (side . bottom) (window-height . 0.3))
      ;; verb (dev.el) sends from an org heading; the response belongs beside it.
+     ;; Not `display-buffer-in-direction': it splits the selected window and
+     ;; then resizes the result to half the *frame*, stealing the difference
+     ;; from a neighbour down to `window-safe-min-width'.  pop-up-window splits
+     ;; only a window wider than `split-width-threshold', so on an already
+     ;; halved frame it declines and the response takes a window over instead
+     ;; of wedging in a third column.
      ("\\`\\*HTTP Response"
-      (display-buffer-reuse-mode-window display-buffer-in-direction)
-      (direction . right) (window-width . 0.5))
+      (display-buffer-reuse-mode-window
+       display-buffer-pop-up-window
+       display-buffer-use-some-window)
+      (inhibit-same-window . t))
      ("\\*Sessions\\*"
       (display-buffer-reuse-mode-window display-buffer-in-side-window)
       (side . bottom) (window-height . 0.3)))))

@@ -161,15 +161,17 @@ With prefix ARG, always start a new shell."
   :bind ([f5] . my/agent-shell-switch-or-start)
   :custom
   (agent-shell-session-strategy 'prompt)
+  ;; Splits only a window wider than `split-width-threshold'; see the
+  ;; *HTTP Response* entry in core.el for why not `display-buffer-in-direction'.
   (agent-shell-display-action
    '((display-buffer-reuse-mode-window
-      display-buffer-in-direction)
-     (direction . right)
-     (window-width . 0.5)
+      display-buffer-pop-up-window
+      display-buffer-use-some-window)
+     (inhibit-same-window . t)
      (preserve-size . (t . nil))))
   ;; Default is same-window, which makes a followed link eat the shell's own
-  ;; half of the split. Reuse a window on the left rather than splitting —
-  ;; pop-up-window splits the largest window and slices get tiny fast.
+  ;; half of the split. A followed file always reuses a window — never a split,
+  ;; not even when the frame has room for one.
   (agent-shell-file-display-action
    '((display-buffer-reuse-window display-buffer-use-some-window)
      (inhibit-same-window . t))))
