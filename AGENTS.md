@@ -73,6 +73,27 @@ compile. Prefer a `;;;###autoload` cookie to a `require` in init.el.
   copies into repos. `migration.org` is the runbook for moving an existing
   repo onto the contract; it stays here and is not installed.
 
+## Answering Elisp questions
+
+`elisp-dev-mcp`, declared in `config/dev.el`, serves five read-only tools over
+MCP against the *running* Emacs. They describe the packages actually installed
+under `elpa/`, not upstream's current documentation or a model's recollection
+of it. Reach for them before guessing at an API, and before recording a new
+gotcha that is simply readable from source.
+
+- `elisp-describe-function(function)` — docstring, signature, and the file
+  that defines it; also how to check whether a function exists at all.
+- `elisp-get-function-definition(function)` — source, file path, line range.
+- `elisp-describe-variable(variable)` — value, type, custom group,
+  obsolescence, aliases.
+- `elisp-info-lookup-symbol(symbol)` — the symbol's Info node, in full.
+- `elisp-read-source-file(library-or-path)` — a library's whole source, by
+  library name or absolute path.
+
+Registration must pass `--server-id=elisp-dev-mcp`. The stdio bridge otherwise
+derives `elisp-dev` from the init function's name, and `tools/list` returns an
+empty list against a server that initialises cleanly.
+
 ## Verifying changes
 
 Batch boot (must stay clean). `--batch` loads neither early-init.el nor
@@ -138,6 +159,13 @@ Never commit batch-test droppings: `projects.eld`, `recentf.eld`, `history`,
   from inside those: one wedged on 1 Sep 2026 and spun a core for 16 days,
   with 27 abandoned `.eln.tmp` files behind it. Hence `config/`. Don't move a
   use-package form back, and don't add a step that compiles `config/`.
+- `elisp-dev-mcp` decides a function is implemented in C with `subrp`, which
+  natively compiled Elisp satisfies, so definition lookup claimed every ELPA
+  and `user-lisp/` function and returned no source at all. `config/dev.el`
+  advises its dispatch to route those to the source-file branch it already
+  carries. The advice names a private function, so an upgrade that renames it
+  silently restores the old behaviour; drop it once upstream separates `subrp`
+  from `subr-native-elisp-p`.
 - `native-comp-async-report-warnings-errors` is left at its default. It was
   `'silent`, which is why the above went unseen.
 - A restored desktop stands the startup dashboard down
