@@ -187,6 +187,11 @@ With prefix ARG, always start a new shell."
   :config
   (unless noninteractive (mcp-server-lib-start)))
 
+;; Multi-file packages point package-lint at their main file through a
+;; file-local, and the property marking it safe rides on package-lint's
+;; autoloads, which we do not install. Visiting such a file prompts otherwise.
+(put 'package-lint-main-file 'safe-local-variable #'stringp)
+
 ;; `elisp-dev-mcp-enable' is autoloaded and the bridge is what calls it.
 (use-package elisp-dev-mcp
   :defer t
