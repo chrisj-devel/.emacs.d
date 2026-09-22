@@ -36,18 +36,37 @@ in-flight state wins; every other feature resolves to the main checkout."
           (puthash feature file files))))
     (sort (hash-table-values files) #'string<)))
 
+(defvar my/tracker--warned-repos nil
+  "Roots `my/tracker-all-org-files' has already warned about.")
+
+(defun my/tracker--warn-unreadable (root err)
+  "Warn that ROOT was left out of the tracker sweep because of ERR.
+Once per root per session: the sweep runs on every agenda and dashboard
+build, and a root stays dead until someone forgets the project."
+  (unless (member root my/tracker--warned-repos)
+    (push root my/tracker--warned-repos)
+    (display-warning
+     'my/tracker
+     (format "%s is a known project but not a readable checkout, so its \
+tickets are missing from the frontier.  Drop it with \
+`M-x project-forget-project'.\n%s"
+             (abbreviate-file-name root) (error-message-string err)))))
+
 (defun my/tracker-all-org-files ()
   "Ticket file of every feature in every known repo.
 What one repo's agenda is to `my/tracker-org-files', this is to the
 machine: the frontier the dashboard opens on spans repos, since which
 one is at point says nothing about what is waiting.
 
-A root that git cannot read is skipped.  `my/session--repos' keeps a known
-project root that is no longer a checkout — a worktree directory left behind
-without its `.git' file — and one of those would otherwise abort the sweep
-and blank the dashboard's frontier for every repo."
+A root that git cannot read is skipped, with a warning naming it.
+`my/session--repos' keeps a known project root that is no longer a checkout
+— a worktree directory left behind without its `.git' file — and one of
+those would otherwise abort the sweep and blank the dashboard's frontier
+for every repo."
   (seq-uniq (seq-mapcat (lambda (repo)
-                          (ignore-errors (my/tracker-org-files repo)))
+                          (condition-case err
+                              (my/tracker-org-files repo)
+                            (error (my/tracker--warn-unreadable repo err) nil)))
                         (my/session--repos))))
 
 (defconst my/tracker-columns-format
