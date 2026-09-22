@@ -1,8 +1,8 @@
 # Native-first Emacs 31 config
 
-Launch alongside the existing config:
+Clone to `~/.emacs.d` and start Emacs. To run it alongside an existing config:
 
-    emacs --init-directory ~/Source/dotfiles/emacs31/.emacs.d
+    emacs --init-directory /path/to/this/checkout
 
 ## Design
 

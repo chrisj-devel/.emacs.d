@@ -1,7 +1,7 @@
 ;;; init.el --- Native-first Emacs 31 configuration -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;; Priority order: built-in > package > custom function.
-;; Launch with: emacs --init-directory ~/Source/dotfiles/emacs31/.emacs.d
+;; Lives at ~/.emacs.d, or any checkout passed to emacs --init-directory.
 ;;
 ;; config/ holds the use-package declarations, user-lisp/ the libraries Emacs
 ;; 31 compiles at startup.  use-package installs `:ensure' packages at
