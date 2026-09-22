@@ -189,7 +189,19 @@ With prefix ARG, always start a new shell."
 
 ;; `elisp-dev-mcp-enable' is autoloaded and the bridge is what calls it.
 (use-package elisp-dev-mcp
-  :defer t)
+  :defer t
+  :config
+  ;; Natively compiled Elisp satisfies `subrp', so the dispatch's C branch
+  ;; claims every ELPA and user function and returns no source at all.
+  ;; `subr-native-elisp-p' is what separates those from a real subr.
+  (define-advice elisp-dev-mcp--get-function-definition-dispatch
+      (:around (orig function sym fn-info) native-comp-is-not-c)
+    (let ((fn (nth 0 fn-info))
+          (file (find-lisp-object-file-name sym 'defun)))
+      (if (and file (subrp fn) (subr-native-elisp-p fn))
+          (elisp-dev-mcp--get-function-definition-from-file
+           function sym file (nth 1 fn-info) (nth 2 fn-info))
+        (funcall orig function sym fn-info)))))
 
 ;;; Agent attention
 
