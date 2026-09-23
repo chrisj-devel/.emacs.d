@@ -210,7 +210,20 @@
 
 (use-package gruvbox-theme
   :config
-  (load-theme 'gruvbox-dark-hard :no-confirm))
+  (load-theme 'gruvbox-dark-hard :no-confirm)
+  ;; Gruvbox tints diff context rather than changes.  Drop these with gruvbox.
+  (custom-theme-set-faces
+   'gruvbox-dark-hard
+   '(diff-context           ((t :background unspecified)))
+   '(diff-added             ((t :background "#253021" :extend t)))
+   '(diff-removed           ((t :background "#35201f" :extend t)))
+   '(diff-indicator-added   ((t :inherit diff-added :foreground "#b8bb26")))
+   '(diff-indicator-removed ((t :inherit diff-removed :foreground "#fb4934")))
+   '(diff-refine-added      ((t :background "#3d4f2c")))
+   '(diff-refine-removed    ((t :background "#5a2b28")))
+   '(diff-hunk-header       ((t :background "#282828" :foreground "#83a598" :extend t)))
+   '(diff-header            ((t :background unspecified)))
+   '(diff-file-header       ((t :background unspecified :weight bold)))))
 
 ;;; Dired
 

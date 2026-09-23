@@ -69,6 +69,12 @@
   ;; motion keys.
   (:map magit-mode-map ("x" . magit-delete-thing)))
 
+;; Folds each file's diff --git/index/---/+++ block into one file-name line.
+(use-package diff-mode
+  :ensure nil
+  :custom
+  (diff-font-lock-prettify t))
+
 ;; Ediff is launched from magit; keys.el gives it its own meow state.  Its
 ;; default control window is a separate frame, which on macOS is a floating
 ;; window that outlives the comparison.
