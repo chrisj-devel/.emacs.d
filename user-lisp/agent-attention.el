@@ -1,6 +1,6 @@
 ;;; agent-attention.el --- Which agent shells are waiting on me -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; A tally in the tab bar of the agent shells awaiting input, plus a macOS
+;; A dot on each session tab whose agent shell awaits input, plus a macOS
 ;; notification when I am not looking at the shell.  Rides `agent-shell's
 ;; public event API only; agent-shell-attention.el does the same but advises
 ;; `agent-shell--send-command' and rebinds `acp-send-request' to also track
@@ -11,6 +11,7 @@
 
 (require 'map)
 (require 'seq)
+(require 'tab-bar)
 
 (declare-function agent-shell-subscribe-to "agent-shell")
 
@@ -27,11 +28,23 @@
              my/agent-attention--pending)
     live))
 
-(defun my/agent-attention--indicator ()
-  "Tally for `global-mode-string', which core.el routes into the tab bar."
-  (let ((n (length (my/agent-attention--live))))
-    (when (> n 0)
-      (propertize (format " AS:%d " n) 'face 'mode-line-emphasis))))
+(defun my/agent-attention--tab-dot (name tab _i)
+  "Prefix NAME with a dot when TAB's worktree has an agent shell waiting.
+Red when it wants a permission, green when its turn is over."
+  (let* ((root (alist-get 'my/session-worktree tab))
+         (label (and root
+                     (seq-some (lambda (buffer)
+                                 (and (file-in-directory-p
+                                       (buffer-local-value 'default-directory buffer)
+                                       root)
+                                      (gethash buffer my/agent-attention--pending)))
+                               (my/agent-attention--live)))))
+    (if label
+        (concat (propertize "\u25cf " 'face (if (equal label "Permission requested")
+                                                'error
+                                              'success))
+                name)
+      name)))
 
 (defun my/agent-attention--away-p (buffer)
   "Non-nil when BUFFER is not what I am currently looking at."
@@ -91,10 +104,10 @@
 
 ;;;###autoload
 (defun my/agent-attention-setup ()
-  "Track which agent shells are waiting, in the tab bar and by notification."
+  "Track which agent shells are waiting, on their tabs and by notification."
   (add-hook 'agent-shell-mode-hook #'my/agent-attention--subscribe)
   (add-hook 'buffer-list-update-hook #'my/agent-attention--maybe-clear)
-  (add-to-list 'global-mode-string '(:eval (my/agent-attention--indicator)) t))
+  (add-to-list 'tab-bar-tab-name-format-functions #'my/agent-attention--tab-dot))
 
 (provide 'agent-attention)
 ;;; agent-attention.el ends here
