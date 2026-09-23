@@ -47,7 +47,8 @@ and agent shells are processes so they start fresh.
   they've diverged it asks.
 - `C-c s j` jumps to a session's work tab, main checkout included.
 - `C-c s b` opens a browse tab: dirvish sidebar and code, same session, second
-  tab.
+  tab. It and `C-c s k` act on the current tab's session; `C-u` asks which
+  one, and `C-u C-u` asks for the repo too.
 - `C-c s r` opens a review tab: any branch the repo knows about, diffed against
   its merge base on the left, agent on the right. If the branch has no worktree
   it gets one, built from the remote ref when there's no local head for it yet,

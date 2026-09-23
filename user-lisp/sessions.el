@@ -379,6 +379,17 @@ prefix argument, reads the repo to offer instead."
          (name (completing-read prompt (mapcar #'my/session-name sessions) nil t)))
     (seq-find (lambda (s) (equal (my/session-name s) name)) sessions)))
 
+(defun my/session--read-here (prompt arg)
+  "The current tab's session, or one read with PROMPT.
+ARG is the raw prefix argument: one prefix reads a session of the repo
+in scope, two read the repo too.  A dashboard, or a tab no session
+opened, reads as with one prefix."
+  (or (and (not arg)
+           (not (derived-mode-p 'my/session-dashboard-mode))
+           (when-let* ((root (my/session-tab-worktree)))
+             (and (file-directory-p root) (my/session--at root))))
+      (my/session--read prompt (equal arg '(16)))))
+
 ;;; Layout and navigation
 
 (defun my/session--start-agent (session)
@@ -471,9 +482,9 @@ argument reads the repo too."
 
 (defun my/session-browse (session)
   "Jump to SESSION's browse tab, creating tab and layout when missing.
-Interactively the session is read from the repo in scope; a prefix
-argument reads the repo too."
-  (interactive (list (my/session--read "Browse session: " current-prefix-arg)))
+Interactively it is the current tab's session; a prefix argument reads
+one from the repo in scope, and two read the repo too."
+  (interactive (list (my/session--read-here "Browse session: " current-prefix-arg)))
   (my/session--open-tab (my/session-browse-tab-name session)
                         (my/session-root session)
                         (lambda () (my/session-browse-layout session))))
@@ -740,8 +751,10 @@ Interactively the repo is the one at point; a prefix argument reads it."
 (defun my/session-teardown (session)
   "Kill SESSION's buffers, close its tab, and remove its worktree.
 The main checkout is a session too and is never removed; tearing it down
-closes its tabs and kills its agent, and it is derived again next time."
-  (interactive (list (my/session--read "Tear down session: " current-prefix-arg)))
+closes its tabs and kills its agent, and it is derived again next time.
+Interactively it is the current tab's session; a prefix argument reads
+one from the repo in scope, and two read the repo too."
+  (interactive (list (my/session--read-here "Tear down session: " current-prefix-arg)))
   (let* ((name (or (my/session-feature session) (my/session-name session)))
          (root (my/session-root session))
          ;; Read before the worktree goes: a tab name is qualified by the repo
