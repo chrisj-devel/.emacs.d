@@ -748,6 +748,18 @@ Interactively the repo is the one at point; a prefix argument reads it."
     (my/session-open
      (make-my/session :name feature :root worktree :branch feature))))
 
+(defun my/session--close-tabs (root)
+  "Close every tab opened for the worktree ROOT.
+Matched by the tab's worktree, not its name: a name is fixed when the tab
+opens, and the branch it was named for can move."
+  (let ((root (file-name-as-directory (expand-file-name root)))
+        (tabs (funcall tab-bar-tabs-function)))
+    ;; Highest first, so each close leaves the lower positions standing.
+    (dolist (index (reverse (number-sequence 1 (length tabs))))
+      (when (equal (alist-get 'my/session-worktree (cdr (nth (1- index) tabs)))
+                   root)
+        (tab-bar-close-tab index)))))
+
 (defun my/session-teardown (session)
   "Kill SESSION's buffers, close its tab, and remove its worktree.
 The main checkout is a session too and is never removed; tearing it down
@@ -757,11 +769,11 @@ one from the repo in scope, and two read the repo too."
   (interactive (list (my/session--read-here "Tear down session: " current-prefix-arg)))
   (let* ((name (or (my/session-feature session) (my/session-name session)))
          (root (my/session-root session))
-         ;; Read before the worktree goes: a tab name is qualified by the repo
-         ;; behind the root, which removal takes away.
-         (tabs (list (my/session-tab-name session)
-                     (my/session-browse-tab-name session)
-                     (my/session-review-tab-name session)))
+         ;; Resolved before the worktree goes: the ticket is visited through
+         ;; the tracker symlink, under the tracker's own path, which is
+         ;; outside the project `project-kill-buffers' kills.
+         (ticket (when-let* ((file (my/session-ticket-file session)))
+                   (find-buffer-visiting file)))
          (linked (my/session--linked-worktree-p root)))
     (when (yes-or-no-p
            (if linked
@@ -778,6 +790,7 @@ one from the repo in scope, and two read the repo too."
         ;; outside every known project would otherwise prompt.
         (when-let* ((project (project-current nil root)))
           (project-kill-buffers t project))
+        (when ticket (kill-buffer ticket))
         (when linked
           (let ((main (my/session--main-root root)))
             (apply #'my/session--git main "worktree" "remove"
@@ -789,9 +802,7 @@ one from the repo in scope, and two read the repo too."
              (abbreviate-file-name (file-name-as-directory root))))))
       (when-let* ((buffer (my/session-agent-buffer session)))
         (kill-buffer buffer))
-      (dolist (tab tabs)
-        (when (my/session--tab-p tab)
-          (tab-bar-close-tab-by-name tab)))
+      (my/session--close-tabs root)
       (message "Session %s torn down (branch kept)" name))))
 
 ;;; Mission control
