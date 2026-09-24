@@ -31,6 +31,10 @@
   (global-auto-revert-non-file-buffers t)
   (standard-indent 2)
   (js-indent-level 2)
+  ;; Fontify only once input stops arriving, and the rest of each buffer in
+  ;; the background after a second idle.
+  (jit-lock-defer-time 0)
+  (jit-lock-stealth-time 1)
   :config
   (setq-default require-final-newline t)
   (setq-default tab-width 2)
