@@ -14,6 +14,8 @@
 (require 'tab-bar)
 
 (declare-function agent-shell-subscribe-to "agent-shell")
+(declare-function agent-shell-buffers "agent-shell")
+(declare-function agent-shell-status "agent-shell")
 
 (defvar my/agent-attention--pending (make-hash-table :test #'eq)
   "Agent shell buffers awaiting input, mapped to why they are waiting.")
@@ -63,6 +65,44 @@ Red when it wants a permission, green when its turn is over."
       (tab-bar-select-tab (1+ i)))
     (pop-to-buffer buffer)
     (select-frame-set-input-focus (selected-frame))))
+
+(defun my/agent-attention--rank (buffer)
+  "Where BUFFER comes in the jump order: blocked, finished, idle, busy."
+  (pcase (gethash buffer my/agent-attention--pending)
+    ("Permission requested" 0)
+    ('nil (pcase (agent-shell-status :shell-buffer buffer)
+            ('blocked 0)
+            ('ready 2)
+            (_ 3)))
+    (_ 1)))
+
+(defvar my/agent-attention--cycle nil
+  "Agent shells still to visit in the current run of jumps.")
+
+;;;###autoload
+(defun my/agent-attention-jump ()
+  "Visit the next agent shell, those waiting on me first, then idle, then busy.
+Repeating this cycles through every shell."
+  (interactive)
+  (unless (eq last-command this-command)
+    (setq my/agent-attention--cycle
+          (append (remq (current-buffer)
+                        (seq-sort-by #'my/agent-attention--rank #'<
+                                     (agent-shell-buffers)))
+                  (and (derived-mode-p 'agent-shell-mode)
+                       (list (current-buffer))))))
+  (setq my/agent-attention--cycle
+        (seq-filter #'buffer-live-p my/agent-attention--cycle))
+  (if-let* ((buffer (car my/agent-attention--cycle)))
+      (progn
+        (setq my/agent-attention--cycle
+              (append (cdr my/agent-attention--cycle) (list buffer)))
+        (my/agent-attention-visit buffer))
+    (message "No agent shells")))
+
+(defvar-keymap my/agent-attention-repeat-map
+  :repeat t
+  "a" #'my/agent-attention-jump)
 
 (defun my/agent-attention--notify (buffer label)
   "Notify LABEL for BUFFER via alerter; clicking it visits BUFFER."

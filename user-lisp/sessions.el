@@ -938,6 +938,7 @@ whose own `default-directory' would otherwise decide it."
   "d" #'my/session-dashboard
   "n" #'my/session-spawn
   "j" #'my/session-open
+  "a" #'my/agent-attention-jump
   "b" #'my/session-browse
   "r" #'my/session-review
   "k" #'my/session-teardown)
