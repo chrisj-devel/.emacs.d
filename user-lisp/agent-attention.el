@@ -51,11 +51,30 @@ Red when it wants a permission, green when its turn is over."
   (or (not (eq buffer (window-buffer (selected-window))))
       (not (seq-some #'frame-focus-state (frame-list)))))
 
+(defun my/agent-attention-visit (buffer)
+  "Select the session tab holding agent shell BUFFER and show it."
+  (when (buffer-live-p buffer)
+    (when-let* ((i (seq-position
+                    (tab-bar-tabs) buffer
+                    (lambda (tab buf)
+                      (when-let* ((root (alist-get 'my/session-worktree tab)))
+                        (file-in-directory-p
+                         (buffer-local-value 'default-directory buf) root))))))
+      (tab-bar-select-tab (1+ i)))
+    (pop-to-buffer buffer)
+    (select-frame-set-input-focus (selected-frame))))
+
 (defun my/agent-attention--notify (buffer label)
-  "Notify LABEL for BUFFER via osascript (notifications-notify is dbus-only)."
-  (start-process "agent-notify" nil "osascript" "-e"
-                 (format "display notification %S with title %S"
-                         label (buffer-name buffer))))
+  "Notify LABEL for BUFFER via alerter; clicking it visits BUFFER."
+  (let ((name (buffer-name buffer)))
+    (make-process
+     :name "agent-notify"
+     :command (list "alerter" "--title" name "--message" label
+                    "--group" name "--sender" "org.gnu.Emacs"
+                    "--timeout" "600" "--json")
+     :filter (lambda (_proc output)
+               (when (string-match-p "\"activationType\" : \"[a-zA-Z]*Clicked\"" output)
+                 (my/agent-attention-visit buffer))))))
 
 (defun my/agent-attention--mark (buffer label)
   (puthash buffer label my/agent-attention--pending)
