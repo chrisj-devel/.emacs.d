@@ -266,6 +266,12 @@
   ;; f1 reaches `dirvish-side' before any session exists, and the extension has
   ;; no autoload to pull it in.  Subtree arrives via the subtree-state attribute.
   (require 'dirvish-side)
+  ;; Sessions are scoped to a tab by its position, which shifts when an
+  ;; earlier tab closes, handing one tab's session to its neighbour.  The
+  ;; interned name is stable and still compares with `eq'.
+  (setq dirvish--scopes
+        (plist-put dirvish--scopes :tab
+                   (lambda () (intern (alist-get 'name (tab-bar--current-tab))))))
   (dirvish-override-dired-mode)
   (dirvish-side-follow-mode))
 

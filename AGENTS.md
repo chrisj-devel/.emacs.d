@@ -186,3 +186,9 @@ Never commit batch-test droppings: `projects.eld`, `recentf.eld`, `history`,
 - GNU ELPA's dirvish keeps its extensions in a subdirectory its autoloads
   never add to `load-path`. config/core.el adds it; without that, `dirvish-side` and
   the attribute libraries are unreachable.
+- dirvish scopes its sessions per tab through the private `dirvish--scopes`,
+  by tab index by default. core.el keys it on the interned tab name instead:
+  by index, closing a tab gives its dirvish buffers to the tab that slides
+  into its place, and those buffers then get killed out from under the tab
+  that owned them. An upgrade that renames the variable silently brings the
+  bug back.
