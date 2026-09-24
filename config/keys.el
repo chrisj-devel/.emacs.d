@@ -51,7 +51,8 @@
         (append '((git-commit-mode . insert)
                   (ghostel-mode . insert)
                   (agent-shell-mode . insert)
-                  (my/session-dashboard-mode . motion))
+                  (my/session-dashboard-mode . motion)
+                  (diff-mode . motion))
                 meow-mode-state-list))
 
   ;; Motion mode (read-only buffers).  Renamed on meow master; MELPA
@@ -68,6 +69,7 @@
    '("y" . meow-save)
    '("/" . meow-visit)
    '("n" . meow-search)
+   '("z" . my/fold-map)
    '("<escape>" . ignore))
 
   ;; Ediff mode
