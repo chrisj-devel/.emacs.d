@@ -32,6 +32,8 @@
 (declare-function vc-responsible-backend "vc")
 (declare-function vc-call-backend "vc-hooks")
 (declare-function vc-diff-internal "vc")
+(declare-function outline-hide-subtree "outline")
+(declare-function outline-show-subtree "outline")
 
 ;; Let-bound in `my/session--review-diff' before vc has necessarily loaded;
 ;; the declaration is what keeps that binding dynamic rather than lexical.
@@ -57,6 +59,11 @@
 (defcustom my/session-review-tab-suffix " review"
   "Suffix distinguishing a session's review tab from its work tab."
   :type 'string)
+
+(defcustom my/review-collapsed-files
+  '("\\.spec\\." "\\.test\\." "/__tests__/" "_test\\.")
+  "Regexps of repo-relative paths whose diff starts folded in a review."
+  :type '(repeat regexp))
 
 (defcustom my/session-stale-threshold 25
   "Commits behind base at which the dashboard calls a session stale.
@@ -519,11 +526,22 @@ two reviews run side by side as readily as two sessions do."
     (with-current-buffer buffer
       ;; `erase-buffer' leaves overlays behind, collapsed onto one position.
       (remove-overlays (point-min) (point-max) 'my/review-note t)
+      (my/review--collapse-files)
       ;; vc's own revert function drops the buffer it was given and rebuilds
       ;; into *vc-diff*.
       (setq-local revert-buffer-function
                   (lambda (&rest _) (my/session--review-diff session))))
     buffer))
+
+(defun my/review--collapse-files ()
+  "Fold each file in the diff matching `my/review-collapsed-files'."
+  (outline-minor-mode 1)
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^\\+\\+\\+ \\(?:b/\\)?\\([^\t\n]+\\)" nil t)
+      (when (seq-some (lambda (re) (string-match-p re (match-string 1)))
+                      my/review-collapsed-files)
+        (outline-hide-subtree)))))
 
 (defun my/session-review-layout (session)
   "Apply the review layout: the branch diff left, agent right."
@@ -616,6 +634,10 @@ Notes last until the diff is rebuilt, `g' being what clears them."
               (buffer (get-buffer (my/session--review-buffer-name session))))
     (with-current-buffer buffer
       (when-let* ((pos (my/review--position file line)))
+        (save-excursion
+          (goto-char pos)
+          (when (re-search-backward "^\\+\\+\\+ " nil t)
+            (outline-show-subtree)))
         (let ((overlay (make-overlay pos pos)))
           (overlay-put overlay 'my/review-note t)
           (overlay-put overlay 'before-string
