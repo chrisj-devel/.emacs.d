@@ -1,7 +1,8 @@
 ;;; agent-attention.el --- Which agent shells are waiting on me -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; A dot on each session tab whose agent shell awaits input, plus a macOS
-;; notification when I am not looking at the shell.  Rides `agent-shell's
+;; A dot on each session tab whose agent shell awaits input, a posframe
+;; listing the waiting shells I cannot see, and a macOS notification when
+;; Emacs is unfocused or the shell is out of the selected frame.  Rides `agent-shell's
 ;; public event API only; agent-shell-attention.el does the same but advises
 ;; `agent-shell--send-command' and rebinds `acp-send-request' to also track
 ;; busy state, which is more surface than a counter is worth.
@@ -16,6 +17,9 @@
 (declare-function agent-shell-subscribe-to "agent-shell")
 (declare-function agent-shell-buffers "agent-shell")
 (declare-function agent-shell-status "agent-shell")
+(declare-function posframe-show "posframe")
+(declare-function posframe-hide "posframe")
+(declare-function posframe-workable-p "posframe")
 
 (defvar my/agent-attention--pending (make-hash-table :test #'eq)
   "Agent shell buffers awaiting input, mapped to why they are waiting.")
@@ -30,9 +34,14 @@
              my/agent-attention--pending)
     live))
 
+(defun my/agent-attention--dot (label)
+  "A dot for LABEL: red when it wants a permission, green otherwise."
+  (propertize "\u25cf " 'face (if (equal label "Permission requested")
+                                  'error
+                                'success)))
+
 (defun my/agent-attention--tab-dot (name tab _i)
-  "Prefix NAME with a dot when TAB's worktree has an agent shell waiting.
-Red when it wants a permission, green when its turn is over."
+  "Prefix NAME with a dot when TAB's worktree has an agent shell waiting."
   (let* ((root (alist-get 'my/session-worktree tab))
          (label (and root
                      (seq-some (lambda (buffer)
@@ -42,29 +51,70 @@ Red when it wants a permission, green when its turn is over."
                                       (gethash buffer my/agent-attention--pending)))
                                (my/agent-attention--live)))))
     (if label
-        (concat (propertize "\u25cf " 'face (if (equal label "Permission requested")
-                                                'error
-                                              'success))
-                name)
+        (concat (my/agent-attention--dot label) name)
       name)))
 
-(defun my/agent-attention--away-p (buffer)
-  "Non-nil when BUFFER is not visible in the tab I am looking at."
-  (or (not (get-buffer-window buffer))
-      (not (seq-some #'frame-focus-state (frame-list)))))
+(defun my/agent-attention--tab-index (buffer)
+  "Index of the session tab in the selected frame holding BUFFER."
+  (seq-position (tab-bar-tabs) buffer
+                (lambda (tab buf)
+                  (when-let* ((root (alist-get 'my/session-worktree tab)))
+                    (file-in-directory-p
+                     (buffer-local-value 'default-directory buf) root)))))
+
+(defun my/agent-attention--elsewhere-p (buffer)
+  "Non-nil when Emacs is unfocused or BUFFER is out of the selected frame."
+  (not (and (seq-some #'frame-focus-state (frame-list))
+            (or (get-buffer-window buffer)
+                (my/agent-attention--tab-index buffer)))))
 
 (defun my/agent-attention-visit (buffer)
   "Select the session tab holding agent shell BUFFER and show it."
   (when (buffer-live-p buffer)
-    (when-let* ((i (seq-position
-                    (tab-bar-tabs) buffer
-                    (lambda (tab buf)
-                      (when-let* ((root (alist-get 'my/session-worktree tab)))
-                        (file-in-directory-p
-                         (buffer-local-value 'default-directory buf) root))))))
+    (when-let* ((i (my/agent-attention--tab-index buffer)))
       (tab-bar-select-tab (1+ i)))
     (pop-to-buffer buffer)
     (select-frame-set-input-focus (selected-frame))))
+
+(defconst my/agent-attention--posframe " *agent-attention*")
+
+(defun my/agent-attention--bottom-right (info)
+  "Posframe position inside the bottom-right window's text area, inset a char.
+Positive pixels, as the NS port puts a child frame at 0,0 for negative ones."
+  (let* ((frame (plist-get info :parent-frame))
+         (window (seq-find (lambda (w)
+                             (and (window-at-side-p w 'bottom)
+                                  (window-at-side-p w 'right)))
+                           (window-list frame 'nomini)))
+         (edges (window-inside-pixel-edges window)))
+    (cons (- (nth 2 edges) (plist-get info :posframe-width)
+             (frame-char-width frame))
+          (- (nth 3 edges) (plist-get info :posframe-height)
+             (/ (frame-char-height frame) 2)))))
+
+(defun my/agent-attention--render (&rest _)
+  "List waiting shells not visible in this tab in a posframe, or hide it."
+  (when (fboundp 'posframe-workable-p)
+    (let ((lines (seq-keep (lambda (buffer)
+                             (unless (get-buffer-window buffer)
+                               (let ((label (gethash buffer my/agent-attention--pending)))
+                                 (concat (my/agent-attention--dot label)
+                                         (propertize (buffer-name buffer) 'face 'bold)
+                                         "  " label))))
+                           (my/agent-attention--live))))
+      (if (and lines (posframe-workable-p))
+          (posframe-show my/agent-attention--posframe
+                         :string (let ((pad (propertize " " 'face '(:height 0.5))))
+                                   (concat pad (propertize "\n" 'face '(:height 0.5))
+                                           (string-join lines "\n") "\n"
+                                           (propertize "C-c s a to jump" 'face 'shadow)
+                                           "\n" pad))
+                         :poshandler #'my/agent-attention--bottom-right
+                         :border-width 1
+                         :border-color (face-foreground 'shadow nil t)
+                         :left-fringe 12
+                         :right-fringe 12)
+        (posframe-hide my/agent-attention--posframe)))))
 
 (defun my/agent-attention--rank (buffer)
   "Where BUFFER comes in the jump order: blocked, finished, idle, busy."
@@ -118,12 +168,14 @@ Repeating this cycles through every shell."
 
 (defun my/agent-attention--mark (buffer label)
   (puthash buffer label my/agent-attention--pending)
-  (when (my/agent-attention--away-p buffer)
+  (when (my/agent-attention--elsewhere-p buffer)
     (my/agent-attention--notify buffer label))
+  (my/agent-attention--render)
   (force-mode-line-update t))
 
 (defun my/agent-attention--clear (buffer)
   (remhash buffer my/agent-attention--pending)
+  (my/agent-attention--render)
   (force-mode-line-update t))
 
 (defun my/agent-attention--on-event (buffer event)
@@ -143,8 +195,10 @@ Repeating this cycles through every shell."
        ;; Only end_turn means it is my move; the rest are just worth knowing.
        (if (equal reason "end_turn")
            (my/agent-attention--mark buffer label)
-         (when (my/agent-attention--away-p buffer)
-           (my/agent-attention--notify buffer label))
+         (cond ((my/agent-attention--elsewhere-p buffer)
+                (my/agent-attention--notify buffer label))
+               ((not (get-buffer-window buffer))
+                (message "%s: %s" (buffer-name buffer) label)))
          (my/agent-attention--clear buffer))))))
 
 (defun my/agent-attention--subscribe ()
@@ -166,6 +220,7 @@ Repeating this cycles through every shell."
   "Track which agent shells are waiting, on their tabs and by notification."
   (add-hook 'agent-shell-mode-hook #'my/agent-attention--subscribe)
   (add-hook 'buffer-list-update-hook #'my/agent-attention--maybe-clear)
+  (add-hook 'tab-bar-tab-post-select-functions #'my/agent-attention--render)
   (add-to-list 'tab-bar-tab-name-format-functions #'my/agent-attention--tab-dot))
 
 (provide 'agent-attention)

@@ -26,6 +26,7 @@
 (require 'tabulated-list)
 
 (declare-function agent-shell-status "agent-shell")
+(declare-function my/agent-attention-jump "agent-attention")
 (declare-function agent-shell "agent-shell")
 (declare-function dirvish-side "dirvish-side")
 (declare-function vc-responsible-backend "vc")

@@ -218,6 +218,8 @@ With prefix ARG, always start a new shell."
 
 ;;; Agent attention
 
+(use-package posframe)
+
 (my/agent-attention-setup)
 
 (provide 'dev)
