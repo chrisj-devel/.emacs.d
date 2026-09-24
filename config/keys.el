@@ -200,6 +200,16 @@
   (meow-normal-define-key
    '("T" . meow-tree-sitter-node)))
 
+;; undo-only/undo-redo walk one line of history; vundo reaches the branches
+;; an edit after undo leaves behind in `buffer-undo-list'.
+(use-package vundo
+  :defer t
+  :init
+  (meow-leader-define-key '("u" . vundo))
+  (add-to-list 'meow-mode-state-list '(vundo-mode . insert))
+  :config
+  (setq vundo-glyph-alist vundo-unicode-symbols))
+
 (use-package ediff
   :ensure nil
   :after meow
