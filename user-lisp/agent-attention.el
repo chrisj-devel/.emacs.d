@@ -47,8 +47,8 @@ Red when it wants a permission, green when its turn is over."
       name)))
 
 (defun my/agent-attention--away-p (buffer)
-  "Non-nil when BUFFER is not what I am currently looking at."
-  (or (not (eq buffer (window-buffer (selected-window))))
+  "Non-nil when BUFFER is not visible in the tab I am looking at."
+  (or (not (get-buffer-window buffer))
       (not (seq-some #'frame-focus-state (frame-list)))))
 
 (defun my/agent-attention-visit (buffer)
