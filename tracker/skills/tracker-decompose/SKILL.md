@@ -53,7 +53,7 @@ It never takes `TYPE` or `NEXT`.
 
 Use `tracker-edges`: sequential slices block their successors; independent
 slices have no edge and can run in parallel. Specified blocked tickets remain
-`NEXT`. Run `M-x my/tracker-validate` after writing the edges.
+`NEXT`. Validate after writing the edges (`issue-tracker.md`).
 
 Report a table of number, title, `TYPE`, and dependencies, followed by any
 necessary slicing constraints. Do not implement; `session-run` does that.

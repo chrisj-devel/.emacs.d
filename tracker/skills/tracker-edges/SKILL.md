@@ -25,8 +25,8 @@ Use `tracker-frontier` for a feature's actionable headings.
 
 ## Validation
 
-```
-M-x my/tracker-validate
+```sh
+emacs --batch -Q --eval '(setq load-prefer-newer t)' -L ~/.emacs.d/user-lisp -l tracker -f my/tracker-validate-batch
 ```
 
 Run after dependency changes or retitling, plus any repo-declared verification.

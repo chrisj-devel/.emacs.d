@@ -106,8 +106,13 @@ A heading is unblocked when every target is `DONE` or `CANCELED`.
 `org-entry-blocked-p` derives blocking; a specified ticket remains `NEXT` while
 blocked, and completing a dependency needs no edit to its dependants.
 
-Run `M-x my/tracker-validate` after dependency changes to find unresolvable edges
-and cycles, plus any commands in **slot: verification**.
+After dependency changes, validate to find unresolvable edges, cycles and ADR
+violations, then run any commands in **slot: verification**. It exits 1 on any
+problem; `M-x my/tracker-validate` is the interactive form.
+
+```sh
+emacs --batch -Q --eval '(setq load-prefer-newer t)' -L ~/.emacs.d/user-lisp -l tracker -f my/tracker-validate-batch
+```
 
 ## Decomposition
 

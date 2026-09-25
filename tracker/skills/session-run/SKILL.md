@@ -16,8 +16,8 @@ If none exists, report that and stop; the human creates it with `C-c s n`.
 Read the PRD and every frontier ticket in full, including `** Comments`.
 Use `tracker-frontier`, then validate the graph:
 
-```
-M-x my/tracker-validate
+```sh
+emacs --batch -Q --eval '(setq load-prefer-newer t)' -L ~/.emacs.d/user-lisp -l tracker -f my/tracker-validate-batch
 ```
 
 Announce the frontier and next human gate. Ask only for a forbidden command or

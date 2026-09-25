@@ -28,7 +28,7 @@ are committed.
 ## Slot: verification
 
 Declare commands required before `DONE`, including any repo-specific checks
-in addition to `M-x my/tracker-validate`.
+in addition to tracker validation.
 
 ## Current constraints
 

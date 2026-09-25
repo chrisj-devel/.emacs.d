@@ -364,5 +364,15 @@ in `my/tracker--adr-problems'."
                (length graph)))
     problems))
 
+;;;###autoload
+(defun my/tracker-validate-batch ()
+  "Run `my/tracker-validate' on the repo holding `default-directory'.
+For `emacs --batch': prints any problems and exits 1."
+  (require 'sessions)
+  (let ((root (car (process-lines "git" "rev-parse" "--show-toplevel"))))
+    (when (my/tracker-validate (file-name-as-directory root))
+      (princ (with-current-buffer "*tracker-validate*" (buffer-string)))
+      (kill-emacs 1))))
+
 (provide 'tracker)
 ;;; tracker.el ends here
