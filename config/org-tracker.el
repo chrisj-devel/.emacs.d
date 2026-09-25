@@ -24,9 +24,7 @@
          (org-mode . visual-line-mode)
          (org-mode . visual-wrap-prefix-mode))
   :custom
-  (org-todo-keywords
-   '((sequence "TODO(t)" "NEXT(n)" "DOING(p)" "WAIT(w@/!)"
-               "|" "DONE(d)" "CANCELED(c@)")))
+  (org-todo-keywords my/tracker-todo-keywords)
   (org-log-done 'time)
   (org-log-into-drawer t)
   (org-use-fast-todo-selection t)

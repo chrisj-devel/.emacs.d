@@ -13,6 +13,11 @@
 (declare-function my/session--repos "sessions")
 (defvar my/session-tickets-subdir)
 
+(defconst my/tracker-todo-keywords
+  '((sequence "TODO(t)" "NEXT(n)" "DOING(p)" "WAIT(w@/!)"
+              "|" "DONE(d)" "CANCELED(c@)"))
+  "The tracker contract's heading states, as `org-todo-keywords'.")
+
 ;; Scope is one repo, derived from `git worktree list', not from
 ;; `project-known-project-roots'. Walking known roots would stat every project
 ;; Emacs has ever seen — including remote ones, where `file-directory-p' opens

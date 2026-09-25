@@ -16,6 +16,7 @@
 (require 'org)
 (require 'project)
 (require 'seq)
+(require 'tickets)
 
 (declare-function org-edna-finder/olp "org-edna")
 (declare-function my/session--read-repo "sessions")
@@ -326,7 +327,8 @@ in `my/tracker--adr-problems'."
   (interactive (list (funcall project-prompter)))
   ;; Truename, because `tickets' is a symlink into the tracker repo: without it
   ;; `find-file-noselect' opens every tracker file under two names.
-  (let* ((dir (file-truename
+  (let* ((org-todo-keywords my/tracker-todo-keywords)
+         (dir (file-truename
                (expand-file-name my/session-tickets-subdir root)))
          (graph (my/tracker--graph dir))
          (problems nil))
